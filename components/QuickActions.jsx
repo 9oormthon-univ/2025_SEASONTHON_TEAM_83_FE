@@ -17,7 +17,8 @@ const QuickActions = () => {
       id: 2,
       icon: require('../assets/images/icon_badge.png'),
       label: '보유 뱃지',
-      value: ''
+      value: '',
+      onPress: () => router.push('/badges')
     },
     {
       id: 3,
