@@ -24,7 +24,8 @@ const QuickActions = () => {
       id: 3,
       icon: require('../assets/images/icon_auth.png'),
       label: '빠른 인증',
-      value: ''
+      value: '',
+      onPress: () => router.push('/challenge-certification')
     },
     {
       id: 4,
