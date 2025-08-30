@@ -27,6 +27,7 @@ export default function RootLayout() {
         <Stack.Screen name="challenge" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="my-page" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
+        <Stack.Screen name="attendance" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

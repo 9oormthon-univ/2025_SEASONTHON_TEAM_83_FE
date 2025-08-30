@@ -1,13 +1,17 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const QuickActions = () => {
+  const router = useRouter();
+  
   const actions = [
     {
       id: 1,
       icon: require('../assets/images/icon_calendar.png'),
       label: '출석체크',
-      value: '11'
+      value: '11',
+      onPress: () => router.push('/attendance')
     },
     {
       id: 2,
@@ -42,7 +46,7 @@ const QuickActions = () => {
           <TouchableOpacity
             key={action.id}
             style={styles.actionItem}
-            onPress={() => {}}
+            onPress={action.onPress || (() => {})}
           >
             <View style={styles.iconContainer}>
               <Image source={action.icon} style={styles.icon} />
