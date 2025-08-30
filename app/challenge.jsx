@@ -50,7 +50,10 @@ export default function ChallengeScreen() {
         </View>
         
         {/* 알림 버튼 */}
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => router.push('/notifications')}
+        >
           <Image
             source={require('../assets/images/icon_alarm.png')}
             style={styles.notificationIcon}
