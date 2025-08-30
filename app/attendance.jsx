@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function AttendanceScreen() {
   const router = useRouter();
@@ -15,8 +16,18 @@ export default function AttendanceScreen() {
 
   const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
   const currentDate = new Date().getDate();
-  const totalDays = 31; // 8월은 31일
-  const attendancePoints = 30;
+  const currentYear = 2025;
+  
+  // 월별 데이터 생성 (6월부터 12월까지)
+  const months = [6, 7, 8, 9, 10, 11, 12];
+  
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
+  };
+  
+  const getFirstDayOfMonth = (year, month) => {
+    return new Date(year, month - 1, 1).getDay();
+  };
 
   const handleAttendance = () => {
     // 출석 처리 로직
@@ -25,8 +36,10 @@ export default function AttendanceScreen() {
     setAttendanceData(newAttendanceData);
   };
 
-  const renderCalendar = () => {
+  const renderCalendar = (month) => {
     const calendar = [];
+    const totalDays = getDaysInMonth(currentYear, month);
+    const firstDay = getFirstDayOfMonth(currentYear, month);
     
     // 요일 헤더
     const weekHeader = (
@@ -38,11 +51,16 @@ export default function AttendanceScreen() {
     );
     calendar.push(weekHeader);
 
-    // 날짜들
+    // 첫 주 빈 칸들
     let week = [];
+    for (let i = 0; i < firstDay; i++) {
+      week.push(<View key={`empty-start-${i}`} style={styles.dayContainer} />);
+    }
+
+    // 날짜들
     for (let day = 1; day <= totalDays; day++) {
       const isAttended = attendanceData[day];
-      const isCurrentDay = day === currentDate;
+      const isCurrentDay = day === currentDate && month === 8; // 8월 현재 날짜만 표시
       
       week.push(
         <View key={day} style={styles.dayContainer}>
@@ -70,11 +88,7 @@ export default function AttendanceScreen() {
         </View>
       );
 
-      if (week.length === 7 || day === totalDays) {
-        // 마지막 주가 7개가 아닌 경우 빈 칸으로 채움
-        while (week.length < 7) {
-          week.push(<View key={`empty-${day}-${week.length}`} style={styles.dayContainer} />);
-        }
+      if (week.length === 7) {
         calendar.push(
           <View key={`week-${Math.floor(day / 7)}`} style={styles.weekRow}>
             {week}
@@ -82,6 +96,18 @@ export default function AttendanceScreen() {
         );
         week = [];
       }
+    }
+
+    // 마지막 주 빈 칸으로 채우기
+    if (week.length > 0) {
+      while (week.length < 7) {
+        week.push(<View key={`empty-end-${week.length}`} style={styles.dayContainer} />);
+      }
+      calendar.push(
+        <View key="week-last" style={styles.weekRow}>
+          {week}
+        </View>
+      );
     }
 
     return calendar;
@@ -129,21 +155,37 @@ export default function AttendanceScreen() {
 
       <View style={styles.content}>
         {/* 출석체크 제목 */}
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>출석체크</Text>
+        <View style={styles.titleContainer}>
+          <Image
+            style={styles.titlePattern}
+            source={require('../assets/images/bar_green.png')}
+          />
+          <Text style={styles.titleText}>출석체크</Text>
         </View>
 
-        {/* 월 표시 */}
-        <View style={styles.monthSection}>
-          <Text style={styles.monthText}>8월</Text>
-        </View>
+        {/* 월별 달력 스크롤 */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          style={styles.monthScrollView}
+        >
+          {months.map((month) => (
+            <View key={month} style={styles.monthContainer}>
+              {/* 월 표시 */}
+              <View style={styles.monthSection}>
+                <Text style={styles.monthText}>{month}월</Text>
+              </View>
 
-        {/* 달력 */}
-        <View style={styles.calendarContainer}>
-          <View style={styles.calendar}>
-            {renderCalendar()}
-          </View>
-        </View>
+              {/* 달력 */}
+              <View style={styles.calendarContainer}>
+                <View style={styles.calendar}>
+                  {renderCalendar(month)}
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
 
         {/* 출석 포인트 */}
         <View style={styles.pointsSection}>
@@ -225,37 +267,56 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  titleSection: {
+  titleContainer: {
+    position: 'relative',
     alignItems: 'center',
     marginBottom: 30,
+    height: 50,
+    justifyContent: 'center',
+    marginHorizontal: -20, // 양쪽으로 꽉 채우기
   },
-  title: {
-    fontSize: 24,
+  titlePattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
+    bottom: 0,
+  },
+  titleText: {
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    fontFamily: 'Pretendard Variable',
+    fontFamily: '109LeantheWall',
+    zIndex: 1,
+  },
+  monthScrollView: {
+    marginBottom: 10,
+  },
+  monthContainer: {
+    width: screenWidth - 40, // paddingHorizontal 20 제외
+    alignItems: 'center',
   },
   monthSection: {
     marginBottom: 20,
+    alignItems: 'center',
   },
   monthText: {
-    width: 31,
     fontSize: 20,
     letterSpacing: -0.2,
     lineHeight: 28,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
-    textAlign: 'left',
-    height: 35,
+    textAlign: 'center',
+    height: 25,
   },
   calendarContainer: {
-    marginBottom: 30,
+    marginBottom: 5,
   },
   calendar: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 20,
+    padding: 15,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -264,10 +325,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    width: '100%',
   },
   weekHeader: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: 10,
+    width: '100%',
   },
   dayHeader: {
     flex: 1,
@@ -279,54 +342,59 @@ const styles = StyleSheet.create({
   },
   weekRow: {
     flexDirection: 'row',
-    marginBottom: 10,
+    marginBottom: 8,
+    width: '100%',
   },
   dayContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 40,
+    height: 35,
+    minWidth: 35,
   },
   dayItem: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   dayText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#2D2D2D',
-    marginBottom: 5,
+    marginBottom: 3,
     fontFamily: 'Pretendard Variable',
+    textAlign: 'center',
   },
   currentDay: {
     backgroundColor: '#006256',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    borderRadius: 18,
+    width: 35,
+    height: 35,
     alignItems: 'center',
     justifyContent: 'center',
   },
   currentDayText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontFamily: 'Pretendard Variable',
   },
   earthIcon: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     resizeMode: 'contain',
   },
   emptyCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 2,
     borderColor: '#E0E0E0',
     backgroundColor: 'transparent',
   },
   pointsSection: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 10,
+    top: -10,
   },
   pointsText: {
     width: 230,
@@ -344,11 +412,11 @@ const styles = StyleSheet.create({
     color: '#0061E9',
   },
   attendanceButton: {
-    width: '100%',
+    width: '80%',
     backgroundColor: '#006256',
     borderRadius: 8,
-    paddingVertical: 15,
-    paddingHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -359,6 +427,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
+    marginBottom: 100,
+    marginTop: 0,
+    alignSelf: 'center',
   },
   attendanceButtonText: {
     fontSize: 16,
