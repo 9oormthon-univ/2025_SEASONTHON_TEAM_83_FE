@@ -30,16 +30,25 @@ const COLORS = {
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function SignupScreen() {
+  console.log('SignupScreen 컴포넌트 렌더링됨');
+  
   const router = useRouter();
+  console.log('useRouter 훅 실행됨, router 객체:', router);
+  
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  console.log('상태 변수들 초기화됨');
 
   const handleSignup = () => {
     // TODO: 회원가입 로직 구현
     console.log('회원가입 시도:', { nickname, birthDate, email, password, confirmPassword });
+    
+    // 회원가입 성공 후 카테고리 설정 화면으로 이동
+    router.push('/category-setup');
   };
 
   const handleKakaoLink = () => {
@@ -140,6 +149,7 @@ export default function SignupScreen() {
               <TouchableOpacity 
                 style={[styles.socialButton, { backgroundColor: COLORS.signupButton }]}
                 onPress={handleSignup}
+                activeOpacity={0.7}
               >
                 <Image
                   source={require('../assets/images/icon_signup.png')}
