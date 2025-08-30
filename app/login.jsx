@@ -1,17 +1,18 @@
+import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import useLogin from '../hooks/useLogin';
 
@@ -29,6 +30,7 @@ const COLORS = {
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function LoginScreen() {
+  const router = useRouter();
 
   const {
     email,
@@ -45,6 +47,10 @@ export default function LoginScreen() {
       console.log('로그인 성공! 메인 화면으로 이동합니다.');
     }
   }, [loginSuccess]);
+
+  const handleSignupPress = () => {
+    router.push('/signup');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -120,7 +126,10 @@ export default function LoginScreen() {
               <Text style={styles.socialButtonText}>카카오톡</Text>
             </View>
             <View style={styles.socialButtonContainer}>
-              <TouchableOpacity style={[styles.socialButton, { backgroundColor: COLORS.signupButton }]}>
+              <TouchableOpacity 
+                style={[styles.socialButton, { backgroundColor: COLORS.signupButton }]}
+                onPress={handleSignupPress}
+              >
                 <Image
                   source={require('../assets/images/icon_signup.png')}
                   style={styles.socialIcon}
