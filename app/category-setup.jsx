@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Image,
@@ -15,6 +16,7 @@ const icon_walk = require('../assets/images/icon_walk.png');
 const icon_tumblr = require('../assets/images/icon_tumblr.png');
 
 export default function CategorySetupScreen() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   return (
@@ -74,7 +76,13 @@ export default function CategorySetupScreen() {
 
         {/* 함께 출발하기 버튼 */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.startButton}>
+          <TouchableOpacity 
+            style={styles.startButton}
+            onPress={() => {
+              console.log('함께 출발하기 버튼 클릭됨');
+              router.replace('/home'); // 스택 초기화하고 홈화면으로 이동
+            }}
+          >
             <Text style={styles.startButtonText}>함께 출발하기</Text>
           </TouchableOpacity>
         </View>
