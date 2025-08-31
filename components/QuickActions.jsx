@@ -32,7 +32,7 @@ const QuickActions = () => {
       icon: require('../assets/images/icon_point.png'),
       label: '포인트',
       value: '',
-      onPress: () => router.push('/ranking')
+      onPress: () => router.push('/points')
     },
     {
       id: 5,

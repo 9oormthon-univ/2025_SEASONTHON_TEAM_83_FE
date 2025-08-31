@@ -31,6 +31,7 @@ export default function RootLayout() {
         <Stack.Screen name="challenge-certification" options={{ headerShown: false }} />
         <Stack.Screen name="badges" options={{ headerShown: false }} />
         <Stack.Screen name="ranking" options={{ headerShown: false }} />
+        <Stack.Screen name="points" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
