@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
-export default function PointsScreen() {
+export default function RewardConversionScreen() {
   const router = useRouter();
 
   return (
@@ -57,134 +57,133 @@ export default function PointsScreen() {
           <Text style={styles.titleText}>보유 포인트</Text>
         </View>
 
-        {/* 현재 묘목 단계 섹션 */}
-        <View style={styles.seedlingSection}>
-          <Text style={styles.seedlingTitle}>현재 묘목 단계</Text>
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View style={styles.progressFill} />
-            </View>
-            <Text style={styles.progressText}>다음 단계까지 10%</Text>
+        {/* 현재 보유 포인트 표시 */}
+        <View style={styles.currentPointsSection}>
+          <Text style={styles.currentPointsText}>
+            현재 보유 포인트는 <Text style={styles.pointsValue}>30p</Text> 입니다.
+          </Text>
+        </View>
+
+        {/* 포인트 입력 필드 */}
+        <View style={styles.inputSection}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.inputField}
+              placeholder="전환할 포인트를 입력해주세요."
+              placeholderTextColor="#9C9C9C"
+            />
+            <TouchableOpacity style={styles.arrowButton}>
+              <Text style={styles.arrowText}>{'>'}</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* 포인트 획득 내역 섹션 */}
+        {/* 나무 심기로 전환 섹션 */}
+        <View style={styles.treeSection}>
+          <View style={styles.treeHeader}>
+            <View style={styles.treeTextContainer}>
+              <Text style={styles.treeTitle}>나무 심기로 전환</Text>
+              <Text style={styles.treeSubtitle}>현재 심을 수 있는 나무는 3그루 입니다.</Text>
+            </View>
+            <TouchableOpacity style={styles.plantTreeButton}>
+              <Text style={styles.plantTreeText}>나무심기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* 리워드 전환 내역 섹션 */}
         <View style={styles.historySection}>
-          <Text style={styles.historyTitle}>포인트 획득 내역</Text>
+          <Text style={styles.historyTitle}>리워드 전환 내역</Text>
           <ScrollView 
             style={styles.historyCard}
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled={true}
           >
-            {/* 포인트 내역 아이템들 */}
+            {/* 더미데이터로 채워진 내역 */}
             <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
+              <View style={styles.historyLeft}>
+                <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_walk.png')} 
+                    source={require('../assets/images/icon_reward.png')} 
                     style={styles.iconImage}
                   />
                 </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>걷기 1.3km 인증</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-15</Text>
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyItemTitle}>나무 심기 전환</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-15</Text>
                 </View>
               </View>
-              <Text style={styles.itemPoints}>+20p</Text>
+              <Text style={styles.historyPoints}>-100p</Text>
             </View>
 
             <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_tumblr.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>텀블러 사용 인증</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-14</Text>
-                </View>
-              </View>
-              <Text style={styles.itemPoints}>+50p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_calendar.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>출석체크</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-13</Text>
-                </View>
-              </View>
-              <Text style={styles.itemPoints}>+10p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
+              <View style={styles.historyLeft}>
+                <View style={styles.historyIcon}>
                   <Image 
                     source={require('../assets/images/icon_badge.png')} 
                     style={styles.iconImage}
                   />
                 </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>첫 번째 뱃지 획득</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-12</Text>
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyItemTitle}>뱃지 획득</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-14</Text>
                 </View>
               </View>
-              <Text style={styles.itemPoints}>+100p</Text>
+              <Text style={styles.historyPoints}>+50p</Text>
             </View>
 
             <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
+              <View style={styles.historyLeft}>
+                <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_walk.png')} 
+                    source={require('../assets/images/icon_reward.png')} 
                     style={styles.iconImage}
                   />
                 </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>걷기 2.1km 인증</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-11</Text>
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyItemTitle}>나무 심기 전환</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-12</Text>
                 </View>
               </View>
-              <Text style={styles.itemPoints}>+30p</Text>
+              <Text style={styles.historyPoints}>-200p</Text>
             </View>
 
             <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
+              <View style={styles.historyLeft}>
+                <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_calendar.png')} 
+                    source={require('../assets/images/icon_point.png')} 
                     style={styles.iconImage}
                   />
                 </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>출석체크</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-10</Text>
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyItemTitle}>포인트 적립</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-10</Text>
                 </View>
               </View>
-              <Text style={styles.itemPoints}>+10p</Text>
+              <Text style={styles.historyPoints}>+150p</Text>
+            </View>
+
+            <View style={styles.historyItem}>
+              <View style={styles.historyLeft}>
+                <View style={styles.historyIcon}>
+                  <Image 
+                    source={require('../assets/images/icon_reward.png')} 
+                    style={styles.iconImage}
+                  />
+                </View>
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyItemTitle}>나무 심기 전환</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-08</Text>
+                </View>
+              </View>
+              <Text style={styles.historyPoints}>-100p</Text>
             </View>
           </ScrollView>
         </View>
 
-        {/* 포인트 정보 */}
-        <View style={styles.pointsInfo}>
-          <Text style={styles.currentPoints}>
-            보유 포인트는 <Text style={styles.pointsValue}>30p</Text> 입니다
-          </Text>
-          <Text style={styles.totalPoints}>누적 포인트 1000p</Text>
-        </View>
-
         {/* 리워드 전환 버튼 */}
-        <TouchableOpacity style={styles.rewardButton} onPress={() => router.push('/reward-conversion')}>
+        <TouchableOpacity style={styles.rewardButton}>
           <Text style={styles.rewardButtonText}>리워드 전환</Text>
         </TouchableOpacity>
       </View>
@@ -275,67 +274,134 @@ const styles = StyleSheet.create({
     fontFamily: '109LeantheWall',
     zIndex: 1,
   },
-  seedlingSection: {
+  currentPointsSection: {
+    alignItems: 'center',
     marginBottom: 20,
   },
-  seedlingTitle: {
-    width: 112,
-    fontSize: 20,
-    letterSpacing: -0.2,
-    lineHeight: 28,
+  currentPointsText: {
+    fontSize: 16,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
-    textAlign: 'left',
-    marginBottom: 10,
+    textAlign: 'center',
+    lineHeight: 18,
+    letterSpacing: 0.3,
   },
-  progressContainer: {
+  pointsValue: {
+    color: '#0061E9',
+  },
+  inputSection: {
+    marginBottom: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D6D6D6',
+    borderRadius: 4,
+    paddingHorizontal: 17,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Pretendard Variable',
+    color: '#2D2D2D',
+    lineHeight: 16,
+    letterSpacing: 0.3,
+  },
+  arrowButton: {
+    width: 25,
+    height: 25,
+    backgroundColor: '#006256',
+    borderRadius: 12.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 15,
+  },
+  arrowText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  treeSection: {
+    marginBottom: 20,
+  },
+  treeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  progressBar: {
+  treeTextContainer: {
     flex: 1,
-    height: 11,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 6,
-    marginRight: 15,
-    overflow: 'hidden',
   },
-  progressFill: {
-    width: '90%',
-    height: '100%',
-    backgroundColor: '#006256',
-    borderRadius: 6,
-  },
-  progressText: {
-    width: 79,
-    fontSize: 10,
-    letterSpacing: -0.1,
-    lineHeight: 28,
+  treeTitle: {
+    fontSize: 20,
+    fontWeight: '700',
     fontFamily: 'Pretendard Variable',
-    color: '#525252',
-    textAlign: 'right',
+    color: '#2D2D2D',
+    textAlign: 'left',
+    marginBottom: 6,
+    lineHeight: 28,
+    letterSpacing: -0.2,
+  },
+  treeSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Pretendard Variable',
+    color: '#6B6B6B',
+    textAlign: 'left',
+    lineHeight: 18,
+    letterSpacing: 0.3,
+  },
+  plantTreeButton: {
+    backgroundColor: '#006256',
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  plantTreeText: {
+    fontSize: 15,
+    fontWeight: '500',
+    fontFamily: 'Pretendard Variable',
+    color: '#F9F8E1',
+    lineHeight: 24,
+    letterSpacing: 0.3,
   },
   historySection: {
     marginBottom: 30,
   },
   historyTitle: {
-    width: 129,
     fontSize: 20,
-    letterSpacing: -0.2,
-    lineHeight: 28,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
     textAlign: 'left',
     marginBottom: 15,
+    lineHeight: 28,
+    letterSpacing: -0.2,
   },
   historyCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 20,
-    maxHeight: 200, // 높이 제한
+    maxHeight: 200, // 높이를 160에서 180으로 증가
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -353,12 +419,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5',
   },
-  itemLeft: {
+  historyLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  itemIcon: {
+  historyIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -372,50 +438,26 @@ const styles = StyleSheet.create({
     height: 20,
     resizeMode: 'contain',
   },
-  itemContent: {
+  historyContent: {
     flex: 1,
   },
-  itemTitle: {
+  historyItemTitle: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
     marginBottom: 4,
   },
-  itemSubtitle: {
+  historyItemSubtitle: {
     fontSize: 14,
     fontFamily: 'Pretendard Variable',
     color: '#666666',
   },
-  itemPoints: {
+  historyPoints: {
     fontSize: 16,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#006256',
-  },
-  pointsInfo: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  currentPoints: {
-    fontSize: 16,
-    fontFamily: 'Pretendard Variable',
-    color: '#2D2D2D',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  pointsValue: {
-    fontWeight: '700',
-    color: '#0061E9',
-  },
-  totalPoints: {
-    width: 110,
-    fontSize: 14,
-    letterSpacing: 0.3,
-    lineHeight: 18,
-    fontFamily: 'Pretendard Variable',
-    color: '#6B6B6B',
-    textAlign: 'center',
   },
   rewardButton: {
     width: '100%',
