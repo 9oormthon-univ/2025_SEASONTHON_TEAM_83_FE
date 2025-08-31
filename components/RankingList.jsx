@@ -1,7 +1,10 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const RankingList = () => {
+  const router = useRouter();
+  
   const rankings = [
     {
       id: 1,
@@ -63,7 +66,9 @@ const RankingList = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>현재 순위</Text>
+      <TouchableOpacity onPress={() => router.push('/ranking')}>
+        <Text style={styles.sectionTitle}>현재 순위</Text>
+      </TouchableOpacity>
       <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
