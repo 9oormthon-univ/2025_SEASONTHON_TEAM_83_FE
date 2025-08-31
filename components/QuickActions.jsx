@@ -38,7 +38,8 @@ const QuickActions = () => {
       id: 5,
       icon: require('../assets/images/icon_reward.png'),
       label: '리워드 전환',
-      value: ''
+      value: '',
+      onPress: () => router.push('/reward-conversion')
     }
   ];
 
