@@ -6,7 +6,7 @@ import CustomTabBar from '../components/CustomTabBar';
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function ChallengeTumblerScreen() {
+export default function ChallengeTumblerUploadScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   
@@ -29,7 +29,7 @@ export default function ChallengeTumblerScreen() {
         {/* 뒤로가기 버튼 */}
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => router.push('/challenge')}
+          onPress={() => router.back()}
         >
           <Image
             source={require('../assets/images/icon_back_button.png')}
@@ -79,8 +79,20 @@ export default function ChallengeTumblerScreen() {
               source={require('../assets/images/walk_challenge.png')}
               resizeMode="cover"
             />
+          </View>
+          
+          {/* 포인트 표시 */}
+          <View style={styles.pointsContainer}>
             <Text style={styles.challengePoints}>50p</Text>
           </View>
+          
+          {/* 사진 업로드 버튼 */}
+          <TouchableOpacity 
+            style={styles.uploadButton}
+            onPress={() => router.push('/challenge-tumbler-photo')}
+          >
+            <Text style={styles.uploadButtonText}>사진 업로드</Text>
+          </TouchableOpacity>
           
           {/* 구분선 */}
           <View style={styles.divider} />
@@ -103,14 +115,6 @@ export default function ChallengeTumblerScreen() {
               2. 하루 최대 1회 인증 가능
             </Text>
           </View>
-          
-          {/* 챌린지 시작 버튼 */}
-          <TouchableOpacity 
-            style={styles.startButton}
-            onPress={() => router.push('/challenge-tumbler-upload')}
-          >
-            <Text style={styles.startButtonText}>챌린지 시작</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
       
@@ -202,12 +206,12 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   challengeDetailSection: {
-    marginBottom: 100,
+    marginBottom: 80,
   },
   challengeTitle: {
     fontSize: 20,
     letterSpacing: -0.2,
-    lineHeight: 28,
+    lineHeight: 20,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
@@ -219,17 +223,44 @@ const styles = StyleSheet.create({
   },
   challengeImage: {
     width: '100%',
-    height: 170,
+    height: 140,
     borderRadius: 8,
   },
+  pointsContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 15,
+  },
   challengePoints: {
-    position: 'absolute',
-    bottom: 15,
-    right: 15,
     fontSize: 16,
     fontWeight: '700',
     color: '#006256',
     fontFamily: 'Pretendard Variable',
+  },
+  uploadButton: {
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 2,
+    elevation: 2,
+    marginBottom: 20,
+    height: 40,
+  },
+  uploadButtonText: {
+    fontSize: 15,
+    letterSpacing: 0.3,
+    lineHeight: 18,
+    fontWeight: '500',
+    fontFamily: 'Pretendard Variable',
+    color: '#F9F8E1',
   },
   divider: {
     height: 1,
@@ -271,30 +302,5 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: '#6B6B6B',
     fontFamily: 'Pretendard Variable',
-  },
-  startButton: {
-    backgroundColor: '#006256',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
-    marginBottom: 20,
-  },
-  startButtonText: {
-    fontSize: 16,
-    letterSpacing: 0.3,
-    lineHeight: 24,
-    fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
-    color: '#FFFFFF',
   },
 });
