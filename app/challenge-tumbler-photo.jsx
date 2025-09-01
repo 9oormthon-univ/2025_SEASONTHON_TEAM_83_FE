@@ -1,14 +1,19 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRouter } from 'expo-router';
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Dimensions, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import RewardPopup from '../components/RewardPopup';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function ChallengeTumblerScreen() {
+export default function ChallengeTumblerPhotoScreen() {
   const router = useRouter();
   const navigation = useNavigation();
+  const [showModal, setShowModal] = useState(false);
+  const [showRewardPopup, setShowRewardPopup] = useState(false);
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -29,7 +34,7 @@ export default function ChallengeTumblerScreen() {
         {/* 뒤로가기 버튼 */}
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => router.push('/challenge')}
+          onPress={() => router.back()}
         >
           <Image
             source={require('../assets/images/icon_back_button.png')}
@@ -76,48 +81,65 @@ export default function ChallengeTumblerScreen() {
           <View style={styles.imageContainer}>
             <Image 
               style={styles.challengeImage}
-              source={require('../assets/images/walk_challenge.png')}
+              source={require('../assets/images/tumblr_challenge.png')}
               resizeMode="cover"
             />
-            <Text style={styles.challengePoints}>50p</Text>
           </View>
           
-          {/* 구분선 */}
-          <View style={styles.divider} />
-          
-          {/* 챌린지 조건 */}
-          <View style={styles.conditionSection}>
-            <Text style={styles.conditionTitle}>챌린지 조건</Text>
-            <Text style={styles.conditionText}>
-              테이크아웃 또는 매장에서 음료를 받을 때{'\n'}
-              반드시 텀블러 사용{'\n'}
-              카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)
-            </Text>
-          </View>
-          
-          {/* 포인트 지급 기준 */}
-          <View style={styles.pointSection}>
-            <Text style={styles.pointTitle}>포인트 지급 기준</Text>
-            <Text style={styles.pointText}>
-              1. 1회 사용 시 50P{'\n'}
-              2. 하루 최대 1회 인증 가능
-            </Text>
-          </View>
-          
-          {/* 챌린지 시작 버튼 */}
+          {/* 사진 업로드 버튼 */}
           <TouchableOpacity 
-            style={styles.startButton}
-            onPress={() => router.push('/challenge-tumbler-upload')}
+            style={styles.uploadButton}
+            onPress={() => setShowModal(true)}
           >
-            <Text style={styles.startButtonText}>챌린지 시작</Text>
+            <Text style={styles.uploadButtonText}>사진 업로드</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
       
-      <CustomTabBar />
-    </SafeAreaView>
-  );
-}
+      {/* 챌린지 성공 모달 */}
+      <Modal
+        visible={showModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowModal(false)}
+            >
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalTitle}>챌린지 성공!</Text>
+            
+            <TouchableOpacity 
+              style={styles.rewardButton}
+              onPress={() => setShowRewardPopup(true)}
+            >
+              <Text style={styles.rewardButtonText}>리워드 받기</Text>
+            </TouchableOpacity>
+            
+            <LinearGradient 
+              style={styles.modalGradient} 
+              colors={['#fffff6', '#faf8d7', '#a0f4eb']} 
+              start={{x: 0, y: 0}} 
+              end={{x: 1, y: 0}}
+            />
+          </View>
+        </View>
+              </Modal>
+        
+        {/* 리워드 팝업 */}
+        {showRewardPopup && (
+          <RewardPopup onClose={() => setShowRewardPopup(false)} />
+        )}
+        
+        <CustomTabBar />
+      </SafeAreaView>
+    );
+  }
 
 const styles = StyleSheet.create({
   container: {
@@ -202,80 +224,103 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   challengeDetailSection: {
-    marginBottom: 100,
+    marginBottom: 80,
   },
   challengeTitle: {
     fontSize: 20,
     letterSpacing: -0.2,
-    lineHeight: 28,
+    lineHeight: 20,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
     marginBottom: 15,
   },
   imageContainer: {
-    position: 'relative',
-    marginBottom: 8,
+    marginBottom: 20,
   },
   challengeImage: {
     width: '100%',
-    height: 170,
+    height: 340,
     borderRadius: 8,
   },
-  challengePoints: {
-    position: 'absolute',
-    bottom: 15,
-    right: 15,
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#006256',
-    fontFamily: 'Pretendard Variable',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 20,
-  },
-  conditionSection: {
-    marginBottom: 20,
-  },
-  conditionTitle: {
-    fontSize: 20,
-    letterSpacing: -0.2,
-    lineHeight: 28,
-    fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
-    color: '#2D2D2D',
-    marginBottom: 10,
-  },
-  conditionText: {
-    fontSize: 16,
-    lineHeight: 18,
-    color: '#000',
-    fontFamily: 'Pretendard Variable',
-  },
-  pointSection: {
-    marginBottom: 30,
-  },
-  pointTitle: {
-    fontSize: 20,
-    letterSpacing: -0.2,
-    lineHeight: 28,
-    fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
-    color: '#2D2D2D',
-    marginBottom: 10,
-  },
-  pointText: {
-    fontSize: 16,
-    lineHeight: 18,
-    color: '#6B6B6B',
-    fontFamily: 'Pretendard Variable',
-  },
-  startButton: {
+  uploadButton: {
     backgroundColor: '#006256',
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 2,
+    elevation: 2,
+    height: 40,
+  },
+  uploadButtonText: {
+    fontSize: 15,
+    letterSpacing: 0.3,
+    lineHeight: 24,
+    fontWeight: '500',
+    fontFamily: 'Pretendard Variable',
+    color: '#F9F8E1',
+  },
+  
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    height: 183,
+    width: '80%',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#d6d6d6',
+    borderStyle: 'solid',
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  modalTitle: {
+    fontSize: 24,
+    letterSpacing: -0.3,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#0061E9',
+    textAlign: 'center',
+    marginBottom: 30,
+    zIndex: 1,
+  },
+  rewardButton: {
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 8,
     paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
@@ -287,14 +332,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
-    marginBottom: 20,
+    zIndex: 1,
   },
-  startButtonText: {
+  rewardButtonText: {
     fontSize: 16,
     letterSpacing: 0.3,
     lineHeight: 24,
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#FFFFFF',
+  },
+  modalGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
   },
 });
