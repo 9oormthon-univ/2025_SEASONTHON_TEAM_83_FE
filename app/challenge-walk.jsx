@@ -1,46 +1,21 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useRouter } from 'expo-router';
 import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function ChallengeScreen() {
+export default function ChallengeWalkScreen() {
   const router = useRouter();
-
-  // 최근 선택한 챌린지 데이터 (스크롤 가능하도록 여러 개 생성)
-  const recentChallenges = [
-    {
-      id: 1,
-      title: '걷기 1.3Km 인증',
-      date: '2025-01-15',
-      icon: require('../assets/images/icon_walk.png')
-    },
-    {
-      id: 2,
-      title: '텀블러 사용 인증',
-      date: '2025-01-14',
-      icon: require('../assets/images/icon_tumblr.png')
-    },
-    {
-      id: 3,
-      title: '1Km 이상 걷기 인증',
-      date: '2025-01-13',
-      icon: require('../assets/images/icon_walk.png')
-    },
-    {
-      id: 4,
-      title: '친환경 제품 사용',
-      date: '2025-01-12',
-      icon: require('../assets/images/icon_earth.png')
-    },
-    {
-      id: 5,
-      title: '대중교통 이용',
-      date: '2025-01-11',
-      icon: require('../assets/images/icon_earth.png')
-    }
-  ];
+  const navigation = useNavigation();
+  
+  // 헤더 숨기기
+  useFocusEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -92,58 +67,46 @@ export default function ChallengeScreen() {
           <Text style={styles.titleText}>오늘의 챌린지</Text>
         </View>
 
-        {/* 챌린지 카드들 */}
-        <View style={styles.challengeCards}>
-          {/* 첫 번째 챌린지 카드 */}
-          <TouchableOpacity 
-            style={styles.challengeCard}
-            onPress={() => router.push('/challenge-walk')}
-          >
-            <Text style={styles.challengeTitle}>1Km 이상 걷기</Text>
+        {/* 챌린지 상세 정보 */}
+        <View style={styles.challengeDetailSection}>
+          {/* 챌린지 제목 */}
+          <Text style={styles.challengeTitle}>1Km 이상 걷기</Text>
+          
+          {/* 챌린지 이미지 */}
+          <View style={styles.imageContainer}>
             <Image 
               style={styles.challengeImage}
               source={require('../assets/images/walk_challenge.png')}
               resizeMode="cover"
             />
             <Text style={styles.challengePoints}>20p</Text>
-          </TouchableOpacity>
-
-          {/* 두 번째 챌린지 카드 */}
-          <TouchableOpacity 
-            style={styles.challengeCard}
-            onPress={() => router.push('/challenge-tumbler')}
-          >
-            <Text style={styles.challengeTitle}>텀블러 사용</Text>
-            <Image 
-              style={styles.challengeImage}
-              source={require('../assets/images/walk_challenge.png')}
-              resizeMode="cover"
-            />
-            <Text style={styles.challengePoints}>50p</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 최근 선택한 챌린지 섹션 */}
-        <View style={styles.recentSection}>
-          <Text style={styles.recentTitle}>최근 선택한 챌린지</Text>
+          </View>
           
-          {/* 최근 챌린지 리스트 */}
-          {recentChallenges.map((challenge) => (
-            <View key={challenge.id} style={styles.recentChallengeItem}>
-              <View style={styles.recentChallengeIcon}>
-                <Image 
-                  source={challenge.icon}
-                  style={styles.recentIcon}
-                  resizeMode="contain"
-                />
-                <Text style={styles.recentIconText}>Challenge</Text>
-              </View>
-              <View style={styles.recentChallengeInfo}>
-                <Text style={styles.recentChallengeTitle}>{challenge.title}</Text>
-                <Text style={styles.recentChallengeDate}>{challenge.date}</Text>
-              </View>
-            </View>
-          ))}
+          {/* 구분선 */}
+          <View style={styles.divider} />
+          
+          {/* 챌린지 조건 */}
+          <View style={styles.conditionSection}>
+            <Text style={styles.conditionTitle}>챌린지 조건</Text>
+            <Text style={styles.conditionText}>
+              최소 1km 이상 보행 시 성공 처리{'\n'}
+              GPS 기반으로 사용자의 이동 경로 기록
+            </Text>
+          </View>
+          
+          {/* 포인트 지급 기준 */}
+          <View style={styles.pointSection}>
+            <Text style={styles.pointTitle}>포인트 지급 기준</Text>
+            <Text style={styles.pointText}>
+              1. 1km 당 20P{'\n'}
+              2. 하루 1회만 포인트 적립 가능
+            </Text>
+          </View>
+          
+          {/* 챌린지 시작 버튼 */}
+          <TouchableOpacity style={styles.startButton}>
+            <Text style={styles.startButtonText}>챌린지 시작</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
       
@@ -234,43 +197,10 @@ const styles = StyleSheet.create({
     fontFamily: '109LeantheWall',
     zIndex: 1,
   },
-  challengeCards: {
-    marginBottom: 10,
-  },
-  challengeCard: {
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 4,
-    position: 'relative',
-  },
-  challengeTitle: {
-    fontSize: 18,
-    letterSpacing: -0.2,
-    lineHeight: 24,
-    fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
-    color: '#2D2D2D',
-    marginBottom: 8,
-  },
-  challengeImage: {
-    width: '100%',
-    height: 140,
-    borderRadius: 8,
-    marginBottom: 25,
-  },
-  challengePoints: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#006256',
-    fontFamily: 'Pretendard Variable',
-  },
-  recentSection: {
+  challengeDetailSection: {
     marginBottom: 100,
   },
-  recentTitle: {
+  challengeTitle: {
     fontSize: 20,
     letterSpacing: -0.2,
     lineHeight: 28,
@@ -279,50 +209,88 @@ const styles = StyleSheet.create({
     color: '#2D2D2D',
     marginBottom: 15,
   },
-
-  recentChallengeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 15,
+  imageContainer: {
+    position: 'relative',
     marginBottom: 10,
+  },
+  challengeImage: {
+    width: '100%',
+    height: 140,
+    borderRadius: 8,
+  },
+  challengePoints: {
+    position: 'absolute',
+    bottom: 15,
+    right: 15,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#006256',
+    fontFamily: 'Pretendard Variable',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 20,
+  },
+  conditionSection: {
+    marginBottom: 20,
+  },
+  conditionTitle: {
+    fontSize: 20,
+    letterSpacing: -0.2,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#2D2D2D',
+    marginBottom: 10,
+  },
+  conditionText: {
+    fontSize: 16,
+    lineHeight: 18,
+    color: '#000',
+    fontFamily: 'Pretendard Variable',
+  },
+  pointSection: {
+    marginBottom: 30,
+  },
+  pointTitle: {
+    fontSize: 20,
+    letterSpacing: -0.2,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#2D2D2D',
+    marginBottom: 10,
+  },
+  pointText: {
+    fontSize: 16,
+    lineHeight: 18,
+    color: '#6B6B6B',
+    fontFamily: 'Pretendard Variable',
+  },
+  startButton: {
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 4,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    marginBottom: 20,
   },
-  recentChallengeIcon: {
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  recentIcon: {
-    width: 40,
-    height: 40,
-    marginBottom: 5,
-  },
-  recentIconText: {
-    fontSize: 12,
-    color: '#666',
-    fontFamily: 'Pretendard Variable',
-  },
-  recentChallengeInfo: {
-    flex: 1,
-  },
-  recentChallengeTitle: {
+  startButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2D2D2D',
+    letterSpacing: 0.3,
+    lineHeight: 24,
+    fontWeight: '700',
     fontFamily: 'Pretendard Variable',
-    marginBottom: 5,
-  },
-  recentChallengeDate: {
-    fontSize: 14,
-    color: '#666',
-    fontFamily: 'Pretendard Variable',
+    color: '#FFFFFF',
   },
 });
