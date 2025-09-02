@@ -56,21 +56,45 @@ export default function CategorySetupScreen() {
         {/* 카테고리 아이콘들 */}
         <View style={styles.categoryIcons}>
           <TouchableOpacity
-            style={[styles.categoryIcon, { opacity: selectedCategory && selectedCategory !== 'walk' ? 0.5 : 1 }]}
+            style={[
+              styles.categoryIcon, 
+              selectedCategory === 'walk' ? styles.categoryIconActive : styles.categoryIconInactive
+            ]}
             onPress={() => setSelectedCategory('walk')}
             activeOpacity={0.8}
           >
-            <Image source={icon_walk} style={styles.iconImage} />
-            <Text style={styles.iconText}>걷기</Text>
+            <Image 
+              source={icon_walk} 
+              style={[
+                styles.iconImage,
+                selectedCategory === 'walk' ? styles.iconImageActive : styles.iconImageInactive
+              ]} 
+            />
+            <Text style={[
+              styles.iconText,
+              selectedCategory === 'walk' ? styles.iconTextActive : styles.iconTextInactive
+            ]}>걷기</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.categoryIcon, { opacity: selectedCategory && selectedCategory !== 'tumblr' ? 0.5 : 1 }]}
+            style={[
+              styles.categoryIcon, 
+              selectedCategory === 'tumblr' ? styles.categoryIconActive : styles.categoryIconInactive
+            ]}
             onPress={() => setSelectedCategory('tumblr')}
             activeOpacity={0.8}
           >
-            <Image source={icon_tumblr} style={styles.iconImage} />
-            <Text style={styles.iconText}>텀블러</Text>
+            <Image 
+              source={icon_tumblr} 
+              style={[
+                styles.iconImage,
+                selectedCategory === 'tumblr' ? styles.iconImageActive : styles.iconImageInactive
+              ]} 
+            />
+            <Text style={[
+              styles.iconText,
+              selectedCategory === 'tumblr' ? styles.iconTextActive : styles.iconTextInactive
+            ]}>텀블러</Text>
           </TouchableOpacity>
         </View>
 
@@ -169,18 +193,35 @@ const styles = StyleSheet.create({
   categoryIcon: {
     alignItems: 'center',
   },
+  categoryIconActive: {
+    // 활성화된 상태의 추가 스타일 (필요시)
+  },
+  categoryIconInactive: {
+    opacity: 0.4, // 비활성화 상태일 때 투명도
+  },
   iconImage: {
     width: 80,
     height: 80,
     resizeMode: 'contain',
     marginBottom: 10,
   },
+  iconImageActive: {
+    // 활성화된 아이콘 이미지 스타일
+  },
+  iconImageInactive: {
+    opacity: 0.4, // 비활성화된 아이콘 이미지 투명도
+  },
   iconText: {
     fontSize: 16,
-    color: '#2D2D2D',
     fontFamily: 'Pretendard Variable',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  iconTextActive: {
+    color: '#006256', // 활성화된 텍스트 색상 (녹색)
+  },
+  iconTextInactive: {
+    color: '#999999', // 비활성화된 텍스트 색상 (회색)
   },
   buttonContainer: {
     width: '100%',
