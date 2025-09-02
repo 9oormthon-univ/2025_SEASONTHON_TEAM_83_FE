@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import NotificationDetailModal from '../components/NotificationDetailModal';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
@@ -12,6 +13,8 @@ export default function NotificationsScreen() {
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
 
   const notifications = [
     { 
@@ -86,6 +89,48 @@ export default function NotificationsScreen() {
     setSelectedNotifications([]);
     setIsSelectionMode(false);
     setShowDeletePopup(false);
+  };
+
+  const handleNotificationPress = (notification) => {
+    if (isSelectionMode) {
+      // 선택 모드일 때는 토글만
+      toggleNotification(notification.id);
+    } else {
+      // 일반 모드일 때는 상세 모달 표시
+      setSelectedNotification(notification);
+      setShowDetailModal(true);
+    }
+  };
+
+  const closeDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedNotification(null);
+  };
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'activity':
+        return '활동';
+      case 'reward':
+        return '리워드';
+      case 'badge':
+        return '뱃지';
+      default:
+        return '알림';
+    }
+  };
+
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'activity':
+        return '#00DDC5';
+      case 'reward':
+        return '#FFB800';
+      case 'badge':
+        return '#8B5CF6';
+      default:
+        return '#006256';
+    }
   };
 
   return (
@@ -180,9 +225,19 @@ export default function NotificationsScreen() {
                 index === notifications.length - 1 && styles.lastItem,
                 isSelectionMode && styles.notificationItemSelectionMode,
               ]}
-              onPress={() => toggleNotification(notification.id)}
+              onPress={() => handleNotificationPress(notification)}
             >
-              <Text style={styles.notificationContent}>{notification.content}</Text>
+              <View style={styles.notificationContentContainer}>
+                <View style={[styles.typeBadge, { backgroundColor: getTypeColor(notification.type) }]}>
+                  <Text style={styles.typeText}>{getTypeLabel(notification.type)}</Text>
+                </View>
+                <Text style={styles.notificationContent}>
+                  {notification.content.length > 10 
+                    ? notification.content.substring(0, 10) + '...' 
+                    : notification.content
+                  }
+                </Text>
+              </View>
               {isSelectionMode && (
                 <TouchableOpacity 
                   style={styles.radioButton}
@@ -226,6 +281,13 @@ export default function NotificationsScreen() {
           </View>
         </View>
       )}
+
+      {/* 알림 상세 모달 */}
+      <NotificationDetailModal
+        visible={showDetailModal}
+        notification={selectedNotification}
+        onClose={closeDetailModal}
+      />
     </SafeAreaView>
   );
 }
@@ -382,12 +444,31 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
   },
+  notificationContentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  typeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: 'Pretendard Variable',
+  },
   notificationContent: {
     fontSize: 16,
     letterSpacing: 0.3,
     lineHeight: 24,
     fontFamily: 'Pretendard Variable',
     color: '#525252',
+    flex: 1,
   },
   radioButton: {
     width: 20,
