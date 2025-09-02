@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
@@ -19,13 +20,13 @@ import useLogin from '../hooks/useLogin';
 // 색상 정의
 const COLORS = {
   background: '#006256',
-  text: '#FAF8D7',
-  placeholder: 'rgba(250, 248, 215, 0.6)',
+  text: '#2D2D2D',
+  placeholder: 'rgba(45, 45, 45, 0.6)',
   loginButtonBackground: '#0F0F0F',
   loginButtonText: '#FAF8D7',
   kakaoButton: '#FEE500',
   signupButton: '#FFFFFF',
-  inputBorder: '#FAF8D7',
+  inputBorder: '#2D2D2D',
 };
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
@@ -53,7 +54,13 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <LinearGradient
+      colors={['#00DDC5', '#FFFFFF']}
+      style={styles.gradientBackground}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
@@ -140,14 +147,17 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -174,7 +184,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain', // 이미지 비율 유지
   },
   slogan: {
-    color: COLORS.text,
+    color: '#FFFFFF',
     fontSize: 32,
     fontWeight: '500',
     textAlign: 'center',
@@ -182,7 +192,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   sloganSub: {
-    color: COLORS.text,
+    color: '#2D2D2D',
     fontFamily: '109LeantheWall',
     fontWeight: 'bold',
     fontSize: 24,

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -8,7 +8,7 @@ export default function PointsScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <Image
@@ -190,7 +190,7 @@ export default function PointsScreen() {
       </View>
       
       <CustomTabBar />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'relative',
-    height: 80,
+    height: 120,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     left: 20,
+    top: 70,
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   headerLogoContainer: {
     position: 'absolute',
     zIndex: 1,
-    top: 10,
+    top: 50,
   },
   headerLogo: {
     width: 100,
@@ -239,6 +240,7 @@ const styles = StyleSheet.create({
   notificationButton: {
     position: 'absolute',
     right: 20,
+    top: 70,
     width: 40,
     height: 40,
     justifyContent: 'center',

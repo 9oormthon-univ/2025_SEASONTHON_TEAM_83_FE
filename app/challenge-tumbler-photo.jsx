@@ -2,7 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import RewardPopup from '../components/RewardPopup';
 
@@ -23,7 +23,7 @@ export default function ChallengeTumblerPhotoScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <Image
@@ -136,9 +136,9 @@ export default function ChallengeTumblerPhotoScreen() {
           <RewardPopup onClose={() => setShowRewardPopup(false)} />
         )}
         
-        <CustomTabBar />
-      </SafeAreaView>
-    );
+              <CustomTabBar />
+    </View>
+  );
   }
 
 const styles = StyleSheet.create({
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'relative',
-    height: 80,
+    height: 120,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     left: 20,
+    top: 70,
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   headerLogoContainer: {
     position: 'absolute',
     zIndex: 1,
-    top: 10,
+    top: 50,
   },
   headerLogo: {
     width: 100,
@@ -186,6 +187,7 @@ const styles = StyleSheet.create({
   notificationButton: {
     position: 'absolute',
     right: 20,
+    top: 70,
     width: 40,
     height: 40,
     justifyContent: 'center',

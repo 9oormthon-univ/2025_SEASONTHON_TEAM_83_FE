@@ -2,13 +2,13 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Image,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import NotificationPopup from '../components/NotificationPopup';
 
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -18,9 +18,10 @@ const icon_tumblr = require('../assets/images/icon_tumblr.png');
 export default function CategorySetupScreen() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showNotificationPopup, setShowNotificationPopup] = useState(false);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       
       <View style={styles.container}>
@@ -56,21 +57,45 @@ export default function CategorySetupScreen() {
         {/* 카테고리 아이콘들 */}
         <View style={styles.categoryIcons}>
           <TouchableOpacity
-            style={[styles.categoryIcon, { opacity: selectedCategory && selectedCategory !== 'walk' ? 0.5 : 1 }]}
+            style={[
+              styles.categoryIcon, 
+              selectedCategory === 'walk' ? styles.categoryIconActive : styles.categoryIconInactive
+            ]}
             onPress={() => setSelectedCategory('walk')}
             activeOpacity={0.8}
           >
-            <Image source={icon_walk} style={styles.iconImage} />
-            <Text style={styles.iconText}>걷기</Text>
+            <Image 
+              source={icon_walk} 
+              style={[
+                styles.iconImage,
+                selectedCategory === 'walk' ? styles.iconImageActive : styles.iconImageInactive
+              ]} 
+            />
+            <Text style={[
+              styles.iconText,
+              selectedCategory === 'walk' ? styles.iconTextActive : styles.iconTextInactive
+            ]}>걷기</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.categoryIcon, { opacity: selectedCategory && selectedCategory !== 'tumblr' ? 0.5 : 1 }]}
+            style={[
+              styles.categoryIcon, 
+              selectedCategory === 'tumblr' ? styles.categoryIconActive : styles.categoryIconInactive
+            ]}
             onPress={() => setSelectedCategory('tumblr')}
             activeOpacity={0.8}
           >
-            <Image source={icon_tumblr} style={styles.iconImage} />
-            <Text style={styles.iconText}>텀블러</Text>
+            <Image 
+              source={icon_tumblr} 
+              style={[
+                styles.iconImage,
+                selectedCategory === 'tumblr' ? styles.iconImageActive : styles.iconImageInactive
+              ]} 
+            />
+            <Text style={[
+              styles.iconText,
+              selectedCategory === 'tumblr' ? styles.iconTextActive : styles.iconTextInactive
+            ]}>텀블러</Text>
           </TouchableOpacity>
         </View>
 
@@ -80,14 +105,27 @@ export default function CategorySetupScreen() {
             style={styles.startButton}
             onPress={() => {
               console.log('함께 출발하기 버튼 클릭됨');
-              router.replace('/home'); // 스택 초기화하고 홈화면으로 이동
+              setShowNotificationPopup(true); // 알림 팝업 표시
             }}
           >
             <Text style={styles.startButtonText}>함께 출발하기</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+
+      {/* 알림 허용 팝업 */}
+      {showNotificationPopup && (
+        <NotificationPopup
+          onClose={() => setShowNotificationPopup(false)}
+          onConfirm={(settings) => {
+            console.log('알림 설정:', settings);
+            setShowNotificationPopup(false);
+            // 설정 저장 후 홈화면으로 이동
+            router.replace('/home');
+          }}
+        />
+      )}
+    </View>
   );
 }
 
@@ -100,7 +138,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 30,
-    paddingTop: 20,
+    paddingTop: 60,
   },
   logoContainer: {
     alignItems: 'center',
@@ -169,18 +207,35 @@ const styles = StyleSheet.create({
   categoryIcon: {
     alignItems: 'center',
   },
+  categoryIconActive: {
+    // 활성화된 상태의 추가 스타일 (필요시)
+  },
+  categoryIconInactive: {
+    opacity: 0.4, // 비활성화 상태일 때 투명도
+  },
   iconImage: {
     width: 80,
     height: 80,
     resizeMode: 'contain',
     marginBottom: 10,
   },
+  iconImageActive: {
+    // 활성화된 아이콘 이미지 스타일
+  },
+  iconImageInactive: {
+    opacity: 0.4, // 비활성화된 아이콘 이미지 투명도
+  },
   iconText: {
     fontSize: 16,
-    color: '#2D2D2D',
     fontFamily: 'Pretendard Variable',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  iconTextActive: {
+    color: '#006256', // 활성화된 텍스트 색상 (녹색)
+  },
+  iconTextInactive: {
+    color: '#999999', // 비활성화된 텍스트 색상 (회색)
   },
   buttonContainer: {
     width: '100%',
