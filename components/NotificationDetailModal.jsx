@@ -94,8 +94,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   typeBadge: {
     paddingHorizontal: 12,
@@ -123,7 +121,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    minHeight: 100,
+    minHeight: 40,
   },
   fullContent: {
     fontSize: 16,
@@ -137,8 +135,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
   },
   confirmButton: {
     backgroundColor: '#006256',
