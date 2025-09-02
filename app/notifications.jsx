@@ -10,17 +10,51 @@ export default function NotificationsScreen() {
   const [readProcessing, setReadProcessing] = useState(false);
   const [deleteAll, setDeleteAll] = useState(true);
   const [selectedNotifications, setSelectedNotifications] = useState([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   const notifications = [
-    { id: 1, content: '미리보기 내용', isSelected: false },
-    { id: 2, content: '미리보기 내용', isSelected: false },
-    { id: 3, content: '미리보기 내용', isSelected: false },
-    { id: 4, content: '미리보기 내용', isSelected: false },
-    { id: 5, content: '미리보기 내용', isSelected: false },
-    { id: 6, content: '미리보기 내용', isSelected: false },
+    { 
+      id: 1, 
+      content: '텀블러 사용 인증 성공! 50P가 쌓였어요.', 
+      type: 'activity',
+      isSelected: false 
+    },
+    { 
+      id: 2, 
+      content: '5,000P로 지역화폐 전환이 가능해요. 지금 교환하러 가볼까요?', 
+      type: 'reward',
+      isSelected: false 
+    },
+    { 
+      id: 3, 
+      content: '이번 주 포인트 랭킹 5위에 올랐습니다.', 
+      type: 'reward',
+      isSelected: false 
+    },
+    { 
+      id: 4, 
+      content: '새싹 뱃지를 획득했어요! 첫 500P 달성 축하합니다.', 
+      type: 'badge',
+      isSelected: false 
+    },
+    { 
+      id: 5, 
+      content: '1Km 걷기 챌린지 완료! 20P를 획득했습니다.', 
+      type: 'activity',
+      isSelected: false 
+    },
+    { 
+      id: 6, 
+      content: '친구 초대 성공! 100P 보너스를 받았어요.', 
+      type: 'reward',
+      isSelected: false 
+    },
   ];
 
   const toggleNotification = (id) => {
+    if (!isSelectionMode) return;
+    
     setSelectedNotifications(prev => 
       prev.includes(id) 
         ? prev.filter(item => item !== id)
@@ -30,6 +64,29 @@ export default function NotificationsScreen() {
 
   const toggleReadProcessing = () => setReadProcessing(!readProcessing);
   const toggleDeleteAll = () => setDeleteAll(!deleteAll);
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      setSelectedNotifications([]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    setShowDeletePopup(true);
+  };
+
+  const confirmDelete = () => {
+    // 선택된 알림들을 필터링하여 제거
+    const updatedNotifications = notifications.filter(
+      notification => !selectedNotifications.includes(notification.id)
+    );
+    // 실제로는 상태 업데이트나 API 호출이 필요
+    console.log('삭제된 알림:', selectedNotifications);
+    setSelectedNotifications([]);
+    setIsSelectionMode(false);
+    setShowDeletePopup(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -95,9 +152,21 @@ export default function NotificationsScreen() {
         {/* 알림 헤더 */}
         <View style={styles.notificationHeader}>
           <Text style={styles.notificationTitle}>현재 알림({notifications.length}개)</Text>
-          <TouchableOpacity>
-            <Text style={styles.selectButton}>선택</Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            {isSelectionMode && selectedNotifications.length > 0 && (
+              <TouchableOpacity 
+                style={styles.deleteButton}
+                onPress={handleDeleteSelected}
+              >
+                <Text style={styles.deleteButtonText}>삭제</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={toggleSelectionMode}>
+              <Text style={styles.selectButton}>
+                {isSelectionMode ? '취소' : '선택'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* 알림 목록 */}
@@ -109,25 +178,54 @@ export default function NotificationsScreen() {
                 styles.notificationItem,
                 index === 0 && styles.firstItem,
                 index === notifications.length - 1 && styles.lastItem,
+                isSelectionMode && styles.notificationItemSelectionMode,
               ]}
               onPress={() => toggleNotification(notification.id)}
             >
               <Text style={styles.notificationContent}>{notification.content}</Text>
-              <TouchableOpacity 
-                style={styles.radioButton}
-                onPress={() => toggleNotification(notification.id)}
-              >
-                <View style={[
-                  styles.radioCircle,
-                  selectedNotifications.includes(notification.id) && styles.radioCircleSelected
-                ]} />
-              </TouchableOpacity>
+              {isSelectionMode && (
+                <TouchableOpacity 
+                  style={styles.radioButton}
+                  onPress={() => toggleNotification(notification.id)}
+                >
+                  <View style={[
+                    styles.radioCircle,
+                    selectedNotifications.includes(notification.id) && styles.radioCircleSelected
+                  ]} />
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
           ))}
         </View>
       </View>
       
       <CustomTabBar />
+
+      {/* 삭제 확인 팝업 */}
+      {showDeletePopup && (
+        <View style={styles.deletePopupOverlay}>
+          <View style={styles.deletePopup}>
+            <Text style={styles.deletePopupTitle}>알림 삭제</Text>
+            <Text style={styles.deletePopupMessage}>
+              선택한 {selectedNotifications.length}개의 알림을 삭제하시겠습니까?
+            </Text>
+            <View style={styles.deletePopupButtons}>
+              <TouchableOpacity 
+                style={styles.deletePopupCancelButton}
+                onPress={() => setShowDeletePopup(false)}
+              >
+                <Text style={styles.deletePopupCancelText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.deletePopupConfirmButton}
+                onPress={confirmDelete}
+              >
+                <Text style={styles.deletePopupConfirmText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -308,5 +406,100 @@ const styles = StyleSheet.create({
   radioCircleSelected: {
     backgroundColor: '#006256',
     borderColor: '#006256',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  deleteButton: {
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Pretendard Variable',
+  },
+  notificationItemSelectionMode: {
+    backgroundColor: '#F8F8F8',
+  },
+  deletePopupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  deletePopup: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    width: '80%',
+    maxWidth: 320,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  deletePopupTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D2D2D',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  deletePopupMessage: {
+    fontSize: 16,
+    color: '#525252',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  deletePopupButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  deletePopupCancelButton: {
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    minWidth: 80,
+  },
+  deletePopupCancelText: {
+    color: '#525252',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Pretendard Variable',
+    textAlign: 'center',
+  },
+  deletePopupConfirmButton: {
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    minWidth: 80,
+  },
+  deletePopupConfirmText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Pretendard Variable',
+    textAlign: 'center',
   },
 });
