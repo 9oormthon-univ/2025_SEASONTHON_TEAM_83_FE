@@ -166,7 +166,7 @@ export default function MyPage() {
                 />
                 {!!selected.date && (
                   <Text style={styles.modalSub}>
-                    {selected.date} 에 얻은 {selected.title} 뱃지입니다.
+                    {selected.date} 에 얻은 {selected.title}입니다.
                   </Text>
                 )}
                 <Pressable
