@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import PopUpAlerts from '../components/PopUpAlerts';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
@@ -9,6 +10,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function AttendanceScreen() {
   const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(8);
+  const [showPopup, setShowPopup] = useState(false);
   const [attendanceData, setAttendanceData] = useState({
     1: true, 2: true, 4: true, 5: true, 6: true, 9: true, 11: true, 12: true, 13: true, 14: true,
     16: true, 18: true, 19: true, 20: true, 21: true, 23: true, 24: true, 25: true, 26: true, 28: true, 30: true
@@ -34,6 +36,13 @@ export default function AttendanceScreen() {
     const newAttendanceData = { ...attendanceData };
     newAttendanceData[currentDate] = true;
     setAttendanceData(newAttendanceData);
+    
+    // 팝업 표시
+    setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
   };
 
   const renderCalendar = (month) => {
@@ -201,6 +210,12 @@ export default function AttendanceScreen() {
           <Text style={styles.attendanceButtonText}>출석하기</Text>
         </TouchableOpacity>
       </View>
+      
+      {/* 출석 완료 팝업 */}
+      <PopUpAlerts 
+        visible={showPopup} 
+        onClose={handleClosePopup} 
+      />
       
       <CustomTabBar />
     </SafeAreaView>
