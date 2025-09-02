@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Image,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -22,7 +21,7 @@ export default function CategorySetupScreen() {
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       
       <View style={styles.container}>
@@ -126,7 +125,7 @@ export default function CategorySetupScreen() {
           }}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 30,
-    paddingTop: 20,
+    paddingTop: 60,
   },
   logoContainer: {
     alignItems: 'center',

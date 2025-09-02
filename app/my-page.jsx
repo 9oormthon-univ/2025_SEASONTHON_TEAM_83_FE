@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import CustomTabBar from '../components/CustomTabBar';
-import HeaderBar from '../components/HeaderBar';
 
 /* =========================
  * Theme & constants
@@ -127,7 +126,44 @@ function Screen() {
     
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <StatusBar translucent={Platform.OS === 'android'} backgroundColor="transparent" barStyle="light-content" />
-      <HeaderBar title="My Page" />
+      
+      {/* 상단 헤더 */}
+      <View style={styles.header}>
+        <Image
+          style={styles.headerBackground}
+          source={require('../assets/images/bar_green.png')}
+        />
+        
+        {/* 뒤로가기 버튼 */}
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Image
+            source={require('../assets/images/icon_back_button.png')}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        
+        {/* 중앙 로고 */}
+        <View style={styles.headerLogoContainer}>
+          <Image
+            source={require('../assets/images/icon_pleanet_logo.png')}
+            style={styles.headerLogo}
+          />
+        </View>
+        
+        {/* 알림 버튼 */}
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => router.push('/notifications')}
+        >
+          <Image
+            source={require('../assets/images/icon_alarm.png')}
+            style={styles.notificationIcon}
+          />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.content}>
         <View style={[styles.card, styles.cardTight]}>
@@ -201,6 +237,61 @@ export default function MyPageScreen() {
  * ======================= */
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
+
+  /* Header */
+  header: {
+    position: 'relative',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  headerLogoContainer: {
+    position: 'absolute',
+    zIndex: 1,
+    top: 50,
+  },
+  headerLogo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  notificationIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
 
   content: {
     flex: 1,

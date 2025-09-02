@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { BackHandler, Image, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import ChallengeCarousel from '../components/ChallengeCarousel';
 import CustomTabBar from '../components/CustomTabBar';
 import QuickActions from '../components/QuickActions';
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <Image
@@ -81,7 +81,7 @@ export default function HomeScreen() {
         <RankingList />
       </View>
       <CustomTabBar />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'relative',
-    height: 80,
+    height: 120,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     left: 20,
+    top: 70,
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -113,14 +114,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   backIcon: {
-    width: 40,
-    height: 40,
+    width: 35,
+    height: 35,
     resizeMode: 'contain',
   },
   headerLogoContainer: {
     position: 'absolute',
     zIndex: 1,
-    top: 10, // 로고를 아래로 내림
+    top: 50, // 로고를 아래로 내림
   },
   headerLogo: {
     width: 100,
@@ -130,6 +131,7 @@ const styles = StyleSheet.create({
   notificationButton: {
     position: 'absolute',
     right: 20,
+    top: 70,
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -137,8 +139,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   notificationIcon: {
-    width: 40,
-    height: 40,
+    width: 35,
+    height: 35,
     resizeMode: 'contain',
   },
   content: {
