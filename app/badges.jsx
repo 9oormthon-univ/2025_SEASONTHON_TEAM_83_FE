@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -47,7 +47,7 @@ export default function BadgesScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* 보유 뱃지 제목 */}
         <View style={styles.titleContainer}>
           <Image
@@ -61,7 +61,10 @@ export default function BadgesScreen() {
         <View style={styles.userInfoSection}>
           <View style={styles.userInfoLeft}>
             <Text style={styles.nicknameText}>닉네임</Text>
-            <View style={styles.profilePlaceholder} />
+            <Image 
+              source={require('../assets/images/icon_plant_level1.png')} 
+              style={styles.profileIcon} 
+            />
           </View>
           <TouchableOpacity style={styles.plantTreeButton}>
             <Text style={styles.plantTreeText}>나무심기</Text>
@@ -70,36 +73,42 @@ export default function BadgesScreen() {
 
         {/* 뱃지 섹션 */}
         <View style={styles.badgeSection}>
-          <Text style={styles.badgeTitle}>현재 보유 뱃지</Text>
+          
           
           <View style={styles.badgeCard}>
             {/* 활동 뱃지 */}
             <View style={styles.badgeCategory}>
               <Text style={styles.categoryTitle}>1. 활동 뱃지</Text>
-              <View style={styles.badgeRow}>
-                <View style={styles.badgeItem}>
-                  <Image 
-                    source={require('../assets/images/icon_walk.png')} 
-                    style={styles.badgeIcon} 
-                  />
-                </View>
-                <View style={styles.badgeItem}>
-                  <Image 
-                    source={require('../assets/images/icon_tumblr.png')} 
-                    style={styles.badgeIcon} 
-                  />
-                </View>
-                <View style={styles.badgeItem}>
-                  <Image 
-                    source={require('../assets/images/icon_walk.png')} 
-                    style={styles.badgeIcon} 
-                  />
-                </View>
-                <View style={styles.badgeItem}>
-                  <Image 
-                    source={require('../assets/images/icon_tumblr.png')} 
-                    style={styles.badgeIcon} 
-                  />
+              <View style={styles.activityBadgeContainer}>
+                <Image
+                  style={styles.activityBadgeBackground}
+                  source={require('../assets/images/bar_green.png')}
+                />
+                <View style={styles.badgeRow}>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={styles.badgeItem}>
+                      <Image 
+                        source={require('../assets/images/icon_walk.png')} 
+                        style={styles.badgeIcon} 
+                      />
+                    </View>
+                    <Text style={styles.badgeText}>
+                      <Text style={styles.badgeName}>걷기 뱃지{'\n'}</Text>
+                      <Text style={styles.badgeDate}>2025.05.05</Text>
+                    </Text>
+                  </View>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={styles.badgeItem}>
+                      <Image 
+                        source={require('../assets/images/icon_tumblr.png')} 
+                        style={styles.badgeIcon} 
+                      />
+                    </View>
+                    <Text style={styles.badgeText}>
+                      <Text style={styles.badgeName}>텀블러 뱃지{'\n'}</Text>
+                      <Text style={styles.badgeDate}>2025.05.07</Text>
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -107,21 +116,97 @@ export default function BadgesScreen() {
             {/* 누적 포인트 뱃지 */}
             <View style={styles.badgeCategory}>
               <Text style={styles.categoryTitle}>2. 누적 포인트 뱃지</Text>
-              <View style={styles.badgeRow}>
-                <Text style={styles.emptyText}>아직 획득한 뱃지가 없습니다</Text>
+              <View style={styles.activityBadgeContainer}>
+                <Image
+                  style={styles.activityBadgeBackground}
+                  source={require('../assets/images/bar_green.png')}
+                />
+                <View style={styles.badgeRow}>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={styles.badgeItem}>
+                      <Image 
+                        source={require('../assets/images/icon_plant_level1.png')} 
+                        style={styles.badgeIcon} 
+                      />
+                    </View>
+                    <Text style={styles.badgeText}>
+                      <Text style={styles.badgeName}>새싹 뱃지{'\n'}</Text>
+                      <Text style={styles.badgeDate}>2025.04.05</Text>
+                    </Text>
+                  </View>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={[styles.badgeItem, styles.badgeItemInactive]}>
+                      <Image 
+                        source={require('../assets/images/icon_plant_level2.png')} 
+                        style={[styles.badgeIcon, styles.badgeIconInactive]} 
+                      />
+                    </View>
+                    <Text style={styles.badgeTextInactive}>획득 전</Text>
+                  </View>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={[styles.badgeItem, styles.badgeItemInactive]}>
+                      <Image 
+                        source={require('../assets/images/icon_plant_level3.png')} 
+                        style={[styles.badgeIcon, styles.badgeIconInactive]} 
+                      />
+                    </View>
+                    <Text style={styles.badgeTextInactive}>획득 전</Text>
+                  </View>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={[styles.badgeItem, styles.badgeItemInactive]}>
+                      <Image 
+                        source={require('../assets/images/icon_plant_level4.png')} 
+                        style={[styles.badgeIcon, styles.badgeIconInactive]} 
+                      />
+                    </View>
+                    <Text style={styles.badgeTextInactive}>획득 전</Text>
+                  </View>
+                </View>
               </View>
             </View>
 
             {/* 이벤트 뱃지 */}
             <View style={styles.badgeCategory}>
               <Text style={styles.categoryTitle}>3. 이벤트 뱃지</Text>
-              <View style={styles.badgeRow}>
-                <Text style={styles.emptyText}>아직 획득한 뱃지가 없습니다</Text>
+              <View style={styles.activityBadgeContainer}>
+                <Image
+                  style={styles.activityBadgeBackground}
+                  source={require('../assets/images/bar_green.png')}
+                />
+                <View style={styles.badgeRow}>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={[styles.badgeItem, styles.badgeItemInactive]}>
+                      <Image 
+                        source={require('../assets/images/icon_event_cake.png')} 
+                        style={[styles.badgeIcon, styles.badgeIconInactive]} 
+                      />
+                    </View>
+                    <Text style={styles.badgeTextInactive}>획득 전</Text>
+                  </View>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={[styles.badgeItem, styles.badgeItemInactive]}>
+                      <Image 
+                        source={require('../assets/images/icon_event_tree.png')} 
+                        style={[styles.badgeIcon, styles.badgeIconInactive]} 
+                      />
+                    </View>
+                    <Text style={styles.badgeTextInactive}>획득 전</Text>
+                  </View>
+                  <View style={styles.badgeItemContainer}>
+                    <View style={[styles.badgeItem, styles.badgeItemInactive]}>
+                      <Image 
+                        source={require('../assets/images/icon_event_earth.png')} 
+                        style={[styles.badgeIcon, styles.badgeIconInactive]} 
+                      />
+                    </View>
+                    <Text style={styles.badgeTextInactive}>획득 전</Text>
+                  </View>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
       
       <CustomTabBar />
     </SafeAreaView>
@@ -187,6 +272,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   titleContainer: {
     position: 'relative',
@@ -230,11 +316,10 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginRight: 15,
   },
-  profilePlaceholder: {
+  profileIcon: {
     width: 28,
     height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E0E0E0',
+    resizeMode: 'contain',
   },
   plantTreeButton: {
     backgroundColor: '#006256',
@@ -274,49 +359,83 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   badgeCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   badgeCategory: {
     marginBottom: 25,
+    marginHorizontal: 0,
+  },
+  activityBadgeContainer: {
+    position: 'relative',
+    marginBottom: 15,
+    marginHorizontal: -40, // 양옆으로 꽉 채우기
+  },
+  activityBadgeBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: 40,
+    resizeMode: 'stretch',
+    top: 25,
+    left: 0,
+    right: 0,
   },
   categoryTitle: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
-    marginBottom: 15,
+    marginBottom: 4,
   },
   badgeRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
+    paddingLeft: 40,
+  },
+  badgeItemContainer: {
+    alignItems: 'center',
+    width: 90,
+    marginRight: 0,
+    marginBottom: 5,
+    zIndex: 2,
   },
   badgeItem: {
-    width: 50,
-    height: 50,
+    width: 90,
+    height: 90,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 15,
+    marginBottom: 2,
+  },
+  badgeItemInactive: {
+    opacity: 0.5,
   },
   badgeIcon: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
     resizeMode: 'contain',
   },
-  emptyText: {
+  badgeIconInactive: {
+    opacity: 0.9,
+  },
+  badgeText: {
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  badgeName: {
     fontSize: 14,
-    color: '#999',
     fontFamily: 'Pretendard Variable',
-    fontStyle: 'italic',
+    color: '#2D2D2D',
+    fontWeight: '600',
+  },
+  badgeDate: {
+    fontSize: 12,
+    fontFamily: 'Pretendard Variable',
+    color: '#6B6B6B',
+  },
+  badgeTextInactive: {
+    fontSize: 14,
+    fontFamily: 'Pretendard Variable',
+    color: '#6B6B6B',
+    textAlign: 'center',
   },
 });
