@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import NotificationPopup from '../components/NotificationPopup';
 
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -18,6 +19,7 @@ const icon_tumblr = require('../assets/images/icon_tumblr.png');
 export default function CategorySetupScreen() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showNotificationPopup, setShowNotificationPopup] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -104,13 +106,26 @@ export default function CategorySetupScreen() {
             style={styles.startButton}
             onPress={() => {
               console.log('함께 출발하기 버튼 클릭됨');
-              router.replace('/home'); // 스택 초기화하고 홈화면으로 이동
+              setShowNotificationPopup(true); // 알림 팝업 표시
             }}
           >
             <Text style={styles.startButtonText}>함께 출발하기</Text>
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* 알림 허용 팝업 */}
+      {showNotificationPopup && (
+        <NotificationPopup
+          onClose={() => setShowNotificationPopup(false)}
+          onConfirm={(settings) => {
+            console.log('알림 설정:', settings);
+            setShowNotificationPopup(false);
+            // 설정 저장 후 홈화면으로 이동
+            router.replace('/home');
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
