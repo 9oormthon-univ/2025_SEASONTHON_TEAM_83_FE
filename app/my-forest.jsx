@@ -65,19 +65,35 @@ export default function MyForest() {
 
   // ====== Sticker(개별 배지) ======
   const Sticker = ({ b }) => {
-    const posRef = useRef({ x: b.x ?? 0, y: b.y ?? 0 });
-    useEffect(() => {
-      posRef.current = { x: b.x ?? 0, y: b.y ?? 0 };
-    }, [b.x, b.y]);
-
-    const finishDrag = (_, g) => {
+    const startRef = useRef({ x: b.x ?? 0, y: b.y ?? 0 }); // 제스처 시작 기준
+    const [dragging, setDragging] = useState(false);
+  
+    // 이동 한계
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  
+    const onGrant = () => {
+      setTooltip(null);
+      setDragging(true);
+      // 제스처 시작 시점의 좌표를 한 번만 스냅샷
+      startRef.current = { x: b.x ?? 0, y: b.y ?? 0 };
+    };
+  
+    const onMove = (_, g) => {
       if (!editable) return;
-      const nx = clamp(posRef.current.x + g.dx, -20, boardSize.w - 80);
-      const ny = clamp(posRef.current.y + g.dy, -20, boardSize.h - 80);
-      posRef.current = { x: nx, y: ny };
+      // 항상 "시작좌표 + 누적이동"으로 계산
+      const nx = clamp(startRef.current.x + g.dx, -20, boardSize.w - 120); // 스티커 크기 120 반영
+      const ny = clamp(startRef.current.y + g.dy, -20, boardSize.h - 120);
       updateBadge(b.id, { x: nx, y: ny });
     };
-
+  
+    const onRelease = (_, g) => {
+      if (!editable) return;
+      const nx = clamp(startRef.current.x + g.dx, -20, boardSize.w - 120);
+      const ny = clamp(startRef.current.y + g.dy, -20, boardSize.h - 120);
+      updateBadge(b.id, { x: nx, y: ny });
+      setDragging(false);
+    };
+  
     const pan = useMemo(
       () =>
         PanResponder.create({
@@ -87,57 +103,40 @@ export default function MyForest() {
           onMoveShouldSetPanResponderCapture: () => true,
           onPanResponderTerminationRequest: () => false,
           onShouldBlockNativeResponder: () => true,
-
-          onPanResponderGrant: () => setTooltip(null),
-          onPanResponderMove: (_, g) => {
-            if (!editable) return;
-            updateBadge(b.id, {
-              x: posRef.current.x + g.dx,
-              y: posRef.current.y + g.dy,
-            });
-          },
-          onPanResponderRelease: finishDrag,
-          onPanResponderTerminate: finishDrag, // 웹에서 끊겨도 놓기 처리
+  
+          onPanResponderGrant: onGrant,
+          onPanResponderMove: onMove,
+          onPanResponderRelease: onRelease,
+          onPanResponderTerminate: onRelease,
         }),
       [editable, boardSize.w, boardSize.h]
     );
-
+  
     return (
       <View
         {...pan.panHandlers}
-        // transform 대신 절대 좌표 → 히트박스와 시각 위치 일치
-        style={[
-          styles.sticker,
-          { left: b.x ?? 0, top: b.y ?? 0 }
-        ]}
+        style={[styles.sticker, { left: b.x ?? 0, top: b.y ?? 0 }]}
       >
         <Pressable
           onPress={() =>
-            setTooltip({
-              id: b.id,
-              x: b.x ?? 0,
-              y: b.y ?? 0,
-              title: b.title,
-              date: b.date,
-            })
+            setTooltip({ id: b.id, x: b.x ?? 0, y: b.y ?? 0, title: b.title, date: b.date })
           }
-          onLongPress={() => setEditable((v) => !v)}
-          delayLongPress={250}
+          // ⛔ 드래그와 충돌 방지: 롱프레스 토글은 없애거나 지연 늘리기
+          // onLongPress={() => setEditable(v => !v)}
+          // delayLongPress={600}
         >
-          {/* 웹에서 이미지 고스트 드래그 방지 */}
           <Image
             source={b.uri}
             style={styles.stickerImg}
             resizeMode="contain"
-            // @ts-ignore
             draggable={false}
-            // @ts-ignore
             onContextMenu={(e) => e.preventDefault()}
           />
         </Pressable>
       </View>
     );
   };
+  
 
   const renderListItem = ({ item }) => (
     <View style={styles.listItem}>
