@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -17,13 +18,13 @@ import {
 // 색상 정의
 const COLORS = {
   background: '#006256',
-  text: '#FAF8D7',
-  placeholder: 'rgba(250, 248, 215, 0.6)',
+  text: '#2D2D2D',
+  placeholder: 'rgba(45, 45, 45, 0.6)',
   loginButtonBackground: '#0F0F0F',
   loginButtonText: '#FAF8D7',
   kakaoButton: '#FEE500',
   signupButton: '#FFFFFF',
-  inputBorder: '#FAF8D7',
+  inputBorder: '#2D2D2D',
   greenBar: '#2D5A4F',
 };
 
@@ -56,120 +57,129 @@ export default function SignupScreen() {
     console.log('카카오톡 연동 시도');
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView contentContainerStyle={styles.container}>
-          {/* 로고 - 최상단 배치 */}
-          <View style={styles.logoContainer}>
-            <Image
-              source={icon_pleanet_logo}
-              style={styles.logo}
-            />
-          </View>
-
-          {/* 회원가입 제목 */}
-          <View style={styles.titleContainer}>
-            <Image
-              style={styles.titlePattern}
-              source={require('../assets/images/bar_green.png')}
-            />
-            <Text style={styles.titleText}>회원가입</Text>
-          </View>
-
-          {/* 입력 필드들 */}
-          <View style={styles.inputGroup}>
-            {/* 닉네임과 생년월일 */}
-            <View style={styles.topInputs}>
-              <TextInput
-                style={styles.input}
-                placeholder="닉네임"
-                placeholderTextColor={COLORS.placeholder}
-                value={nickname}
-                onChangeText={setNickname}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="생년월일"
-                placeholderTextColor={COLORS.placeholder}
-                value={birthDate}
-                onChangeText={setBirthDate}
+    return (
+    <LinearGradient
+      colors={['#00DDC5', '#FFFFFF']}
+      style={styles.gradientBackground}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <ScrollView contentContainerStyle={styles.container}>
+            {/* 로고 - 최상단 배치 */}
+            <View style={styles.logoContainer}>
+              <Image
+                source={icon_pleanet_logo}
+                style={styles.logo}
               />
             </View>
 
-            {/* 이메일, 비밀번호, 비밀번호 재확인 */}
-            <View style={styles.bottomInputs}>
-              <TextInput
-                style={styles.input}
-                placeholder="이메일"
-                placeholderTextColor={COLORS.placeholder}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
+            {/* 회원가입 제목 */}
+            <View style={styles.titleContainer}>
+              <Image
+                style={styles.titlePattern}
+                source={require('../assets/images/bar_green.png')}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="비밀번호"
-                placeholderTextColor={COLORS.placeholder}
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="비밀번호 재확인"
-                placeholderTextColor={COLORS.placeholder}
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
+              <Text style={styles.titleText}>회원가입</Text>
             </View>
-          </View>
 
-          {/* 소셜 로그인 및 회원가입 버튼 */}
-          <View style={styles.socialGroup}>
-            <View style={styles.socialButtonContainer}>
-              <TouchableOpacity 
-                style={[styles.socialButton, { backgroundColor: COLORS.kakaoButton }]}
-                onPress={handleKakaoLink}
-              >
-                <Image
-                  source={require('../assets/images/icon_kakao.png')}
-                  style={styles.socialIcon}
+            {/* 입력 필드들 */}
+            <View style={styles.inputGroup}>
+              {/* 닉네임과 생년월일 */}
+              <View style={styles.topInputs}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="닉네임"
+                  placeholderTextColor={COLORS.placeholder}
+                  value={nickname}
+                  onChangeText={setNickname}
                 />
-              </TouchableOpacity>
-              <Text style={styles.socialButtonText}>카카오톡 연동</Text>
-            </View>
-            <View style={styles.socialButtonContainer}>
-              <TouchableOpacity 
-                style={[styles.socialButton, { backgroundColor: COLORS.signupButton }]}
-                onPress={handleSignup}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={require('../assets/images/icon_signup.png')}
-                  style={styles.socialIcon}
+                <TextInput
+                  style={styles.input}
+                  placeholder="생년월일"
+                  placeholderTextColor={COLORS.placeholder}
+                  value={birthDate}
+                  onChangeText={setBirthDate}
                 />
-              </TouchableOpacity>
-              <Text style={styles.socialButtonText}>회원가입</Text>
-            </View>
-          </View>
+              </View>
 
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              {/* 이메일, 비밀번호, 비밀번호 재확인 */}
+              <View style={styles.bottomInputs}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="이메일"
+                  placeholderTextColor={COLORS.placeholder}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="비밀번호"
+                  placeholderTextColor={COLORS.placeholder}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="비밀번호 재확인"
+                  placeholderTextColor={COLORS.placeholder}
+                  secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+              </View>
+            </View>
+
+            {/* 소셜 로그인 및 회원가입 버튼 */}
+            <View style={styles.socialGroup}>
+              <View style={styles.socialButtonContainer}>
+                <TouchableOpacity 
+                  style={[styles.socialButton, { backgroundColor: COLORS.kakaoButton }]}
+                  onPress={handleKakaoLink}
+                >
+                  <Image
+                    source={require('../assets/images/icon_kakao.png')}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
+                <Text style={styles.socialButtonText}>카카오톡 연동</Text>
+              </View>
+              <View style={styles.socialButtonContainer}>
+                <TouchableOpacity 
+                  style={[styles.socialButton, { backgroundColor: COLORS.signupButton }]}
+                  onPress={handleSignup}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={require('../assets/images/icon_signup.png')}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
+                <Text style={styles.socialButtonText}>회원가입</Text>
+              </View>
+            </View>
+
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -202,8 +212,8 @@ const styles = StyleSheet.create({
     resizeMode: 'stretch',
   },
   titleText: {
-    color: COLORS.text,
-    fontSize: 24,
+    color: "#FFFFFF",
+    fontSize: 32,
     fontWeight: 'bold',
     position: 'absolute',
     fontFamily: '109LeantheWall',
