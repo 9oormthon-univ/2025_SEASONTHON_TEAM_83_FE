@@ -1,11 +1,56 @@
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import TreePopup from '../components/TreePopup';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function RewardConversionScreen() {
   const router = useRouter();
+  
+  // 팝업 관련 상태
+  const [currentPopupIndex, setCurrentPopupIndex] = useState(-1);
+  const [isPopupSequenceActive, setIsPopupSequenceActive] = useState(false);
+  
+  // 4개의 팝업 메시지
+  const popupMessages = [
+    "리워드 전환 완료!",
+    "하나의 나무, 하나의 변화.\n당신이 시작했습니다.",
+    "함께 심은 나무, 함께 키워가는 지구.",
+    "당신의 실천이 지구에\n초록 숨결을 더합니다."
+  ];
+
+  // 팝업 시퀀스 제어
+  useEffect(() => {
+    if (isPopupSequenceActive && currentPopupIndex < popupMessages.length) {
+      const timer = setTimeout(() => {
+        if (currentPopupIndex < popupMessages.length - 1) {
+          setCurrentPopupIndex(currentPopupIndex + 1);
+        } else {
+          // 마지막 팝업 후 시퀀스 종료
+          setTimeout(() => {
+            setCurrentPopupIndex(-1);
+            setIsPopupSequenceActive(false);
+          }, 2000); // 마지막 팝업도 2초간 표시
+        }
+      }, 2000); // 2초 간격
+
+      return () => clearTimeout(timer);
+    }
+  }, [isPopupSequenceActive, currentPopupIndex, popupMessages.length]);
+
+  // 리워드 전환 버튼 핸들러
+  const handleRewardConversion = () => {
+    setCurrentPopupIndex(0);
+    setIsPopupSequenceActive(true);
+  };
+
+  // 팝업 닫기 핸들러
+  const handleClosePopup = () => {
+    setCurrentPopupIndex(-1);
+    setIsPopupSequenceActive(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -183,10 +228,20 @@ export default function RewardConversionScreen() {
         </View>
 
         {/* 리워드 전환 버튼 */}
-        <TouchableOpacity style={styles.rewardButton}>
+        <TouchableOpacity style={styles.rewardButton} onPress={handleRewardConversion}>
           <Text style={styles.rewardButtonText}>리워드 전환</Text>
         </TouchableOpacity>
       </View>
+      
+      {/* 나무 팝업 시퀀스 */}
+      {currentPopupIndex >= 0 && (
+        <TreePopup 
+          visible={true}
+          onClose={handleClosePopup}
+          message={popupMessages[currentPopupIndex]}
+          isFirstPopup={currentPopupIndex === 0}
+        />
+      )}
       
       <CustomTabBar />
     </SafeAreaView>
