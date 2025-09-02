@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
@@ -8,46 +9,53 @@ export default function RankingScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* 상단 헤더 */}
-      <View style={styles.header}>
-        <Image
-          style={styles.headerBackground}
-          source={require('../assets/images/bar_green.png')}
-        />
-        
-        {/* 뒤로가기 버튼 */}
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+    <LinearGradient
+      colors={['#E8F8F5', '#F0F8FF', '#FFF8DC']}
+      locations={[0, 0.5, 1]}
+      useAngle={true}
+      angle={135}
+      style={styles.fullScreenGradient}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* 상단 헤더 */}
+        <View style={styles.header}>
           <Image
-            source={require('../assets/images/icon_back_button.png')}
-            style={styles.backIcon}
+            style={styles.headerBackground}
+            source={require('../assets/images/bar_green.png')}
           />
-        </TouchableOpacity>
-        
-        {/* 중앙 로고 */}
-        <View style={styles.headerLogoContainer}>
-          <Image
-            source={icon_pleanet_logo}
-            style={styles.headerLogo}
-          />
+          
+          {/* 뒤로가기 버튼 */}
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Image
+              source={require('../assets/images/icon_back_button.png')}
+              style={styles.backIcon}
+            />
+          </TouchableOpacity>
+          
+          {/* 중앙 로고 */}
+          <View style={styles.headerLogoContainer}>
+            <Image
+              source={icon_pleanet_logo}
+              style={styles.headerLogo}
+            />
+          </View>
+          
+          {/* 알림 버튼 */}
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => router.push('/notifications')}
+          >
+            <Image
+              source={require('../assets/images/icon_alarm.png')}
+              style={styles.notificationIcon}
+            />
+          </TouchableOpacity>
         </View>
-        
-        {/* 알림 버튼 */}
-        <TouchableOpacity 
-          style={styles.notificationButton}
-          onPress={() => router.push('/notifications')}
-        >
-          <Image
-            source={require('../assets/images/icon_alarm.png')}
-            style={styles.notificationIcon}
-          />
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.content}>
+        <View style={styles.content}>
         {/* 현재 랭킹 제목 */}
         <View style={styles.titleContainer}>
           <Image
@@ -61,22 +69,26 @@ export default function RankingScreen() {
         <View style={styles.rankingSection}>
           {/* 1위 */}
           <View style={styles.firstPlace}>
-            <View style={styles.crownContainer}>
-              <Image 
-                source={require('../assets/images/icon_crown.png')} 
-                style={styles.crownIcon} 
-              />
-            </View>
-            <View style={styles.firstPlaceAvatar}>
-              <Image 
-                source={require('../assets/images/icon_default_profile2.png')} 
-                style={styles.profileImage} 
-              />
-            </View>
-            <Text style={styles.firstPlaceNickname}>닉네임</Text>
-            <View style={styles.firstPlaceInfo}>
-              <Text style={styles.firstPlaceText}>총 10000점</Text>
-              <Text style={styles.firstPlaceText}>보유 뱃지 n개</Text>
+            <View style={styles.firstPlaceContent}>
+              <View style={styles.avatarGradientContainer}>
+                <LinearGradient
+                  colors={['#87CEEB', '#98D8E8', '#B0E0E6']}
+                  locations={[0, 0.5, 1]}
+                  style={styles.avatarGradient}
+                >
+                  <View style={styles.firstPlaceAvatar}>
+                    <Image 
+                      source={require('../assets/images/icon_logo_badge.png')} 
+                      style={styles.profileImage} 
+                    />
+                  </View>
+                </LinearGradient>
+              </View>
+              <Text style={styles.firstPlaceNickname}>닉네임</Text>
+              <View style={styles.firstPlaceInfo}>
+                <Text style={styles.firstPlaceText}>총 10000점</Text>
+                <Text style={styles.firstPlaceText}>보유 뱃지 n개</Text>
+              </View>
             </View>
           </View>
 
@@ -87,7 +99,7 @@ export default function RankingScreen() {
               <Text style={styles.rankText}>2위</Text>
               <View style={styles.avatarContainer}>
                 <Image 
-                  source={require('../assets/images/icon_default_profile2.png')} 
+                  source={require('../assets/images/icon_logo_badge.png')} 
                   style={styles.profileImage} 
                 />
               </View>
@@ -98,7 +110,7 @@ export default function RankingScreen() {
               <Text style={styles.rankText}>3위</Text>
               <View style={styles.avatarContainer}>
                 <Image 
-                  source={require('../assets/images/icon_default_profile2.png')} 
+                  source={require('../assets/images/icon_logo_badge.png')} 
                   style={styles.profileImage} 
                 />
               </View>
@@ -120,7 +132,7 @@ export default function RankingScreen() {
                 <Text style={styles.rankNumber}>{item.rank}</Text>
                 <View style={styles.avatarContainer}>
                   <Image 
-                    source={require('../assets/images/icon_default_profile2.png')} 
+                    source={require('../assets/images/icon_logo_badge.png')} 
                     style={styles.profileImage} 
                   />
                 </View>
@@ -131,17 +143,21 @@ export default function RankingScreen() {
             ))}
           </ScrollView>
         </View>
-      </View>
-      
-      <CustomTabBar />
-    </SafeAreaView>
+        </View>
+        
+        <CustomTabBar />
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  fullScreenGradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F9F8E1',
+    backgroundColor: 'transparent',
   },
   header: {
     position: 'relative',
@@ -224,19 +240,43 @@ const styles = StyleSheet.create({
   },
   firstPlace: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 10,
     position: 'relative',
-    height: 224,
+    height: 240,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#4A90E2',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
-  crownContainer: {
-    position: 'absolute',
-    top: 0,
-    zIndex: 2,
+  firstPlaceContent: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    borderRadius: 16,
   },
-  crownIcon: {
-    width: 60,
-    height: 60,
-    resizeMode: 'contain',
+
+  avatarGradientContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30,
+    marginBottom: 15,
+  },
+  avatarGradient: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    padding: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   firstPlaceAvatar: {
     width: 120,
@@ -244,9 +284,8 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 15,
     overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
   },
   profileImage: {
     width: '100%',
