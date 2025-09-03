@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import { TokenManager } from '../services/api';
 import AuthService from '../services/authService';
 import KakaoService from '../services/kakaoService';
+import PermissionService from '../services/permissionService';
 
 // 인증 상태 타입
 const AuthState = {
@@ -240,6 +241,56 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 동의항목 수정
+  const updateAgreements = async (agreements) => {
+    try {
+      const response = await AuthService.updateAgreements(agreements);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 동의항목 조회
+  const getAgreements = async () => {
+    try {
+      const response = await AuthService.getAgreements();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 위치 서비스 권한 요청
+  const requestLocationPermission = async () => {
+    try {
+      const response = await PermissionService.requestLocationPermission();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 푸시 알림 권한 요청
+  const requestNotificationPermission = async () => {
+    try {
+      const response = await PermissionService.requestNotificationPermission();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 모든 권한 상태 확인
+  const checkAllPermissions = async () => {
+    try {
+      const response = await PermissionService.checkAllPermissions();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   // 카카오 로그인
   const kakaoLogin = async (code) => {
     try {
@@ -295,6 +346,11 @@ export const AuthProvider = ({ children }) => {
     updateKakaoAdditionalInfo,
     updateProfile,
     setInterests,
+    updateAgreements,
+    getAgreements,
+    requestLocationPermission,
+    requestNotificationPermission,
+    checkAllPermissions,
     checkAuthStatus,
   };
 

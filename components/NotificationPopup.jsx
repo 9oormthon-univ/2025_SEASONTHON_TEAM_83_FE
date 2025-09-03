@@ -1,12 +1,97 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../contexts/AuthContext";
 
 const NotificationPopup = ({ onClose, onConfirm }) => {
+  const { 
+    updateAgreements, 
+    requestLocationPermission, 
+    requestNotificationPermission 
+  } = useAuth();
   const [pushNotification, setPushNotification] = useState(true);
   const [locationService, setLocationService] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleConfirm = () => {
-    onConfirm({ pushNotification, locationService });
+  const handleConfirm = async () => {
+    setIsLoading(true);
+
+    try {
+      let actualLocationPermission = false;
+      let actualNotificationPermission = false;
+
+      // 위치 서비스 권한 요청
+      if (locationService) {
+        const locationResult = await requestLocationPermission();
+        actualLocationPermission = locationResult.success;
+        
+        if (!locationResult.success) {
+          Alert.alert(
+            '위치 서비스 권한 필요', 
+            '챌린지 인증을 위해 위치 서비스 권한이 필요합니다.',
+            [
+              { text: '취소', onPress: () => setLocationService(false) },
+              { text: '설정으로 이동', onPress: () => {
+                // 설정 앱으로 이동하는 로직 추가 가능
+                setLocationService(false);
+              }}
+            ]
+          );
+        }
+      }
+
+      // 푸시 알림 권한 요청
+      if (pushNotification) {
+        const notificationResult = await requestNotificationPermission();
+        actualNotificationPermission = notificationResult.success;
+        
+        if (!notificationResult.success) {
+          Alert.alert(
+            '푸시 알림 권한 필요', 
+            '중요한 알림을 받기 위해 푸시 알림 권한이 필요합니다.',
+            [
+              { text: '취소', onPress: () => setPushNotification(false) },
+              { text: '설정으로 이동', onPress: () => {
+                // 설정 앱으로 이동하는 로직 추가 가능
+                setPushNotification(false);
+              }}
+            ]
+          );
+        }
+      }
+
+      // 실제 권한 상태로 서버에 저장
+      const agreements = {
+        "allowLocation": actualLocationPermission,
+        "allowPush": actualNotificationPermission
+      };
+
+      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
+      // const result = await updateAgreements(agreements);
+
+      // 임시: 서버 없이 성공 시뮬레이션
+      console.log('임시 동의항목 수정:', agreements);
+      
+      // 1초 지연으로 로딩 상태 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 성공 시뮬레이션
+      const result = { success: true, data: agreements };
+
+      if (result.success) {
+        console.log('동의항목 수정 성공:', result.data);
+        // 실제 권한 상태로 onConfirm 콜백 호출
+        onConfirm({ 
+          pushNotification: actualNotificationPermission, 
+          locationService: actualLocationPermission 
+        });
+      } else {
+        Alert.alert('오류', result.error || '동의항목 수정에 실패했습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '권한 요청 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,8 +140,16 @@ const NotificationPopup = ({ onClose, onConfirm }) => {
         </View>
 
         {/* 확인 버튼 */}
-        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-          <Text style={styles.confirmButtonText}>확인</Text>
+        <TouchableOpacity 
+          style={[styles.confirmButton, isLoading && styles.disabledButton]} 
+          onPress={handleConfirm}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.confirmButtonText}>확인</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -169,6 +262,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Pretendard Variable',
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
 });
 
