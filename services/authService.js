@@ -160,6 +160,25 @@ export const AuthService = {
       };
     }
   },
+
+  // 관심활동 설정
+  async setInterests(interests) {
+    try {
+      const response = await apiClient.post('/api/members/interests', {
+        interests: interests
+      });
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 export default AuthService;

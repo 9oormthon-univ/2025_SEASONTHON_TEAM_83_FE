@@ -230,6 +230,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 관심활동 설정
+  const setInterests = async (interests) => {
+    try {
+      const response = await AuthService.setInterests(interests);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   // 카카오 로그인
   const kakaoLogin = async (code) => {
     try {
@@ -284,6 +294,7 @@ export const AuthProvider = ({ children }) => {
     loginWithKakao,
     updateKakaoAdditionalInfo,
     updateProfile,
+    setInterests,
     checkAuthStatus,
   };
 
