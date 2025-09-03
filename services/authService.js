@@ -179,6 +179,40 @@ export const AuthService = {
       };
     }
   },
+
+  // 동의항목 수정
+  async updateAgreements(agreements) {
+    try {
+      const response = await apiClient.patch('/api/members/agreements', agreements);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 동의항목 조회
+  async getAgreements() {
+    try {
+      const response = await apiClient.get('/api/members/agreements');
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 export default AuthService;
