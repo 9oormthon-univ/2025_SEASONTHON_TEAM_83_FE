@@ -29,7 +29,10 @@ const CustomTabBar = () => {
     <View style={styles.container}>
       <View style={styles.tabBar}>
         {tabs.map((tab, index) => {
-          const isActive = pathname === tab.route;
+          const isActive =
+          pathname === tab.route ||
+          (tab.name === 'My page' && ['/my-forest', '/edit-profile'].includes(pathname));
+        
           
           return (
             <TouchableOpacity

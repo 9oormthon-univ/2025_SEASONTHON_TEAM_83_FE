@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import CustomTabBar from '../components/CustomTabBar';
-
+import HeaderBar from '../components/HeaderBar';
 /* =========================
  * Theme & constants
  * ======================= */
@@ -25,7 +25,7 @@ const BADGE_SIZE = 56;
 const RIBBON_H = 14;
 
 const COLORS = {
-  bg: '#EDE4CC',
+  bg: '#F9F8E1',
   card: '#FFFFFF',
   ink: '#1F2A22',
   sub: '#7A8B83',
@@ -127,43 +127,8 @@ function Screen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <StatusBar translucent={Platform.OS === 'android'} backgroundColor="transparent" barStyle="light-content" />
       
-      {/* 상단 헤더 */}
-      <View style={styles.header}>
-        <Image
-          style={styles.headerBackground}
-          source={require('../assets/images/bar_green.png')}
-        />
-        
-        {/* 뒤로가기 버튼 */}
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Image
-            source={require('../assets/images/icon_back_button.png')}
-            style={styles.backIcon}
-          />
-        </TouchableOpacity>
-        
-        {/* 중앙 로고 */}
-        <View style={styles.headerLogoContainer}>
-          <Image
-            source={require('../assets/images/icon_pleanet_logo.png')}
-            style={styles.headerLogo}
-          />
-        </View>
-        
-        {/* 알림 버튼 */}
-        <TouchableOpacity 
-          style={styles.notificationButton}
-          onPress={() => router.push('/notifications')}
-        >
-          <Image
-            source={require('../assets/images/icon_alarm.png')}
-            style={styles.notificationIcon}
-          />
-        </TouchableOpacity>
-      </View>
+
+      <HeaderBar title = "My Page"/>
 
       <View style={styles.content}>
         <View style={[styles.card, styles.cardTight]}>

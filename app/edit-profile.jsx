@@ -17,7 +17,7 @@ import HeaderBar from '../components/HeaderBar';
 
 
 const COLORS = {
-  bg: '#EDE4CC',
+  bg: '#F9F8E1',
   header: '#0F3A2D',
   ink: '#1F2A22',
   sub: '#7A8B83',
