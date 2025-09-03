@@ -25,9 +25,9 @@ export default function RootLayout() {
         <Stack.Screen name="category-setup" options={{ headerShown: false }} />
         <Stack.Screen name="home" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="challenge" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="my-page" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="edit-profile" options={{headerShown : false, animation : 'none'}}/>
-        <Stack.Screen name="my-forest" options={{ headerShown: false, animation: 'none' }} />
+        <Stack.Screen name="my-page/index" options={{ headerShown: false, animation: 'none' }} />
++       <Stack.Screen name="my-page/my-forest" options={{ headerShown: false, animation: 'none' }} />
++       <Stack.Screen name="my-page/edit-profile" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="attendance" options={{ headerShown: false }} />
         <Stack.Screen name="challenge-certification" options={{ headerShown: false }} />

@@ -80,9 +80,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 26,
     color: COLORS.ivory,
-    fontFamily: 'LeantheWall',  // ✅ 커스텀 폰트 고정
+    fontFamily: 'LeantheWall',  
     letterSpacing: 0.5,
     includeFontPadding: false,
-    // ⚠️ fontWeight 쓰면 단일 TTF에서 폴백될 수 있으니 사용 지양
+    
   },
 });
