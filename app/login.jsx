@@ -107,48 +107,53 @@ export default function LoginScreen() {
 
   // 로그인 처리
   const handleLogin = async () => {
+    // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
     // 전체 폼 유효성 검사
-    const isFormValid = Object.values(validation).every(field => field.isValid);
+    // const isFormValid = Object.values(validation).every(field => field.isValid);
     
-    if (!isFormValid) {
-      Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
-      return;
-    }
+    // if (!isFormValid) {
+    //   Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
+    //   return;
+    // }
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
-    try {
-      const result = await login({
-        emailOrNickname: formData.email,
-        password: formData.password
-      });
+    // try {
+    //   const result = await login({
+    //     emailOrNickname: formData.email,
+    //     password: formData.password
+    //   });
 
-      if (result.success) {
-        // 로그인 성공 - useEffect에서 자동으로 홈 화면으로 이동
-        console.log('로그인 성공:', result.data);
-      } else {
-        // 로그인 실패 - 에러 메시지 표시
-        let errorMessage = '로그인에 실패했습니다.';
+    //   if (result.success) {
+    //     // 로그인 성공 - useEffect에서 자동으로 홈 화면으로 이동
+    //     console.log('로그인 성공:', result.data);
+    //   } else {
+    //     // 로그인 실패 - 에러 메시지 표시
+    //     let errorMessage = '로그인에 실패했습니다.';
         
-        if (result.error) {
-          if (result.error.includes('가입된 계정이 아닙니다')) {
-            errorMessage = '가입된 계정이 아닙니다.';
-          } else if (result.error.includes('비밀번호가 올바르지 않습니다')) {
-            errorMessage = '비밀번호가 올바르지 않습니다.';
-          } else if (result.error.includes('네트워크')) {
-            errorMessage = '네트워크 문제로 로그인할 수 없습니다.';
-          } else {
-            errorMessage = result.error;
-          }
-        }
+    //     if (result.error) {
+    //       if (result.error.includes('가입된 계정이 아닙니다')) {
+    //         errorMessage = '가입된 계정이 아닙니다.';
+    //       } else if (result.error.includes('비밀번호가 올바르지 않습니다')) {
+    //         errorMessage = '비밀번호가 올바르지 않습니다.';
+    //       } else if (result.error.includes('네트워크')) {
+    //         errorMessage = '네트워크 문제로 로그인할 수 없습니다.';
+    //       } else {
+    //         errorMessage = result.error;
+    //       }
+    //     }
         
-        Alert.alert('로그인 실패', errorMessage);
-      }
-    } catch (error) {
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    //     Alert.alert('로그인 실패', errorMessage);
+    //   }
+    // } catch (error) {
+    //   Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    // } finally {
+    //   setIsLoading(false);
+    // }
+
+    // 임시: 서버 없이 바로 회원가입 화면으로 이동
+    console.log('임시 로그인 - 회원가입 화면으로 이동');
+    router.push('/signup');
   };
 
   // 카카오 로그인 처리
