@@ -2,7 +2,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    Alert,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -203,41 +202,43 @@ export default function SignupScreen() {
   };
 
   const handleSignup = async () => {
+    // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
     // 전체 폼 유효성 검사
-    const isFormValid = Object.values(validation).every(field => field.isValid);
+    // const isFormValid = Object.values(validation).every(field => field.isValid);
     
-    if (!isFormValid) {
-      Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
-      return;
-    }
+    // if (!isFormValid) {
+    //   Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
+    //   return;
+    // }
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
-    try {
-      const result = await signup({
-        nickname: formData.nickname,
-        birthday: formData.birthday,
-        email: formData.email,
-        password: formData.password
-      });
+    // try {
+    //   const result = await signup({
+    //     nickname: formData.nickname,
+    //     birthday: formData.birthday,
+    //     email: formData.email,
+    //     password: formData.password
+    //   });
 
-      if (result.success) {
-        Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.', [
-          {
-            text: '확인',
-            onPress: () => router.push('/login')
-          }
-        ]);
-      } else {
-        Alert.alert('회원가입 실패', result.error || '회원가입 중 오류가 발생했습니다.');
-      }
-    } catch (error) {
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    //   if (result.success) {
+    //     Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.', [
+    //       {
+    //         text: '확인',
+    //         onPress: () => router.push('/login')
+    //       }
+    //     ]);
+    //   } else {
+    //     Alert.alert('회원가입 실패', result.error || '회원가입 중 오류가 발생했습니다.');
+    //   }
+    // } catch (error) {
+    //   Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    // } finally {
+    //   setIsLoading(false);
+    // }
     
-    // 회원가입 성공 후 카테고리 설정 화면으로 이동
+    // 임시: 서버 없이 바로 카테고리 설정 화면으로 이동
+    console.log('임시 회원가입 - 카테고리 설정 화면으로 이동');
     router.push('/category-setup');
   };
 
@@ -282,10 +283,10 @@ export default function SignupScreen() {
               {/* 닉네임과 생년월일 */}
               <View style={styles.topInputs}>
                 <View style={styles.inputContainer}>
-                  <TextInput
+                <TextInput
                     style={[styles.input, !validation.nickname.isValid && formData.nickname ? styles.inputError : null]}
                     placeholder="닉네임 (2-12자)"
-                    placeholderTextColor={COLORS.placeholder}
+                  placeholderTextColor={COLORS.placeholder}
                     value={formData.nickname}
                     onChangeText={(value) => updateFormData('nickname', value)}
                   />
@@ -296,10 +297,10 @@ export default function SignupScreen() {
                   )}
                 </View>
                 <View style={styles.inputContainer}>
-                  <TextInput
+                <TextInput
                     style={[styles.input, !validation.birthday.isValid && formData.birthday ? styles.inputError : null]}
                     placeholder="생년월일 (YYYY-MM-DD)"
-                    placeholderTextColor={COLORS.placeholder}
+                  placeholderTextColor={COLORS.placeholder}
                     value={formData.birthday}
                     onChangeText={(value) => updateFormData('birthday', value)}
                   />
@@ -315,12 +316,12 @@ export default function SignupScreen() {
               <View style={styles.bottomInputs}>
                 {/* 이메일 */}
                 <View style={styles.inputContainer}>
-                  <TextInput
+                <TextInput
                     style={[styles.input, !validation.email.isValid && formData.email ? styles.inputError : null]}
-                    placeholder="이메일"
-                    placeholderTextColor={COLORS.placeholder}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
+                  placeholder="이메일"
+                  placeholderTextColor={COLORS.placeholder}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
                     value={formData.email}
                     onChangeText={(value) => updateFormData('email', value)}
                   />
@@ -337,10 +338,10 @@ export default function SignupScreen() {
                 {/* 비밀번호 */}
                 <View style={styles.inputContainer}>
                   <View style={styles.passwordContainer}>
-                    <TextInput
+                <TextInput
                       style={[styles.input, styles.passwordInput, !validation.password.isValid && formData.password ? styles.inputError : null]}
                       placeholder="비밀번호 (영문+숫자, 8자 이상)"
-                      placeholderTextColor={COLORS.placeholder}
+                  placeholderTextColor={COLORS.placeholder}
                       value={formData.password}
                       onChangeText={(value) => updateFormData('password', value)}
                       secureTextEntry={!showPassword}
@@ -370,10 +371,10 @@ export default function SignupScreen() {
                 {/* 비밀번호 확인 */}
                 <View style={styles.inputContainer}>
                   <View style={styles.passwordContainer}>
-                    <TextInput
+                <TextInput
                       style={[styles.input, styles.passwordInput, !validation.confirmPassword.isValid && formData.confirmPassword ? styles.inputError : null]}
-                      placeholder="비밀번호 재확인"
-                      placeholderTextColor={COLORS.placeholder}
+                  placeholder="비밀번호 재확인"
+                  placeholderTextColor={COLORS.placeholder}
                       value={formData.confirmPassword}
                       onChangeText={(value) => updateFormData('confirmPassword', value)}
                       secureTextEntry={!showConfirmPassword}
@@ -422,10 +423,10 @@ export default function SignupScreen() {
                   {isLoading ? (
                     <Text style={styles.loadingText}>처리 중...</Text>
                   ) : (
-                    <Image
-                      source={require('../assets/images/icon_signup.png')}
-                      style={styles.socialIcon}
-                    />
+                  <Image
+                    source={require('../assets/images/icon_signup.png')}
+                    style={styles.socialIcon}
+                  />
                   )}
                 </TouchableOpacity>
                 <Text style={styles.socialButtonText}>
