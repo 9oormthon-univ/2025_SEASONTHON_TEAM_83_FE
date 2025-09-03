@@ -13,8 +13,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import CustomTabBar from '../../components/CustomTabBar';
-import HeaderBar from '../../components/HeaderBar';
+import CustomTabBar from '../components/CustomTabBar';
+import HeaderBar from '../components/HeaderBar';
 /* =========================
  * Theme & constants
  * ======================= */
@@ -25,7 +25,7 @@ const BADGE_SIZE = 56;
 const RIBBON_H = 14;
 
 const COLORS = {
-  bg: '#F9F8E1',  
+  bg: '#F9F8E1',
   card: '#FFFFFF',
   ink: '#1F2A22',
   sub: '#7A8B83',
@@ -47,15 +47,15 @@ const shadow = Platform.select({
  * Mock data
  * ======================= */
 const HISTORY = [
-  { id: 1, title: '걷기 1.3Km 인증', date: '2025-01-15', point: '+20p', icon: require('../../assets/images/icon_walk.png'), dim: false },
-  { id: 2, title: '텀블러 사용 인증', date: '2025-01-14', point: '+20p', icon: require('../../assets/images/icon_tumblr.png'), dim: true },
+  { id: 1, title: '걷기 1.3Km 인증', date: '2025-01-15', point: '+20p', icon: require('../assets/images/icon_walk.png'), dim: false },
+  { id: 2, title: '텀블러 사용 인증', date: '2025-01-14', point: '+20p', icon: require('../assets/images/icon_tumblr.png'), dim: true },
 ];
 
 const BADGES = [
-  { id: 1, name: '걷기',   date: '2025.05.06', src: require('../../assets/images/icon_walk.png') },
-  { id: 2, name: '텀블러', date: '2025.06.20', src: require('../../assets/images/icon_tumblr.png') },
-  { id: 3, name: '걷기',   date: '2025.06.25', src: require('../../assets/images/icon_walk.png') },
-  { id: 4, name: '텀블러', date: '2025.08.04', src: require('../../assets/images/icon_tumblr.png') },
+  { id: 1, name: '걷기',   date: '2025.05.06', src: require('../assets/images/icon_walk.png') },
+  { id: 2, name: '텀블러', date: '2025.06.20', src: require('../assets/images/icon_tumblr.png') },
+  { id: 3, name: '걷기',   date: '2025.06.25', src: require('../assets/images/icon_walk.png') },
+  { id: 4, name: '텀블러', date: '2025.08.04', src: require('../assets/images/icon_tumblr.png') },
 ];
 
 /* =========================
@@ -98,7 +98,7 @@ function BadgeStrip({ badges }) {
   return (
     <View style={styles.badgeArea}>
       <Image
-        source={require('../../assets/images/bar_green.png')}
+        source={require('../assets/images/bar_green.png')}
         style={styles.ribbonImg}
         resizeMode="stretch"
         pointerEvents="none"
@@ -127,13 +127,14 @@ function Screen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <StatusBar translucent={Platform.OS === 'android'} backgroundColor="transparent" barStyle="light-content" />
       
-      {/* 상단 헤더 */}
-      <HeaderBar title="My Page"/>
+
+      <HeaderBar title = "My Page"/>
+
       <View style={styles.content}>
         <View style={[styles.card, styles.cardTight]}>
           <View style={styles.profileRow}>
             <View style={styles.profileLeft}>
-              <Image source={require('../../assets/images/icon_level1.png')} style={styles.avatar} />
+              <Image source={require('../assets/images/icon_level1.png')} style={styles.avatar} />
               <View style={{ marginLeft: 10 }}>
                 <Text style={styles.name} numberOfLines={1}>닉네임</Text>
                 <Text style={styles.email} numberOfLines={1}>이메일@naver.com</Text>
@@ -141,11 +142,11 @@ function Screen() {
             </View>
             <View style={styles.profileRight}>
               <Image
-                source={require('../../assets/images/icon_pleanet_logo.png')}
+                source={require('../assets/images/icon_pleanet_logo.png')}
                 style={styles.planetBadge}
                 resizeMode="contain"
               />
-              <TouchableOpacity style={styles.editBtn} onPress={() => router.push('my-page/edit-profile')}>
+              <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/edit-profile')}>
                 <Text style={styles.editBtnText}>프로필 수정</Text>
               </TouchableOpacity>
             </View>
@@ -161,7 +162,7 @@ function Screen() {
         <BadgeStrip badges={BADGES} />
 
         {/* CTA */}
-        <TouchableOpacity style={styles.cta} onPress={() => router.push('/my-page/my-forest')}>
+        <TouchableOpacity style={styles.cta} onPress={() => router.push('/my-forest')}>
           <Text style={styles.ctaText}>나의 숲</Text>
         </TouchableOpacity>
       </View>

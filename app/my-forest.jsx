@@ -14,11 +14,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import CustomTabBar from "../../components/CustomTabBar";
-
+import CustomTabBar from "../components/CustomTabBar";
+import HeaderBar from "../components/HeaderBar";
 // ✅ 이미지 매핑 테이블
 const BADGE_IMAGES = {
-  tree: require("../../assets/images/tree_badge.png"),
+  tree: require("../assets/images/tree_badge.png"),
   // earth: require("../assets/images/earth_badge.png"),
 };
 
@@ -107,14 +107,16 @@ export default function MyPage() {
   return (
     <View style={styles.root}>
       {/* 배경: 위쪽은 forest, 아래는 아이보리로 살짝 가리기 */}
+      
       <Image
-        source={require("../../assets/images/forest.png")}
+        source={require("../assets/images/forest.png")}
         style={StyleSheet.absoluteFill}
         resizeMode="stretch"
         pointerEvents="none"
       />
+      <HeaderBar title = "My Forest"/>
 
-      {/* 아이보리 패널(아래쪽을 덮어 스샷처럼 보이게) */}
+      
       <View style={[styles.ivoryPanel, { height: IVORY_PANEL_H }]} />
 
       {/* 내용은 안전영역 안쪽(top만) */}
@@ -209,10 +211,10 @@ const styles = StyleSheet.create({
 
   footerFloat: {
     position: "absolute",
-    zIndex: 50,
+    zIndex: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "transparent", // 카드 느낌 제거
+    backgroundColor: "#F9F8E1", // 카드 느낌 제거
     paddingHorizontal: 0,
     paddingVertical: 0,
     ...Platform.select({

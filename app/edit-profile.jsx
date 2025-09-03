@@ -13,11 +13,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import HeaderBar from '../../components/HeaderBar';
+import HeaderBar from '../components/HeaderBar';
 
 
 const COLORS = {
-  bg: '#F9F8E1',  
+  bg: '#F9F8E1',
   header: '#0F3A2D',
   ink: '#1F2A22',
   sub: '#7A8B83',
@@ -54,12 +54,12 @@ export default function EditProfile() {
       {/* Profile Card */}
       <View style={styles.card}>
         <View style={styles.profileRow}>
-          <Image source={require('../../assets/images/icon_level1.png')} style={styles.avatar} />
+          <Image source={require('../assets/images/icon_level1.png')} style={styles.avatar} />
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={styles.profileName} numberOfLines={1}>닉네임</Text>
             <Text style={styles.profileEmail} numberOfLines={1}>이메일@naver.com</Text>
           </View>
-          <Image source={require('../../assets/images/icon_pleanet_logo.png')} style={styles.badge} resizeMode="contain" />
+          <Image source={require('../assets/images/icon_pleanet_logo.png')} style={styles.badge} resizeMode="contain" />
         </View>
 
         <TouchableOpacity style={styles.photoBtn} onPress={() => console.log('프로필 이미지 수정')}>
