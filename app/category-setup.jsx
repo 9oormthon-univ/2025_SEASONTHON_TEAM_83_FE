@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   Image,
   StatusBar,
   StyleSheet,
@@ -9,6 +10,7 @@ import {
   View
 } from 'react-native';
 import NotificationPopup from '../components/NotificationPopup';
+import { useAuth } from '../contexts/AuthContext';
 
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -17,8 +19,49 @@ const icon_tumblr = require('../assets/images/icon_tumblr.png');
 
 export default function CategorySetupScreen() {
   const router = useRouter();
+  const { setInterests } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 관심활동 설정 함수
+  const handleSetInterests = async () => {
+    if (!selectedCategory) {
+      Alert.alert('알림', '관심 카테고리를 선택해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // 선택된 카테고리를 API 형식으로 변환
+      const interests = selectedCategory === 'walk' ? ['WALK'] : ['TUMBLER'];
+      
+      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
+      // const result = await setInterests(interests);
+
+      // 임시: 서버 없이 성공 시뮬레이션
+      console.log('임시 관심활동 설정:', { interests });
+      
+      // 2초 지연으로 로딩 상태 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // 성공 시뮬레이션
+      const result = { success: true, data: { interests } };
+
+      if (result.success) {
+        console.log('관심활동 설정 성공:', result.data);
+        // 성공 시 알림 팝업 표시
+        setShowNotificationPopup(true);
+      } else {
+        Alert.alert('오류', result.error || '관심활동 설정에 실패했습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.safeArea}>
@@ -102,13 +145,13 @@ export default function CategorySetupScreen() {
         {/* 함께 출발하기 버튼 */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={styles.startButton}
-            onPress={() => {
-              console.log('함께 출발하기 버튼 클릭됨');
-              setShowNotificationPopup(true); // 알림 팝업 표시
-            }}
+            style={[styles.startButton, isLoading && styles.disabledButton]}
+            onPress={handleSetInterests}
+            disabled={isLoading}
           >
-            <Text style={styles.startButtonText}>함께 출발하기</Text>
+            <Text style={styles.startButtonText}>
+              {isLoading ? '설정 중...' : '함께 출발하기'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -256,6 +299,10 @@ const styles = StyleSheet.create({
     },
     shadowRadius: 4,
     elevation: 4,
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
   startButtonText: {
     color: '#FFFFFF',
