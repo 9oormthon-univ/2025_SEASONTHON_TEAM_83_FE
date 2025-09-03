@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -18,27 +19,30 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="signup" options={{ headerShown: false }} />
-        <Stack.Screen name="category-setup" options={{ headerShown: false }} />
-        <Stack.Screen name="home" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="challenge" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="my-page" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="edit-profile" options={{headerShown : false, animation : 'none'}}/>
-        <Stack.Screen name="my-forest" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        <Stack.Screen name="attendance" options={{ headerShown: false }} />
-        <Stack.Screen name="challenge-certification" options={{ headerShown: false }} />
-        <Stack.Screen name="badges" options={{ headerShown: false }} />
-        <Stack.Screen name="ranking" options={{ headerShown: false }} />
-        <Stack.Screen name="points" options={{ headerShown: false }} />
-        <Stack.Screen name="reward-conversion" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="signup" options={{ headerShown: false }} />
+          <Stack.Screen name="kakao-additional-info" options={{ headerShown: false }} />
+          <Stack.Screen name="category-setup" options={{ headerShown: false }} />
+          <Stack.Screen name="home" options={{ headerShown: false, animation: 'none' }} />
+          <Stack.Screen name="challenge" options={{ headerShown: false, animation: 'none' }} />
+          <Stack.Screen name="my-page" options={{ headerShown: false, animation: 'none' }} />
+          <Stack.Screen name="edit-profile" options={{headerShown : false, animation : 'none'}}/>
+          <Stack.Screen name="my-forest" options={{ headerShown: false, animation: 'none' }} />
+          <Stack.Screen name="notifications" options={{ headerShown: false }} />
+          <Stack.Screen name="attendance" options={{ headerShown: false }} />
+          <Stack.Screen name="challenge-certification" options={{ headerShown: false }} />
+          <Stack.Screen name="badges" options={{ headerShown: false }} />
+          <Stack.Screen name="ranking" options={{ headerShown: false }} />
+          <Stack.Screen name="points" options={{ headerShown: false }} />
+          <Stack.Screen name="reward-conversion" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
