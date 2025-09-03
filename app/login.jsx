@@ -1,21 +1,23 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import useLogin from '../hooks/useLogin';
+import { useAuth } from '../contexts/AuthContext';
+import { validateEmail } from '../utils/validation';
 
 // 색상 정의
 const COLORS = {
@@ -32,22 +34,144 @@ const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login, isAuthenticated, loginWithKakao } = useAuth();
 
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    isLoading,
-    handleLogin,
-    loginSuccess,
-  } = useLogin();
+  // 폼 데이터
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
+  // 유효성 검사 상태
+  const [validation, setValidation] = useState({
+    email: { isValid: false, message: '' },
+    password: { isValid: false, message: '' }
+  });
+
+  // UI 상태
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // 로그인 성공 시 자동으로 홈 화면으로 이동
   useEffect(() => {
-    if (loginSuccess) {
-      console.log('로그인 성공! 메인 화면으로 이동합니다.');
+    if (isAuthenticated) {
+      router.replace('/home');
     }
-  }, [loginSuccess]);
+  }, [isAuthenticated, router]);
+
+  // 폼 데이터 업데이트
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // 실시간 유효성 검사
+    switch (field) {
+      case 'email':
+        if (value && !validateEmail(value)) {
+          setValidation(prev => ({
+            ...prev,
+            email: { isValid: false, message: '올바른 이메일 형식을 입력해주세요.' }
+          }));
+        } else if (value && validateEmail(value)) {
+          setValidation(prev => ({
+            ...prev,
+            email: { isValid: true, message: '올바른 이메일 형식입니다.' }
+          }));
+        } else {
+          setValidation(prev => ({
+            ...prev,
+            email: { isValid: false, message: '' }
+          }));
+        }
+        break;
+        
+      case 'password':
+        if (value && value.length < 8) {
+          setValidation(prev => ({
+            ...prev,
+            password: { isValid: false, message: '비밀번호는 최소 8자 이상이어야 합니다.' }
+          }));
+        } else if (value && value.length >= 8) {
+          setValidation(prev => ({
+            ...prev,
+            password: { isValid: true, message: '올바른 비밀번호 형식입니다.' }
+          }));
+        } else {
+          setValidation(prev => ({
+            ...prev,
+            password: { isValid: false, message: '' }
+          }));
+        }
+        break;
+    }
+  };
+
+  // 로그인 처리
+  const handleLogin = async () => {
+    // 전체 폼 유효성 검사
+    const isFormValid = Object.values(validation).every(field => field.isValid);
+    
+    if (!isFormValid) {
+      Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await login({
+        emailOrNickname: formData.email,
+        password: formData.password
+      });
+
+      if (result.success) {
+        // 로그인 성공 - useEffect에서 자동으로 홈 화면으로 이동
+        console.log('로그인 성공:', result.data);
+      } else {
+        // 로그인 실패 - 에러 메시지 표시
+        let errorMessage = '로그인에 실패했습니다.';
+        
+        if (result.error) {
+          if (result.error.includes('가입된 계정이 아닙니다')) {
+            errorMessage = '가입된 계정이 아닙니다.';
+          } else if (result.error.includes('비밀번호가 올바르지 않습니다')) {
+            errorMessage = '비밀번호가 올바르지 않습니다.';
+          } else if (result.error.includes('네트워크')) {
+            errorMessage = '네트워크 문제로 로그인할 수 없습니다.';
+          } else {
+            errorMessage = result.error;
+          }
+        }
+        
+        Alert.alert('로그인 실패', errorMessage);
+      }
+    } catch (error) {
+      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 카카오 로그인 처리
+  const handleKakaoLogin = async () => {
+    try {
+      const result = await loginWithKakao();
+
+      if (result.success) {
+        if (result.needsAdditionalInfo) {
+          // 추가 정보 입력이 필요한 경우
+          console.log('추가 정보 입력 필요:', result.data);
+          router.push('/kakao-additional-info');
+        } else {
+          // 로그인 성공 - useEffect에서 자동으로 홈 화면으로 이동
+          console.log('카카오 로그인 성공:', result.data);
+        }
+      } else {
+        Alert.alert('카카오 로그인 실패', result.error);
+      }
+    } catch (error) {
+      Alert.alert('오류', '카카오 로그인 중 오류가 발생했습니다.');
+    }
+  };
 
   const handleSignupPress = () => {
     router.push('/signup');
@@ -87,31 +211,56 @@ export default function LoginScreen() {
 
           {/* 입력 필드 */}
           <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="이메일 또는 닉네임"
-              placeholderTextColor={COLORS.placeholder} // 3. 상태 연결
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isLoading}
-            />
-            <TextInput
-              style={styles.input} // 3. 상태 연결
-              placeholder="비밀번호"
-              placeholderTextColor={COLORS.placeholder}
-              secureTextEntry
-              value={password} // 3. 상태 연결
-              onChangeText={setPassword} // 3. 상태 변경 함수 연결
-              editable={!isLoading}
-            />
+            {/* 이메일 입력 */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, !validation.email.isValid && formData.email ? styles.inputError : null]}
+                placeholder="이메일 또는 닉네임"
+                placeholderTextColor={COLORS.placeholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={formData.email}
+                onChangeText={(value) => updateFormData('email', value)}
+                editable={!isLoading}
+              />
+              {validation.email.message && (
+                <Text style={[styles.validationText, validation.email.isValid ? styles.validationSuccess : styles.validationError]}>
+                  {validation.email.message}
+                </Text>
+              )}
+            </View>
+
+            {/* 비밀번호 입력 */}
+            <View style={styles.inputContainer}>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[styles.input, styles.passwordInput, !validation.password.isValid && formData.password ? styles.inputError : null]}
+                  placeholder="비밀번호"
+                  placeholderTextColor={COLORS.placeholder}
+                  secureTextEntry={!showPassword}
+                  value={formData.password}
+                  onChangeText={(value) => updateFormData('password', value)}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Text style={styles.eyeButtonText}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                </TouchableOpacity>
+              </View>
+              {validation.password.message && (
+                <Text style={[styles.validationText, validation.password.isValid ? styles.validationSuccess : styles.validationError]}>
+                  {validation.password.message}
+                </Text>
+              )}
+            </View>
           </View>
 
           {/* 로그인 버튼 */}
           <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin} // 4. 로직 함수 연결
+            style={[styles.loginButton, isLoading && styles.disabledButton]}
+            onPress={handleLogin}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -124,13 +273,23 @@ export default function LoginScreen() {
           {/* 소셜 로그인 및 회원가입 */}
           <View style={styles.socialGroup}>
             <View style={styles.socialButtonContainer}>
-              <TouchableOpacity style={[styles.socialButton, { backgroundColor: COLORS.kakaoButton }]}>
-                <Image
-                  source={require('../assets/images/icon_kakao.png')}
-                  style={styles.socialIcon}
-                />
+              <TouchableOpacity 
+                style={[styles.socialButton, { backgroundColor: COLORS.kakaoButton }, isLoading && styles.disabledButton]}
+                onPress={handleKakaoLogin}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#000" size="small" />
+                ) : (
+                  <Image
+                    source={require('../assets/images/icon_kakao.png')}
+                    style={styles.socialIcon}
+                  />
+                )}
               </TouchableOpacity>
-              <Text style={styles.socialButtonText}>카카오톡</Text>
+              <Text style={styles.socialButtonText}>
+                {isLoading ? '처리 중...' : '카카오톡'}
+              </Text>
             </View>
             <View style={styles.socialButtonContainer}>
               <TouchableOpacity 
@@ -220,7 +379,46 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.inputBorder,
     paddingVertical: 12,
-    marginBottom: 12,
+    marginBottom: 5,
+  },
+  inputError: {
+    borderBottomColor: '#ff4444',
+    borderBottomWidth: 2,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  passwordInput: {
+    flex: 1,
+    paddingRight: 50,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 0,
+    padding: 5,
+  },
+  eyeButtonText: {
+    fontSize: 20,
+  },
+  validationText: {
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
+  },
+  validationSuccess: {
+    color: '#00aa44',
+  },
+  validationError: {
+    color: '#ff4444',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   loginButton: {
     width: '100%',
