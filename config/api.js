@@ -51,6 +51,7 @@ export const ENDPOINTS = {
     LIST: '/api/challenges',
     DETAIL: '/api/challenges/:id',
     PARTICIPATE: '/api/challenges/:id/participate',
+    VERIFY: '/api/challenges/:id/verify',
   },
   
   // 포인트 관련
