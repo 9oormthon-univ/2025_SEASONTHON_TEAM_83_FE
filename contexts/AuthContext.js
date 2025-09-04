@@ -321,6 +321,56 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 챌린지 목록 조회
+  const getChallenges = async () => {
+    try {
+      const response = await AuthService.getChallenges();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 챌린지 상세 조회
+  const getChallengeDetail = async (challengeId) => {
+    try {
+      const response = await AuthService.getChallengeDetail(challengeId);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 챌린지 시작
+  const startChallenge = async (challengeId) => {
+    try {
+      const response = await AuthService.startChallenge(challengeId);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // GPS 정보 전송
+  const sendGpsData = async (challengeId, gpsData) => {
+    try {
+      const response = await AuthService.sendGpsData(challengeId, gpsData);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 챌린지 완료 (리워드 받기)
+  const completeChallenge = async (challengeId) => {
+    try {
+      const response = await AuthService.completeChallenge(challengeId);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   // 카카오 로그인
   const kakaoLogin = async (code) => {
     try {
@@ -384,6 +434,11 @@ export const AuthProvider = ({ children }) => {
     getMonthlyAttendance,
     checkAttendance,
     getAttendanceSummary,
+    getChallenges,
+    getChallengeDetail,
+    startChallenge,
+    sendGpsData,
+    completeChallenge,
     checkAuthStatus,
   };
 

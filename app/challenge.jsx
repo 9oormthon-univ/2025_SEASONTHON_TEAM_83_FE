@@ -1,12 +1,19 @@
 import { useRouter } from 'expo-router';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import { useAuth } from '../contexts/AuthContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function ChallengeScreen() {
   const router = useRouter();
+  const { getChallenges } = useAuth();
+  
+  const [challenges, setChallenges] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentChallenge, setCurrentChallenge] = useState(null);
 
   // 최근 선택한 챌린지 데이터 (스크롤 가능하도록 여러 개 생성)
   const recentChallenges = [
@@ -41,6 +48,67 @@ export default function ChallengeScreen() {
       icon: require('../assets/images/icon_earth.png')
     }
   ];
+
+  // 챌린지 목록 로드
+  const loadChallenges = async () => {
+    try {
+      setIsLoading(true);
+      
+      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
+      // const response = await getChallenges();
+      
+      // 임시: 서버 없이 성공 시뮬레이션
+      console.log('임시 챌린지 목록 로드');
+      
+      // 1초 지연으로 로딩 상태 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 임시 데이터
+      const tempChallenges = [
+        {
+          challengeId: 1,
+          title: "1km 걷기",
+          imageUrl: "/uploads/challenge1.png",
+          point: 20,
+          description: "최소 1km 이상 보행 시 성공 처리||GPS 기반으로 사용자의 이동 경로 기록",
+          totalDistance: 0.0,
+          requiredDistance: 1.0,
+          remainingDistance: 1.0,
+          pathCount: 0,
+          status: "NOT_STARTED"
+        },
+        {
+          challengeId: 2,
+          title: "텀블러 사용",
+          imageUrl: "/uploads/challenge2.png",
+          point: 50,
+          description: "테이크아웃 또는 매장에서 음료를 받을 때||카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)",
+          totalDistance: 0.0,
+          requiredDistance: 1.0,
+          remainingDistance: 1.0,
+          pathCount: 0,
+          status: "NOT_STARTED"
+        }
+      ];
+      
+      setChallenges(tempChallenges);
+      setCurrentChallenge(tempChallenges[0]); // 첫 번째 챌린지를 현재 챌린지로 설정
+      
+      // 성공 시뮬레이션
+      console.log('챌린지 목록 로드 성공');
+      
+    } catch (error) {
+      console.error('챌린지 목록 로드 실패:', error);
+      Alert.alert('오류', '챌린지 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadChallenges();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -94,33 +162,34 @@ export default function ChallengeScreen() {
 
         {/* 챌린지 카드들 */}
         <View style={styles.challengeCards}>
-          {/* 첫 번째 챌린지 카드 */}
-          <TouchableOpacity 
-            style={styles.challengeCard}
-            onPress={() => router.push('/challenge-walk')}
-          >
-            <Text style={styles.challengeTitle}>1Km 이상 걷기</Text>
-            <Image 
-              style={styles.challengeImage}
-              source={require('../assets/images/walk_challenge.png')}
-              resizeMode="cover"
-            />
-            <Text style={styles.challengePoints}>20p</Text>
-          </TouchableOpacity>
-
-          {/* 두 번째 챌린지 카드 */}
-          <TouchableOpacity 
-            style={styles.challengeCard}
-            onPress={() => router.push('/challenge-tumbler')}
-          >
-            <Text style={styles.challengeTitle}>텀블러 사용</Text>
-            <Image 
-              style={styles.challengeImage}
-              source={require('../assets/images/walk_challenge.png')}
-              resizeMode="cover"
-            />
-            <Text style={styles.challengePoints}>50p</Text>
-          </TouchableOpacity>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#006256" />
+              <Text style={styles.loadingText}>챌린지 목록을 불러오는 중...</Text>
+            </View>
+          ) : (
+            challenges.map((challenge) => (
+              <TouchableOpacity 
+                key={challenge.challengeId}
+                style={styles.challengeCard}
+                onPress={() => {
+                  if (challenge.challengeId === 1) {
+                    router.push('/challenge-walk');
+                  } else if (challenge.challengeId === 2) {
+                    router.push('/challenge-tumbler');
+                  }
+                }}
+              >
+                <Text style={styles.challengeTitle}>{challenge.title}</Text>
+                <Image 
+                  style={styles.challengeImage}
+                  source={require('../assets/images/walk_challenge.png')}
+                  resizeMode="cover"
+                />
+                <Text style={styles.challengePoints}>{challenge.point}p</Text>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
         {/* 최근 선택한 챌린지 섹션 */}
@@ -326,5 +395,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontFamily: 'Pretendard Variable',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    fontFamily: 'Pretendard Variable',
+    color: '#666666',
+    textAlign: 'center',
   },
 });

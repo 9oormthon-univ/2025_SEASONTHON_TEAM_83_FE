@@ -264,6 +264,91 @@ export const AuthService = {
       };
     }
   },
+
+  // 챌린지 목록 조회
+  async getChallenges() {
+    try {
+      const response = await apiClient.get('/api/challenges');
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 챌린지 상세 조회
+  async getChallengeDetail(challengeId) {
+    try {
+      const response = await apiClient.get(`/api/challenges/${challengeId}`);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 챌린지 시작
+  async startChallenge(challengeId) {
+    try {
+      const response = await apiClient.post(`/api/challenges/${challengeId}/start`);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // GPS 정보 전송
+  async sendGpsData(challengeId, gpsData) {
+    try {
+      const response = await apiClient.post(`/api/challenges/${challengeId}/gps`, gpsData);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 챌린지 완료 (리워드 받기)
+  async completeChallenge(challengeId) {
+    try {
+      const response = await apiClient.get(`/api/challenges/${challengeId}/reward`);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 export default AuthService;
