@@ -1,46 +1,29 @@
-// app/mypage.jsx
+// app/my-forest.jsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  FlatList,
-  Image,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
+    FlatList,
+    Image,
+    Modal,
+    Platform,
+    Pressable,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomTabBar from "../components/CustomTabBar";
 import HeaderBar from "../components/HeaderBar";
-// ✅ 이미지 매핑 테이블
-const BADGE_IMAGES = {
-  tree: require("../assets/images/tree_badge.png"),
-  // earth: require("../assets/images/earth_badge.png"),
-};
+import { BADGE_IMAGES, PROFILE_COLORS, PROFILE_SIZES, QUOTES, STORAGE_KEYS } from "../constants/ProfileConstants";
 
-const STORAGE_KEY = "badge_board_v1";
-const TABBAR_H = 72;
-const GRID_GAP = 12;
-const GRID_PAD_H = 16;
-const TARGET_SIZE = 96;
-const MODAL_IMG_SIZE = 140;
-
-const QUOTES = [
-  "“하나의 나무, 하나의 변화.\n당신이 시작했습니다.”",
-  "“당신의 실천이 지구에 초록 숨결을 더합니다.”",
-  "“함께 심은 나무, 함께 키워가는 지구.”",
-];
-
-export default function MyPage() {
+export default function MyForest() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
 
   // 🔸 아이보리 패널 높이(탭바 + 여유)
-  const IVORY_PANEL_H = TABBAR_H + insets.bottom + 120;
+  const IVORY_PANEL_H = PROFILE_SIZES.TABBAR_H + insets.bottom + 120;
 
   const [badges, setBadges] = useState([
     { id: "tree-1", title: "나무 뱃지", date: "2025.09.02", imageKey: "tree" },
@@ -59,12 +42,12 @@ export default function MyPage() {
   useEffect(() => {
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        const saved = await AsyncStorage.getItem(STORAGE_KEYS.BADGE_BOARD);
         if (!saved) return;
         const arr = JSON.parse(saved);
         if (!Array.isArray(arr)) return;
         const normalized = arr.map((b, i) => ({
-          id: b.id ?? `badge-${i}`,         // ← 버그 픽스: 템플릿 리터럴
+          id: b.id ?? `badge-${i}`,
           title: b.title ?? "뱃지",
           date: b.date ?? "",
           imageKey: b.imageKey ?? "tree",
@@ -79,10 +62,10 @@ export default function MyPage() {
   // 그리드 열/아이템 크기
   const columns = Math.max(
     2,
-    Math.floor((width - GRID_PAD_H * 2 + GRID_GAP) / (TARGET_SIZE + GRID_GAP))
+    Math.floor((width - PROFILE_SIZES.GRID_PAD_H * 2 + PROFILE_SIZES.GRID_GAP) / (PROFILE_SIZES.TARGET_SIZE + PROFILE_SIZES.GRID_GAP))
   );
   const itemSize = Math.floor(
-    (width - GRID_PAD_H * 2 - GRID_GAP * (columns - 1)) / columns
+    (width - PROFILE_SIZES.GRID_PAD_H * 2 - PROFILE_SIZES.GRID_GAP * (columns - 1)) / columns
   );
 
   const renderItem = ({ item }) => (
@@ -127,12 +110,12 @@ export default function MyPage() {
           keyExtractor={(it) => it.id}
           numColumns={columns}
           contentContainerStyle={{
-            paddingHorizontal: GRID_PAD_H,
+            paddingHorizontal: PROFILE_SIZES.GRID_PAD_H,
             paddingTop: 12,
             // 패널 높이만큼 여유 → 리스트가 패널/탭바와 겹치지 않음
             paddingBottom: IVORY_PANEL_H,
           }}
-          columnWrapperStyle={{ justifyContent: "flex-start", gap: GRID_GAP }}
+          columnWrapperStyle={{ justifyContent: "flex-start", gap: PROFILE_SIZES.GRID_GAP }}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
         />
@@ -143,7 +126,7 @@ export default function MyPage() {
           style={[
             styles.footerFloat,
             {
-              bottom: TABBAR_H + insets.bottom + 8, // 탭바와 거의 붙어서 한 덩어리처럼
+              bottom: PROFILE_SIZES.TABBAR_H + insets.bottom + 8, // 탭바와 거의 붙어서 한 덩어리처럼
               left: 16,
               right: 16,
             },
@@ -153,7 +136,7 @@ export default function MyPage() {
         </View>
 
         {/* 탭바(내부에서 bottom inset 처리) - 마이페이지 활성화 */}
-        <CustomTabBar tabBarHeight={TABBAR_H} active="mypage" />
+        <CustomTabBar tabBarHeight={PROFILE_SIZES.TABBAR_H} active="mypage" />
       </SafeAreaView>
 
       {/* 배지 상세 모달 */}
@@ -169,7 +152,7 @@ export default function MyPage() {
               <>
                 <Image
                   source={BADGE_IMAGES[selected.imageKey] ?? BADGE_IMAGES.tree}
-                  style={{ width: MODAL_IMG_SIZE, height: MODAL_IMG_SIZE, marginBottom: 10 }}
+                  style={{ width: PROFILE_SIZES.MODAL_IMG_SIZE, height: PROFILE_SIZES.MODAL_IMG_SIZE, marginBottom: 10 }}
                   resizeMode="contain"
                 />
                 {!!selected.date && (
@@ -199,11 +182,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#F9F8E1',
+    backgroundColor: PROFILE_COLORS.bg,
   },
 
   badgeBox: {
-    marginBottom: GRID_GAP,
+    marginBottom: PROFILE_SIZES.GRID_GAP,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
@@ -214,7 +197,7 @@ const styles = StyleSheet.create({
     zIndex: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F9F8E1", // 카드 느낌 제거
+    backgroundColor: PROFILE_COLORS.bg, // 카드 느낌 제거
     paddingHorizontal: 0,
     paddingVertical: 0,
     ...Platform.select({
@@ -268,7 +251,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: "#0F6D52",
+    backgroundColor: PROFILE_COLORS.green,
   },
   modalCloseText: { color: "#fff", fontSize: 13, fontWeight: "700" },
 });
