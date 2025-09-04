@@ -43,6 +43,7 @@ export default function RootLayout() {
           <Stack.Screen name="reward-conversion" options={{ headerShown: false }} />
           <Stack.Screen name="test-map" options={{ headerShown: false }} />
           <Stack.Screen name="test-upload" options={{ headerShown: false }} />
+          <Stack.Screen name="test-attendance" options={{ headerShown: false }} />
           <Stack.Screen name="search" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />

@@ -1,16 +1,17 @@
+// app/attendance.jsx
+
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import PopUpAlerts from '../components/PopUpAlerts';
-import { useAuth } from '../contexts/AuthContext';
+import AttendanceService from '../services/attendanceService';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function AttendanceScreen() {
   const router = useRouter();
-  const { getMonthlyAttendance, checkAttendance, getAttendanceSummary } = useAuth();
   
   const [currentMonth, setCurrentMonth] = useState(8);
   const [showPopup, setShowPopup] = useState(false);
@@ -32,28 +33,27 @@ export default function AttendanceScreen() {
     try {
       setIsLoading(true);
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await getMonthlyAttendance();
+      const response = await AttendanceService.getMonthlyAttendance();
       
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 월별 출석 데이터 로드:', month);
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 임시 데이터 생성 (현재 월만 출석 데이터 있음)
-      if (month === 8) {
-        const tempAttendanceData = {
-          1: true, 2: true, 4: true, 5: true, 6: true, 9: true, 11: true, 12: true, 13: true, 14: true,
-          16: true, 18: true, 19: true, 20: true, 21: true, 23: true, 24: true, 25: true, 26: true, 28: true, 30: true
-        };
-        setAttendanceData(tempAttendanceData);
+      if (response.success) {
+        const { month: responseMonth, attendances } = response.data;
+        const [year, monthNum] = responseMonth.split('-');
+        
+        // 현재 월과 응답 월이 일치하는 경우에만 데이터 설정
+        if (parseInt(monthNum) === month) {
+          const tempAttendanceData = {};
+          attendances.forEach(attendance => {
+            const day = parseInt(attendance.date.split('-')[2]);
+            tempAttendanceData[day] = attendance.checked;
+          });
+          setAttendanceData(tempAttendanceData);
+        }
+        
+        console.log('월별 출석 데이터 로드 성공:', response.data);
       } else {
-        setAttendanceData({});
+        console.error('월별 출석 데이터 로드 실패:', response.error);
+        Alert.alert('오류', '출석 데이터를 불러오는데 실패했습니다.');
       }
-      
-      // 성공 시뮬레이션
-      console.log('월별 출석 데이터 로드 성공');
       
     } catch (error) {
       console.error('월별 출석 데이터 로드 실패:', error);
@@ -66,20 +66,15 @@ export default function AttendanceScreen() {
   // 출석 포인트 합계 로드
   const loadAttendanceSummary = async () => {
     try {
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await getAttendanceSummary();
+      const response = await AttendanceService.getAttendanceSummary();
       
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 출석 포인트 합계 로드');
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // 임시 데이터
-      setMonthlyPoints(30);
-      
-      // 성공 시뮬레이션
-      console.log('출석 포인트 합계 로드 성공');
+      if (response.success) {
+        setMonthlyPoints(response.data.totalPoints);
+        console.log('출석 포인트 합계 로드 성공:', response.data);
+      } else {
+        console.error('출석 포인트 합계 로드 실패:', response.error);
+        Alert.alert('오류', '출석 포인트를 불러오는데 실패했습니다.');
+      }
       
     } catch (error) {
       console.error('출석 포인트 합계 로드 실패:', error);
@@ -92,7 +87,7 @@ export default function AttendanceScreen() {
     loadMonthlyAttendance(currentMonth);
     loadAttendanceSummary();
   }, [currentMonth]);
-  
+
   const getDaysInMonth = (year, month) => {
     return new Date(year, month, 0).getDate();
   };
@@ -105,40 +100,25 @@ export default function AttendanceScreen() {
     try {
       setIsCheckingAttendance(true);
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await checkAttendance();
+      const response = await AttendanceService.checkAttendance();
       
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 출석체크 처리');
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 임시 성공 응답 시뮬레이션
-      const mockResponse = {
-        success: true,
-        data: {
-          message: "출석되었습니다",
-          date: "2025-08-31",
-          earnedPoint: 3
-        }
-      };
-      
-      if (mockResponse.success) {
+      if (response.success) {
         // 출석 데이터 업데이트
         const newAttendanceData = { ...attendanceData };
         newAttendanceData[currentDate] = true;
         setAttendanceData(newAttendanceData);
         
-        // 포인트 업데이트
-        setMonthlyPoints(prev => prev + mockResponse.data.earnedPoint);
+        // 포인트 업데이트 (API 응답에서 포인트 정보가 있다면)
+        if (response.data && response.data.earnedPoint) {
+          setMonthlyPoints(prev => prev + response.data.earnedPoint);
+        }
         
         // 팝업 표시
         setShowPopup(true);
         
-        console.log('출석체크 성공:', mockResponse.data);
+        console.log('출석체크 성공:', response.data);
       } else {
-        Alert.alert('오류', mockResponse.error || '출석체크에 실패했습니다.');
+        Alert.alert('오류', response.error || '출석체크에 실패했습니다.');
       }
       
     } catch (error) {
