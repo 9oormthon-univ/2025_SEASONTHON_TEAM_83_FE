@@ -1,12 +1,130 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import RankingService from '../services/rankingService';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function RankingScreen() {
   const router = useRouter();
+  const [rankings, setRankings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
+  // 컴포넌트 마운트 시 랭킹 데이터 로드
+  useEffect(() => {
+    loadRankings();
+  }, []);
+
+  // 랭킹 데이터 로드
+  const loadRankings = async (page = 0) => {
+    try {
+      setLoading(true);
+      const response = await RankingService.getRankings(page, 10);
+      
+      if (response.success) {
+        const newRankings = response.data.content;
+        if (page === 0) {
+          setRankings(newRankings);
+        } else {
+          setRankings(prev => [...prev, ...newRankings]);
+        }
+        setCurrentPage(page);
+        setHasMore(!response.data.last);
+      } else {
+        Alert.alert('오류', response.error || '랭킹을 불러올 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('랭킹 로드 중 오류:', error);
+      Alert.alert('오류', '랭킹을 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 더 많은 랭킹 로드
+  const loadMoreRankings = () => {
+    if (!loading && hasMore) {
+      loadRankings(currentPage + 1);
+    }
+  };
+
+  // 랭킹 아이템 렌더링
+  const renderRankingItem = (item, index) => {
+    const isTopThree = item.rank <= 3;
+    
+    if (isTopThree) {
+      return renderTopThreeRanking(item);
+    } else {
+      return renderRegularRanking(item);
+    }
+  };
+
+  // 상위 3위 렌더링
+  const renderTopThreeRanking = (item) => {
+    if (item.rank === 1) {
+      return (
+        <View key={item.memberId} style={styles.firstPlace}>
+          <View style={styles.firstPlaceContent}>
+            <View style={styles.avatarGradientContainer}>
+              <LinearGradient
+                colors={['#87CEEB', '#98D8E8', '#B0E0E6']}
+                locations={[0, 0.5, 1]}
+                style={styles.avatarGradient}
+              >
+                <View style={styles.firstPlaceAvatar}>
+                  <Image 
+                    source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
+                    style={styles.profileImage} 
+                  />
+                </View>
+              </LinearGradient>
+            </View>
+            <Text style={styles.firstPlaceNickname}>{item.nickname}</Text>
+            <View style={styles.firstPlaceInfo}>
+              <Text style={styles.firstPlaceText}>총 {item.totalPoint.toLocaleString()}점</Text>
+              <Text style={styles.firstPlaceText}>보유 뱃지 {item.badgeCount}개</Text>
+            </View>
+          </View>
+        </View>
+      );
+    } else if (item.rank === 2 || item.rank === 3) {
+      return (
+        <View key={item.memberId} style={item.rank === 2 ? styles.secondPlace : styles.thirdPlace}>
+          <Text style={styles.rankText}>{item.rank}위</Text>
+          <View style={styles.avatarContainer}>
+            <Image 
+              source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
+              style={styles.profileImage} 
+            />
+          </View>
+          <Text style={styles.userName}>{item.nickname}</Text>
+          <Text style={styles.pointsText}>{item.totalPoint.toLocaleString()}p</Text>
+        </View>
+      );
+    }
+  };
+
+  // 일반 랭킹 렌더링
+  const renderRegularRanking = (item) => {
+    return (
+      <View key={item.memberId} style={styles.rankingItem}>
+        <Text style={styles.rankNumber}>{item.rank}</Text>
+        <View style={styles.avatarContainer}>
+          <Image 
+            source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
+            style={styles.profileImage} 
+          />
+        </View>
+        <Text style={styles.userName}>{item.nickname}</Text>
+        <View style={styles.separator} />
+        <Text style={styles.pointsText}>{item.totalPoint.toLocaleString()}p</Text>
+      </View>
+    );
+  };
 
   return (
     <LinearGradient
@@ -67,81 +185,60 @@ export default function RankingScreen() {
 
         {/* 랭킹 섹션 */}
         <View style={styles.rankingSection}>
-          {/* 1위 */}
-          <View style={styles.firstPlace}>
-            <View style={styles.firstPlaceContent}>
-              <View style={styles.avatarGradientContainer}>
-                <LinearGradient
-                  colors={['#87CEEB', '#98D8E8', '#B0E0E6']}
-                  locations={[0, 0.5, 1]}
-                  style={styles.avatarGradient}
-                >
-                  <View style={styles.firstPlaceAvatar}>
-                    <Image 
-                      source={require('../assets/images/icon_logo_badge.png')} 
-                      style={styles.profileImage} 
-                    />
-                  </View>
-                </LinearGradient>
-              </View>
-              <Text style={styles.firstPlaceNickname}>닉네임</Text>
-              <View style={styles.firstPlaceInfo}>
-                <Text style={styles.firstPlaceText}>총 10000점</Text>
-                <Text style={styles.firstPlaceText}>보유 뱃지 n개</Text>
-              </View>
+          {loading && rankings.length === 0 ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#006256" />
+              <Text style={styles.loadingText}>랭킹을 불러오는 중...</Text>
             </View>
-          </View>
-
-          {/* 2위와 3위 */}
-          <View style={styles.secondThirdRow}>
-            {/* 2위 */}
-            <View style={styles.secondPlace}>
-              <Text style={styles.rankText}>2위</Text>
-              <View style={styles.avatarContainer}>
-                <Image 
-                  source={require('../assets/images/icon_logo_badge.png')} 
-                  style={styles.profileImage} 
-                />
-              </View>
-            </View>
-
-            {/* 3위 */}
-            <View style={styles.thirdPlace}>
-              <Text style={styles.rankText}>3위</Text>
-              <View style={styles.avatarContainer}>
-                <Image 
-                  source={require('../assets/images/icon_logo_badge.png')} 
-                  style={styles.profileImage} 
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* 4위부터 10위까지 리스트 */}
-          <ScrollView style={styles.rankingList} showsVerticalScrollIndicator={false}>
-            {[
-              { rank: 4, points: 8500 },
-              { rank: 5, points: 7800 },
-              { rank: 6, points: 7200 },
-              { rank: 7, points: 6800 },
-              { rank: 8, points: 6200 },
-              { rank: 9, points: 5800 },
-              { rank: 10, points: 5400 }
-            ].map((item) => (
-              <View key={item.rank} style={styles.rankingItem}>
-                <Text style={styles.rankNumber}>{item.rank}</Text>
-                <View style={styles.avatarContainer}>
-                  <Image 
-                    source={require('../assets/images/icon_logo_badge.png')} 
-                    style={styles.profileImage} 
-                  />
+          ) : (
+            <>
+              {/* 상위 3위 */}
+              {rankings.filter(item => item.rank <= 3).map(item => renderTopThreeRanking(item))}
+              
+              {/* 2위와 3위를 위한 컨테이너 */}
+              {rankings.filter(item => item.rank === 2 || item.rank === 3).length > 0 && (
+                <View style={styles.secondThirdRow}>
+                  {rankings.filter(item => item.rank === 2 || item.rank === 3).map(item => 
+                    <View key={item.memberId} style={item.rank === 2 ? styles.secondPlace : styles.thirdPlace}>
+                      <Text style={styles.rankText}>{item.rank}위</Text>
+                      <View style={styles.avatarContainer}>
+                        <Image 
+                          source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
+                          style={styles.profileImage} 
+                        />
+                      </View>
+                      <Text style={styles.userName}>{item.nickname}</Text>
+                      <Text style={styles.pointsText}>{item.totalPoint.toLocaleString()}p</Text>
+                    </View>
+                  )}
                 </View>
-                <Text style={styles.userName}>User</Text>
-                <View style={styles.separator} />
-                <Text style={styles.pointsText}>{item.points.toLocaleString()}p</Text>
-              </View>
-            ))}
-          </ScrollView>
+              )}
+
+              {/* 4위부터 리스트 */}
+              <ScrollView 
+                style={styles.rankingList} 
+                showsVerticalScrollIndicator={false}
+                onScrollEndDrag={loadMoreRankings}
+              >
+                {rankings.filter(item => item.rank > 3).map(item => renderRegularRanking(item))}
+                
+                {/* 더 보기 로딩 */}
+                {loading && (
+                  <View style={styles.loadMoreContainer}>
+                    <ActivityIndicator size="small" color="#006256" />
+                    <Text style={styles.loadMoreText}>더 많은 랭킹을 불러오는 중...</Text>
+                  </View>
+                )}
+                
+                {/* 더 이상 데이터가 없는 경우 */}
+                {!hasMore && rankings.length > 0 && (
+                  <View style={styles.noMoreContainer}>
+                    <Text style={styles.noMoreText}>모든 랭킹을 불러왔습니다.</Text>
+                  </View>
+                )}
+              </ScrollView>
+            </>
+          )}
         </View>
         </View>
         
@@ -378,6 +475,39 @@ const styles = StyleSheet.create({
   pointsText: {
     fontSize: 14,
     color: '#666',
+    fontFamily: 'Pretendard Variable',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666666',
+    fontFamily: 'Pretendard Variable',
+    marginTop: 10,
+  },
+  loadMoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'Pretendard Variable',
+    marginLeft: 10,
+  },
+  noMoreContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noMoreText: {
+    fontSize: 14,
+    color: '#999999',
     fontFamily: 'Pretendard Variable',
   },
 });

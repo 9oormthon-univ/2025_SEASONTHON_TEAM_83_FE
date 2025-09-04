@@ -71,6 +71,12 @@ export const ENDPOINTS = {
     HISTORY: '/api/search/history',
     DELETE_HISTORY: '/api/search/history/:id',
   },
+  
+  // 랭킹 관련
+  RANKING: {
+    LIST: '/api/members/rankings',
+    MY_RANKING: '/api/members/rankings/me',
+  },
 };
 
 export default {
