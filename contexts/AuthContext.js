@@ -291,6 +291,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 월별 출석 현황 조회
+  const getMonthlyAttendance = async () => {
+    try {
+      const response = await AuthService.getMonthlyAttendance();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 오늘 출석하기
+  const checkAttendance = async () => {
+    try {
+      const response = await AuthService.checkAttendance();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 이번 달 출석 포인트 합계 조회
+  const getAttendanceSummary = async () => {
+    try {
+      const response = await AuthService.getAttendanceSummary();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   // 카카오 로그인
   const kakaoLogin = async (code) => {
     try {
@@ -351,6 +381,9 @@ export const AuthProvider = ({ children }) => {
     requestLocationPermission,
     requestNotificationPermission,
     checkAllPermissions,
+    getMonthlyAttendance,
+    checkAttendance,
+    getAttendanceSummary,
     checkAuthStatus,
   };
 
