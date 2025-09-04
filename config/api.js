@@ -77,6 +77,13 @@ export const ENDPOINTS = {
     LIST: '/api/members/rankings',
     MY_RANKING: '/api/members/rankings/me',
   },
+  
+  // 출석 관련
+  ATTENDANCE: {
+    CHECK: '/api/attendance/check',
+    MONTHLY: '/api/attendance/monthly',
+    SUMMARY: '/api/attendance/summary',
+  },
 };
 
 export default {

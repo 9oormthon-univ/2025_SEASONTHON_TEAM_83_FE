@@ -1,0 +1,68 @@
+// services/attendanceService.js
+
+import { ENDPOINTS } from '../config/api';
+import { apiClient } from './api';
+
+export const AttendanceService = {
+  /**
+   * 오늘 출석하기
+   */
+  async checkAttendance() {
+    try {
+      const response = await apiClient.post(ENDPOINTS.ATTENDANCE.CHECK);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      console.error('출석 체크 실패:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  /**
+   * 월별 출석 현황 조회
+   */
+  async getMonthlyAttendance() {
+    try {
+      const response = await apiClient.get(ENDPOINTS.ATTENDANCE.MONTHLY);
+      return {
+        success: true,
+        data: response,
+        message: response.message || '월별 출석 현황 조회 성공',
+      };
+    } catch (error) {
+      console.error('월별 출석 현황 조회 실패:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  /**
+   * 이번 달 출석 포인트 합계 조회
+   */
+  async getAttendanceSummary() {
+    try {
+      const response = await apiClient.get(ENDPOINTS.ATTENDANCE.SUMMARY);
+      return {
+        success: true,
+        data: response,
+        message: response.message || '출석 포인트 합계 조회 성공',
+      };
+    } catch (error) {
+      console.error('출석 포인트 합계 조회 실패:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+};
+
+export default AttendanceService;
