@@ -213,6 +213,57 @@ export const AuthService = {
       };
     }
   },
+
+  // 월별 출석 현황 조회
+  async getMonthlyAttendance() {
+    try {
+      const response = await apiClient.get('/api/attendance/monthly');
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 오늘 출석하기
+  async checkAttendance() {
+    try {
+      const response = await apiClient.post('/api/attendance/check');
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 이번 달 출석 포인트 합계 조회
+  async getAttendanceSummary() {
+    try {
+      const response = await apiClient.get('/api/attendance/summary');
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 export default AuthService;

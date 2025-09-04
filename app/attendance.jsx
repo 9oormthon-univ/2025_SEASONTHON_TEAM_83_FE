@@ -1,20 +1,24 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import PopUpAlerts from '../components/PopUpAlerts';
+import { useAuth } from '../contexts/AuthContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function AttendanceScreen() {
   const router = useRouter();
+  const { getMonthlyAttendance, checkAttendance, getAttendanceSummary } = useAuth();
+  
   const [currentMonth, setCurrentMonth] = useState(8);
   const [showPopup, setShowPopup] = useState(false);
-  const [attendanceData, setAttendanceData] = useState({
-    1: true, 2: true, 4: true, 5: true, 6: true, 9: true, 11: true, 12: true, 13: true, 14: true,
-    16: true, 18: true, 19: true, 20: true, 21: true, 23: true, 24: true, 25: true, 26: true, 28: true, 30: true
-  });
+  const [attendanceData, setAttendanceData] = useState({});
+  const [monthlyPoints, setMonthlyPoints] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
+  const [attendanceSummary, setAttendanceSummary] = useState(null);
 
   const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
   const currentDate = new Date().getDate();
@@ -22,6 +26,72 @@ export default function AttendanceScreen() {
   
   // 월별 데이터 생성 (6월부터 12월까지)
   const months = [6, 7, 8, 9, 10, 11, 12];
+
+  // 월별 출석 데이터 로드
+  const loadMonthlyAttendance = async (month) => {
+    try {
+      setIsLoading(true);
+      
+      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
+      // const response = await getMonthlyAttendance();
+      
+      // 임시: 서버 없이 성공 시뮬레이션
+      console.log('임시 월별 출석 데이터 로드:', month);
+      
+      // 1초 지연으로 로딩 상태 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 임시 데이터 생성 (현재 월만 출석 데이터 있음)
+      if (month === 8) {
+        const tempAttendanceData = {
+          1: true, 2: true, 4: true, 5: true, 6: true, 9: true, 11: true, 12: true, 13: true, 14: true,
+          16: true, 18: true, 19: true, 20: true, 21: true, 23: true, 24: true, 25: true, 26: true, 28: true, 30: true
+        };
+        setAttendanceData(tempAttendanceData);
+      } else {
+        setAttendanceData({});
+      }
+      
+      // 성공 시뮬레이션
+      console.log('월별 출석 데이터 로드 성공');
+      
+    } catch (error) {
+      console.error('월별 출석 데이터 로드 실패:', error);
+      Alert.alert('오류', '출석 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 출석 포인트 합계 로드
+  const loadAttendanceSummary = async () => {
+    try {
+      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
+      // const response = await getAttendanceSummary();
+      
+      // 임시: 서버 없이 성공 시뮬레이션
+      console.log('임시 출석 포인트 합계 로드');
+      
+      // 1초 지연으로 로딩 상태 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // 임시 데이터
+      setMonthlyPoints(30);
+      
+      // 성공 시뮬레이션
+      console.log('출석 포인트 합계 로드 성공');
+      
+    } catch (error) {
+      console.error('출석 포인트 합계 로드 실패:', error);
+      Alert.alert('오류', '출석 포인트를 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadMonthlyAttendance(currentMonth);
+    loadAttendanceSummary();
+  }, [currentMonth]);
   
   const getDaysInMonth = (year, month) => {
     return new Date(year, month, 0).getDate();
@@ -31,14 +101,52 @@ export default function AttendanceScreen() {
     return new Date(year, month - 1, 1).getDay();
   };
 
-  const handleAttendance = () => {
-    // 출석 처리 로직
-    const newAttendanceData = { ...attendanceData };
-    newAttendanceData[currentDate] = true;
-    setAttendanceData(newAttendanceData);
-    
-    // 팝업 표시
-    setShowPopup(true);
+  const handleAttendance = async () => {
+    try {
+      setIsCheckingAttendance(true);
+      
+      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
+      // const response = await checkAttendance();
+      
+      // 임시: 서버 없이 성공 시뮬레이션
+      console.log('임시 출석체크 처리');
+      
+      // 1초 지연으로 로딩 상태 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 임시 성공 응답 시뮬레이션
+      const mockResponse = {
+        success: true,
+        data: {
+          message: "출석되었습니다",
+          date: "2025-08-31",
+          earnedPoint: 3
+        }
+      };
+      
+      if (mockResponse.success) {
+        // 출석 데이터 업데이트
+        const newAttendanceData = { ...attendanceData };
+        newAttendanceData[currentDate] = true;
+        setAttendanceData(newAttendanceData);
+        
+        // 포인트 업데이트
+        setMonthlyPoints(prev => prev + mockResponse.data.earnedPoint);
+        
+        // 팝업 표시
+        setShowPopup(true);
+        
+        console.log('출석체크 성공:', mockResponse.data);
+      } else {
+        Alert.alert('오류', mockResponse.error || '출석체크에 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('출석체크 실패:', error);
+      Alert.alert('오류', '출석체크 중 오류가 발생했습니다.');
+    } finally {
+      setIsCheckingAttendance(false);
+    }
   };
 
   const handleClosePopup = () => {
@@ -200,14 +308,27 @@ export default function AttendanceScreen() {
         <View style={styles.pointsSection}>
           <Text style={styles.pointsText}>
             <Text style={styles.pointsLabel}>이번달 출석 포인트는 </Text>
-            <Text style={styles.pointsValue}>30p</Text>
+            <Text style={styles.pointsValue}>{monthlyPoints}p</Text>
             <Text style={styles.pointsLabel}> 입니다</Text>
           </Text>
         </View>
 
         {/* 출석하기 버튼 */}
-        <TouchableOpacity style={styles.attendanceButton} onPress={handleAttendance}>
-          <Text style={styles.attendanceButtonText}>출석하기</Text>
+        <TouchableOpacity 
+          style={[
+            styles.attendanceButton, 
+            (isCheckingAttendance || attendanceData[currentDate]) && styles.disabledButton
+          ]} 
+          onPress={handleAttendance}
+          disabled={isCheckingAttendance || attendanceData[currentDate]}
+        >
+          {isCheckingAttendance ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.attendanceButtonText}>
+              {attendanceData[currentDate] ? '출석완료' : '출석하기'}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
       
@@ -455,5 +576,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#FFFFFF',
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
 });
