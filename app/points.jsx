@@ -1,11 +1,66 @@
 import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import { usePoint } from '../contexts/PointContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function PointsScreen() {
   const router = useRouter();
+  const { balance, history, loading, error, fetchBalance, fetchHistory, refreshPoints } = usePoint();
+
+  // 컴포넌트 마운트 시 포인트 데이터 로드
+  useEffect(() => {
+    console.log('포인트 화면 마운트 - API 호출 시작');
+    refreshPoints();
+  }, []);
+
+  // 디버깅을 위한 로그
+  useEffect(() => {
+    console.log('포인트 상태 업데이트:', { balance, history, loading, error });
+  }, [balance, history, loading, error]);
+
+  // 에러 처리
+  useEffect(() => {
+    if (error) {
+      Alert.alert('오류', error);
+    }
+  }, [error]);
+
+  // 포인트 히스토리 아이템 렌더링
+  const renderHistoryItem = (item, index) => {
+    const getIconSource = (type) => {
+      switch (type) {
+        case 'WALK':
+          return require('../assets/images/icon_walk.png');
+        case 'TUMBLER':
+          return require('../assets/images/icon_tumblr.png');
+        case 'ATTENDANCE':
+          return require('../assets/images/icon_calendar.png');
+        default:
+          return require('../assets/images/icon_badge.png');
+      }
+    };
+
+    return (
+      <View key={index} style={styles.historyItem}>
+        <View style={styles.itemLeft}>
+          <View style={styles.itemIcon}>
+            <Image 
+              source={getIconSource(item.type)} 
+              style={styles.iconImage}
+            />
+          </View>
+          <View style={styles.itemContent}>
+            <Text style={styles.itemTitle}>{item.description}</Text>
+            <Text style={styles.itemSubtitle}>{item.date}</Text>
+          </View>
+        </View>
+        <Text style={styles.itemPoints}>+{item.pointChange}p</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -62,9 +117,9 @@ export default function PointsScreen() {
           <Text style={styles.seedlingTitle}>현재 묘목 단계</Text>
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
-              <View style={styles.progressFill} />
+              <View style={[styles.progressFill, { width: `${balance.progressToNextLevel * 100}%` }]} />
             </View>
-            <Text style={styles.progressText}>다음 단계까지 10%</Text>
+            <Text style={styles.progressText}>다음 단계까지 {Math.round(balance.progressToNextLevel * 100)}%</Text>
           </View>
         </View>
 
@@ -76,112 +131,36 @@ export default function PointsScreen() {
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled={true}
           >
-            {/* 포인트 내역 아이템들 */}
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_walk.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>걷기 1.3km 인증</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-15</Text>
-                </View>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#006256" />
+                <Text style={styles.loadingText}>포인트 내역을 불러오는 중...</Text>
               </View>
-              <Text style={styles.itemPoints}>+20p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_tumblr.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>텀블러 사용 인증</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-14</Text>
-                </View>
+            ) : history.length > 0 ? (
+              history.map((item, index) => renderHistoryItem(item, index))
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>포인트 내역이 없습니다.</Text>
               </View>
-              <Text style={styles.itemPoints}>+50p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_calendar.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>출석체크</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-13</Text>
-                </View>
-              </View>
-              <Text style={styles.itemPoints}>+10p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_badge.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>첫 번째 뱃지 획득</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-12</Text>
-                </View>
-              </View>
-              <Text style={styles.itemPoints}>+100p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_walk.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>걷기 2.1km 인증</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-11</Text>
-                </View>
-              </View>
-              <Text style={styles.itemPoints}>+30p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.itemLeft}>
-                <View style={styles.itemIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_calendar.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle}>출석체크</Text>
-                  <Text style={styles.itemSubtitle}>2025-01-10</Text>
-                </View>
-              </View>
-              <Text style={styles.itemPoints}>+10p</Text>
-            </View>
+            )}
           </ScrollView>
         </View>
 
         {/* 포인트 정보 */}
         <View style={styles.pointsInfo}>
           <Text style={styles.currentPoints}>
-            보유 포인트는 <Text style={styles.pointsValue}>30p</Text> 입니다
+            보유 포인트는 <Text style={styles.pointsValue}>{balance.currentPoints}p</Text> 입니다
           </Text>
-          <Text style={styles.totalPoints}>누적 포인트 1000p</Text>
+          <Text style={styles.totalPoints}>누적 포인트 {balance.totalEarnedPoints}p</Text>
         </View>
+
+        {/* 테스트 버튼 */}
+        <TouchableOpacity 
+          style={[styles.rewardButton, styles.testButton]} 
+          onPress={refreshPoints}
+        >
+          <Text style={styles.rewardButtonText}>포인트 새로고침</Text>
+        </TouchableOpacity>
 
         {/* 리워드 전환 버튼 */}
         <TouchableOpacity style={styles.rewardButton} onPress={() => router.push('/reward-conversion')}>
@@ -443,5 +422,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard Variable',
+    color: '#666666',
+    marginTop: 10,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard Variable',
+    color: '#666666',
+  },
+  testButton: {
+    backgroundColor: '#FF6B6B',
+    marginBottom: 10,
   },
 });
