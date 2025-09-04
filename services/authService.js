@@ -349,6 +349,23 @@ export const AuthService = {
       };
     }
   },
+
+  // 사진 인증 검증
+  async verifyChallenge(challengeId) {
+    try {
+      const response = await apiClient.post(`/api/challenges/${challengeId}/verify`);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
 };
 
 export default AuthService;

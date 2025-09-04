@@ -2,9 +2,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import RewardPopup from '../components/RewardPopup';
+import AuthService from '../services/authService';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
@@ -14,6 +15,9 @@ export default function ChallengeTumblerPhotoScreen() {
   const navigation = useNavigation();
   const [showModal, setShowModal] = useState(false);
   const [showRewardPopup, setShowRewardPopup] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  
+  const challengeId = 5; // 텀블러 챌린지 ID
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -21,6 +25,38 @@ export default function ChallengeTumblerPhotoScreen() {
       headerShown: false,
     });
   });
+
+  // 사진 인증 검증 처리
+  const handleVerifyChallenge = async () => {
+    try {
+      setIsVerifying(true);
+      console.log('사진 인증 검증 시작:', challengeId);
+      
+      const response = await AuthService.verifyChallenge(challengeId);
+      
+      if (response.success) {
+        console.log('사진 인증 검증 성공:', response.data);
+        Alert.alert(
+          '인증 성공!', 
+          `챌린지 인증이 완료되었습니다!\n리워드: ${response.data.reward || 0}포인트`,
+          [
+            {
+              text: '확인',
+              onPress: () => setShowRewardPopup(true),
+            },
+          ]
+        );
+      } else {
+        console.error('사진 인증 검증 실패:', response.error);
+        Alert.alert('인증 실패', response.error || '사진 인증에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('사진 인증 검증 오류:', error);
+      Alert.alert('오류', '사진 인증 중 오류가 발생했습니다.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -91,7 +127,7 @@ export default function ChallengeTumblerPhotoScreen() {
             style={styles.uploadButton}
             onPress={() => setShowModal(true)}
           >
-            <Text style={styles.uploadButtonText}>사진 업로드</Text>
+            <Text style={styles.uploadButtonText}>사진 인증하기</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -115,10 +151,15 @@ export default function ChallengeTumblerPhotoScreen() {
             <Text style={styles.modalTitle}>챌린지 성공!</Text>
             
             <TouchableOpacity 
-              style={styles.rewardButton}
-              onPress={() => setShowRewardPopup(true)}
+              style={[styles.rewardButton, isVerifying && styles.disabledButton]}
+              onPress={handleVerifyChallenge}
+              disabled={isVerifying}
             >
-              <Text style={styles.rewardButtonText}>리워드 받기</Text>
+              {isVerifying ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.rewardButtonText}>리워드 받기</Text>
+              )}
             </TouchableOpacity>
             
             <LinearGradient 
@@ -353,5 +394,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 4,
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
 });
