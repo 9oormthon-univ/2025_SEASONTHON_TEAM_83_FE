@@ -1,7 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation, useRouter } from 'expo-router';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import ImageUploader from '../components/ImageUploader';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
@@ -9,6 +11,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function ChallengeTumblerUploadScreen() {
   const router = useRouter();
   const navigation = useNavigation();
+  const [uploadedImage, setUploadedImage] = useState(null);
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -16,6 +19,36 @@ export default function ChallengeTumblerUploadScreen() {
       headerShown: false,
     });
   });
+
+  // 업로드 성공 처리
+  const handleUploadSuccess = (data) => {
+    setUploadedImage(data.photoUrl);
+    console.log('텀블러 인증 사진 업로드 성공:', data.photoUrl);
+  };
+
+  // 업로드 에러 처리
+  const handleUploadError = (error) => {
+    console.error('텀블러 인증 사진 업로드 실패:', error);
+  };
+
+  // 챌린지 완료 처리
+  const handleCompleteChallenge = () => {
+    if (!uploadedImage) {
+      Alert.alert('알림', '텀블러와 영수증이 함께 찍힌 사진을 업로드해주세요.');
+      return;
+    }
+
+    Alert.alert(
+      '챌린지 완료',
+      '텀블러 사용 챌린지가 완료되었습니다!\n50포인트가 적립되었습니다.',
+      [
+        {
+          text: '확인',
+          onPress: () => router.replace('/home'),
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -86,13 +119,20 @@ export default function ChallengeTumblerUploadScreen() {
             <Text style={styles.challengePoints}>50p</Text>
           </View>
           
-          {/* 사진 업로드 버튼 */}
-          <TouchableOpacity 
-            style={styles.uploadButton}
-            onPress={() => router.push('/challenge-tumbler-photo')}
-          >
-            <Text style={styles.uploadButtonText}>사진 업로드</Text>
-          </TouchableOpacity>
+          {/* 텀블러 인증 사진 업로드 */}
+          <View style={styles.uploadSection}>
+            <Text style={styles.uploadSectionTitle}>텀블러 인증 사진</Text>
+            <Text style={styles.uploadDescription}>
+              텀블러와 영수증을 함께 찍어주세요
+            </Text>
+            <ImageUploader
+              challengeId={2} // 텀블러 챌린지 ID
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+              placeholder="텀블러와 영수증이 함께 찍힌 사진을 선택해주세요"
+              buttonText="인증 사진 선택"
+            />
+          </View>
           
           {/* 구분선 */}
           <View style={styles.divider} />
@@ -103,7 +143,7 @@ export default function ChallengeTumblerUploadScreen() {
             <Text style={styles.conditionText}>
               테이크아웃 또는 매장에서 음료를 받을 때{'\n'}
               반드시 텀블러 사용{'\n'}
-              카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)
+              텀블러와 영수증을 함께 찍은 사진 제출 (1회 주문당 1회 인정)
             </Text>
           </View>
           
@@ -115,6 +155,20 @@ export default function ChallengeTumblerUploadScreen() {
               2. 하루 최대 1회 인증 가능
             </Text>
           </View>
+
+          {/* 챌린지 완료 버튼 */}
+          <TouchableOpacity 
+            style={[
+              styles.completeButton,
+              !uploadedImage && styles.disabledButton
+            ]}
+            onPress={handleCompleteChallenge}
+            disabled={!uploadedImage}
+          >
+            <Text style={styles.completeButtonText}>
+              {uploadedImage ? '챌린지 완료' : '인증 사진 업로드 필요'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
       
@@ -303,6 +357,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 18,
     color: '#6B6B6B',
+    fontFamily: 'Pretendard Variable',
+  },
+  uploadSection: {
+    marginBottom: 20,
+  },
+  uploadSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D2D2D',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 5,
+  },
+  uploadDescription: {
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 15,
+    lineHeight: 20,
+  },
+  completeButton: {
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    marginTop: 20,
+  },
+  disabledButton: {
+    backgroundColor: '#CCCCCC',
+  },
+  completeButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
     fontFamily: 'Pretendard Variable',
   },
 });

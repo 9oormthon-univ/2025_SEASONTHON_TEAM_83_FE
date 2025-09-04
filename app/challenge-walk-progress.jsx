@@ -398,13 +398,22 @@ export default function ChallengeWalkProgressScreen() {
           </View>
         </View>
 
-        {/* 테스트 버튼 */}
-        <TouchableOpacity 
-          style={styles.testButton}
-          onPress={() => router.push('/test-map')}
-        >
-          <Text style={styles.testButtonText}>지도 테스트</Text>
-        </TouchableOpacity>
+        {/* 테스트 버튼들 */}
+        <View style={styles.testButtonsContainer}>
+          <TouchableOpacity 
+            style={styles.testButton}
+            onPress={() => router.push('/test-map')}
+          >
+            <Text style={styles.testButtonText}>지도 테스트</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.testButton}
+            onPress={() => router.push('/test-upload')}
+          >
+            <Text style={styles.testButtonText}>업로드 테스트</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* 완료 버튼 */}
         <TouchableOpacity 
@@ -607,18 +616,22 @@ const styles = StyleSheet.create({
     color: '#006256',
     fontWeight: '700',
   },
+  testButtonsContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
   testButton: {
-    width: '100%',
+    flex: 1,
     backgroundColor: '#FFFE4F',
     borderRadius: 8,
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
   },
   testButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Pretendard Variable',
     color: '#333',
     fontWeight: '600',
