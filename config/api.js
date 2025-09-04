@@ -4,7 +4,7 @@
 export const API_CONFIG = {
   // 개발 환경
   DEVELOPMENT: {
-    BASE_URL: 'http://localhost:8080', // 로컬 개발 서버
+    BASE_URL: 'https://your-actual-server.com', // 실제 서버 주소로 변경
     TIMEOUT: 10000,
   },
   

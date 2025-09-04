@@ -152,4 +152,26 @@ export const API_ENDPOINTS = {
   PROFILE: '/api/members/me',
 };
 
+// 유저 정보 조회 API
+export const getUserProfile = async () => {
+  try {
+    const response = await apiClient.get(API_ENDPOINTS.PROFILE);
+    return response;
+  } catch (error) {
+    console.error('유저 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+// 유저 정보 수정 API
+export const updateUserProfile = async (updateData) => {
+  try {
+    const response = await apiClient.patch(API_ENDPOINTS.PROFILE, updateData);
+    return response;
+  } catch (error) {
+    console.error('유저 정보 수정 실패:', error);
+    throw error;
+  }
+};
+
 export default apiClient;
