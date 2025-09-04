@@ -1,10 +1,16 @@
+import { useRouter } from "expo-router";
 import * as React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const SearchBar = () => {
+  const router = useRouter();
+
+  const handleSearchPress = () => {
+    router.push('/search');
+  };
   	
   	return (
-    		<View style={styles.searchBar}>
+    		<TouchableOpacity style={styles.searchBar} onPress={handleSearchPress}>
       			<View style={styles.view}>
         				<View style={styles.labels}>
           					<Image 
@@ -14,7 +20,7 @@ const SearchBar = () => {
           					<Text style={styles.search}>Search</Text>
         				</View>
       			</View>
-    		</View>);
+    		</TouchableOpacity>);
 };
 
 const styles = StyleSheet.create({

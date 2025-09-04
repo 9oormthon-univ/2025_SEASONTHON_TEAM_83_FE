@@ -64,6 +64,13 @@ export const ENDPOINTS = {
     LIST: '/api/badges',
     USER_BADGES: '/api/badges/user',
   },
+  
+  // 검색 관련
+  SEARCH: {
+    INTEGRATED: '/api/search',
+    HISTORY: '/api/search/history',
+    DELETE_HISTORY: '/api/search/history/:id',
+  },
 };
 
 export default {
