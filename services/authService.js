@@ -130,13 +130,25 @@ export const AuthService = {
   // 프로필 조회
   async getProfile() {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.PROFILE);
-      return {
-        success: true,
-        data: response.result,
-        message: response.message,
-      };
+      console.log('사용자 정보 조회 API 호출: /api/members/me');
+      const response = await apiClient.get('/api/members/me');
+      console.log('사용자 정보 조회 API 응답:', response);
+      
+      // API 응답 구조에 맞게 처리
+      if (response.isSuccess) {
+        return {
+          success: true,
+          data: response.result, // { profileUrl, nickname, email, birthday }
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.message || '사용자 정보 조회에 실패했습니다.',
+        };
+      }
     } catch (error) {
+      console.error('사용자 정보 조회 API 에러:', error);
       return {
         success: false,
         error: error.message,
@@ -144,16 +156,218 @@ export const AuthService = {
     }
   },
 
-  // 프로필 수정
+  // 프로필 수정 (profileUrl, nickname, birthday 필드 수정 가능)
   async updateProfile(profileData) {
     try {
-      const response = await apiClient.patch(API_ENDPOINTS.PROFILE, profileData);
+      console.log('사용자 정보 수정 API 호출: /api/members/me', profileData);
+      
+      // 수정 가능한 필드만 필터링
+      const allowedFields = ['profileUrl', 'nickname', 'birthday'];
+      const updateData = {};
+      
+      allowedFields.forEach(field => {
+        if (profileData[field] !== undefined) {
+          updateData[field] = profileData[field];
+        }
+      });
+      
+      const response = await apiClient.patch('/api/members/me', updateData);
+      console.log('사용자 정보 수정 API 응답:', response);
+      
+      // API 응답 구조에 맞게 처리
+      if (response.isSuccess) {
+        return {
+          success: true,
+          data: response.result, // { profileUrl, nickname, birthday }
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.message || '사용자 정보 수정에 실패했습니다.',
+        };
+      }
+    } catch (error) {
+      console.error('사용자 정보 수정 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 닉네임 수정
+  async updateNickname(nickname) {
+    try {
+      console.log('닉네임 수정 API 호출:', nickname);
+      const response = await apiClient.patch('/api/members/me', {
+        nickname: nickname
+      });
+      console.log('닉네임 수정 API 응답:', response);
+      
+      if (response.isSuccess) {
+        return {
+          success: true,
+          data: response.result,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.message || '닉네임 수정에 실패했습니다.',
+        };
+      }
+    } catch (error) {
+      console.error('닉네임 수정 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 생년월일 수정
+  async updateBirthday(birthday) {
+    try {
+      console.log('생년월일 수정 API 호출:', birthday);
+      const response = await apiClient.patch('/api/members/me', {
+        birthday: birthday
+      });
+      console.log('생년월일 수정 API 응답:', response);
+      
+      if (response.isSuccess) {
+        return {
+          success: true,
+          data: response.result,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.message || '생년월일 수정에 실패했습니다.',
+        };
+      }
+    } catch (error) {
+      console.error('생년월일 수정 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 프로필 이미지 수정 (profileUrl 필드 사용)
+  async updateProfileImage(imageUrl) {
+    try {
+      console.log('프로필 이미지 수정 API 호출:', imageUrl);
+      const response = await apiClient.patch('/api/members/me', {
+        profileUrl: imageUrl
+      });
+      console.log('프로필 이미지 수정 API 응답:', response);
+      
+      if (response.isSuccess) {
+        return {
+          success: true,
+          data: response.result,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.message || '프로필 이미지 수정에 실패했습니다.',
+        };
+      }
+    } catch (error) {
+      console.error('프로필 이미지 수정 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 사용자 통계 정보 조회
+  async getUserStats() {
+    try {
+      console.log('사용자 통계 정보 조회 API 호출');
+      const response = await apiClient.get('/api/members/stats');
+      console.log('사용자 통계 정보 조회 API 응답:', response);
       return {
         success: true,
         data: response.result,
         message: response.message,
       };
     } catch (error) {
+      console.error('사용자 통계 정보 조회 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 사용자 활동 내역 조회
+  async getUserActivity() {
+    try {
+      console.log('사용자 활동 내역 조회 API 호출');
+      const response = await apiClient.get('/api/members/activity');
+      console.log('사용자 활동 내역 조회 API 응답:', response);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      console.error('사용자 활동 내역 조회 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 비밀번호 변경
+  async changePassword(passwordData) {
+    try {
+      console.log('비밀번호 변경 API 호출');
+      const response = await apiClient.patch('/api/members/password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      console.log('비밀번호 변경 API 응답:', response);
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      console.error('비밀번호 변경 API 에러:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 계정 삭제
+  async deleteAccount() {
+    try {
+      console.log('계정 삭제 API 호출');
+      const response = await apiClient.delete('/api/members/account');
+      console.log('계정 삭제 API 응답:', response);
+      
+      // 계정 삭제 성공 시 토큰 제거
+      if (response.isSuccess) {
+        await TokenManager.removeToken();
+      }
+      
+      return {
+        success: true,
+        data: response.result,
+        message: response.message,
+      };
+    } catch (error) {
+      console.error('계정 삭제 API 에러:', error);
       return {
         success: false,
         error: error.message,

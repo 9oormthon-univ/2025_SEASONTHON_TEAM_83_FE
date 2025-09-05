@@ -1,20 +1,81 @@
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import { useAuth } from '../contexts/AuthContext';
 import { usePoint } from '../contexts/PointContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function PointsScreen() {
   const router = useRouter();
-  const { balance, history, loading, error, fetchBalance, fetchHistory, refreshPoints } = usePoint();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { 
+    balance, 
+    history, 
+    loading, 
+    error, 
+    refreshPoints, 
+    clearError 
+  } = usePoint();
+  
+  // 로컬 상태로 안정적인 UI 관리
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [displayBalance, setDisplayBalance] = useState(balance);
+  const [displayHistory, setDisplayHistory] = useState(history);
+  const [displayLoading, setDisplayLoading] = useState(loading);
 
-  // 컴포넌트 마운트 시 포인트 데이터 로드
+  // 상태 동기화 - 깜빡거림 방지 (디바운싱 적용)
   useEffect(() => {
-    console.log('포인트 화면 마운트 - API 호출 시작');
-    refreshPoints();
-  }, []);
+    if (!isInitialized) {
+      // 초기 로딩 상태 설정
+      setDisplayLoading(true);
+      setIsInitialized(true);
+      return;
+    }
+
+    // 디바운싱을 위한 타이머
+    const timer = setTimeout(() => {
+      if (!loading) {
+        // 로딩이 완료되었을 때만 상태 업데이트
+        setDisplayLoading(false);
+        setDisplayBalance(balance);
+        setDisplayHistory(history);
+      }
+    }, 100); // 100ms 디바운싱
+
+    return () => clearTimeout(timer);
+  }, [loading, balance, history, isInitialized]);
+
+  // 인증 상태 확인
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      console.log('인증되지 않은 사용자 - 로그인 화면으로 이동');
+      Alert.alert(
+        '로그인 필요',
+        '포인트 정보를 확인하려면 로그인이 필요합니다.',
+        [
+          {
+            text: '로그인하기',
+            onPress: () => router.push('/login')
+          },
+          {
+            text: '취소',
+            onPress: () => router.back(),
+            style: 'cancel'
+          }
+        ]
+      );
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // 컴포넌트 마운트 시 포인트 데이터 로드 (인증된 사용자만)
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      console.log('포인트 화면 마운트 - API 호출 시작');
+      refreshPoints();
+    }
+  }, [refreshPoints, isAuthenticated, authLoading]); // refreshPoints는 useCallback으로 안정화됨
 
   // 디버깅을 위한 로그
   useEffect(() => {
@@ -24,27 +85,77 @@ export default function PointsScreen() {
   // 에러 처리
   useEffect(() => {
     if (error) {
-      Alert.alert('오류', error);
+      const isServerError = error.includes('서버') || error.includes('관리자');
+      
+      Alert.alert(
+        isServerError ? '서버 오류' : '오류', 
+        isServerError 
+          ? '서버가 일시적으로 불안정합니다.\n잠시 후 다시 시도해주세요.'
+          : error,
+        [
+          {
+            text: '다시 시도',
+            onPress: () => {
+              clearError();
+              refreshPoints();
+            }
+          },
+          {
+            text: '확인',
+            onPress: clearError,
+            style: 'cancel'
+          }
+        ]
+      );
     }
-  }, [error]);
+  }, [error, clearError, refreshPoints]); // 필요한 함수들을 의존성에 포함
 
-  // 포인트 히스토리 아이템 렌더링
-  const renderHistoryItem = (item, index) => {
+  // 포인트 히스토리 아이템 렌더링 (useMemo로 최적화)
+  const renderHistoryItem = useMemo(() => {
+    const renderItem = (item, index) => {
     const getIconSource = (type) => {
-      switch (type) {
+      switch (type?.toUpperCase()) {
         case 'WALK':
+        case 'WALKING':
           return require('../assets/images/icon_walk.png');
         case 'TUMBLER':
+        case 'TUMBLR':
           return require('../assets/images/icon_tumblr.png');
         case 'ATTENDANCE':
+        case 'CHECK_IN':
           return require('../assets/images/icon_calendar.png');
-        default:
+        case 'CHALLENGE':
           return require('../assets/images/icon_badge.png');
+        case 'GENERAL':
+        default:
+          return require('../assets/images/icon_point.png');
       }
     };
 
+    // 날짜 포맷팅
+    const formatDate = (dateString) => {
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (_error) {
+        return dateString || '날짜 정보 없음';
+      }
+    };
+
+    // 포인트 변화 표시
+    const formatPointChange = (pointChange) => {
+      const points = pointChange || 0;
+      return points > 0 ? `+${points}p` : `${points}p`;
+    };
+
     return (
-      <View key={index} style={styles.historyItem}>
+      <View key={item.id || `history_${index}_${item.date}`} style={styles.historyItem}>
         <View style={styles.itemLeft}>
           <View style={styles.itemIcon}>
             <Image 
@@ -53,14 +164,66 @@ export default function PointsScreen() {
             />
           </View>
           <View style={styles.itemContent}>
-            <Text style={styles.itemTitle}>{item.description}</Text>
-            <Text style={styles.itemSubtitle}>{item.date}</Text>
+            <Text style={styles.itemTitle}>{item.description || '포인트 획득'}</Text>
+            <Text style={styles.itemSubtitle}>{formatDate(item.date)}</Text>
           </View>
         </View>
-        <Text style={styles.itemPoints}>+{item.pointChange}p</Text>
+        <Text style={[
+          styles.itemPoints,
+          (item.pointChange || 0) < 0 && styles.itemPointsNegative
+        ]}>
+          {formatPointChange(item.pointChange)}
+        </Text>
       </View>
     );
-  };
+    };
+    
+    return renderItem;
+  }, []);
+
+  // 히스토리 리스트 최적화 - 로컬 상태 사용
+  const historyList = useMemo(() => {
+    if (displayLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#006256" />
+          <Text style={styles.loadingText}>포인트 내역을 불러오는 중...</Text>
+        </View>
+      );
+    }
+    
+    if (displayHistory.length > 0) {
+      return displayHistory.map((item, index) => renderHistoryItem(item, index));
+    }
+    
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>포인트 내역이 없습니다.</Text>
+      </View>
+    );
+  }, [displayLoading, displayHistory, renderHistoryItem]);
+
+  // 인증 로딩 중이거나 인증되지 않은 경우 처리
+  if (authLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#006256" />
+          <Text style={styles.loadingText}>인증 상태 확인 중...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>로그인이 필요합니다.</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -90,6 +253,14 @@ export default function PointsScreen() {
           />
         </View>
         
+        {/* API 테스트 버튼 */}
+        <TouchableOpacity 
+          style={styles.apiTestButton}
+          onPress={() => router.push('/api-test')}
+        >
+          <Text style={styles.apiTestButtonText}>API 테스트</Text>
+        </TouchableOpacity>
+        
         {/* 알림 버튼 */}
         <TouchableOpacity 
           style={styles.notificationButton}
@@ -117,9 +288,11 @@ export default function PointsScreen() {
           <Text style={styles.seedlingTitle}>현재 묘목 단계</Text>
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${balance.progressToNextLevel * 100}%` }]} />
+              <View style={[styles.progressFill, { width: `${Math.min(displayBalance.progressToNextLevel * 100, 100)}%` }]} />
             </View>
-            <Text style={styles.progressText}>다음 단계까지 {Math.round(balance.progressToNextLevel * 100)}%</Text>
+            <Text style={styles.progressText}>
+              {displayBalance.currentLevel} → {displayBalance.nextLevel} ({Math.round(displayBalance.progressToNextLevel * 100)}%)
+            </Text>
           </View>
         </View>
 
@@ -131,36 +304,19 @@ export default function PointsScreen() {
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled={true}
           >
-            {loading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#006256" />
-                <Text style={styles.loadingText}>포인트 내역을 불러오는 중...</Text>
-              </View>
-            ) : history.length > 0 ? (
-              history.map((item, index) => renderHistoryItem(item, index))
-            ) : (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>포인트 내역이 없습니다.</Text>
-              </View>
-            )}
+            {historyList}
           </ScrollView>
         </View>
 
         {/* 포인트 정보 */}
         <View style={styles.pointsInfo}>
           <Text style={styles.currentPoints}>
-            보유 포인트는 <Text style={styles.pointsValue}>{balance.currentPoints}p</Text> 입니다
+            보유 포인트: <Text style={styles.pointsValue}>{displayBalance.currentPoints.toLocaleString()}p</Text>
           </Text>
-          <Text style={styles.totalPoints}>누적 포인트 {balance.totalEarnedPoints}p</Text>
+          <Text style={styles.totalPoints}>누적 획득: {displayBalance.totalEarnedPoints.toLocaleString()}p</Text>
+          <Text style={styles.levelInfo}>현재 레벨: {displayBalance.currentLevel}</Text>
         </View>
 
-        {/* 테스트 버튼 */}
-        <TouchableOpacity 
-          style={[styles.rewardButton, styles.testButton]} 
-          onPress={refreshPoints}
-        >
-          <Text style={styles.rewardButtonText}>포인트 새로고침</Text>
-        </TouchableOpacity>
 
         {/* 리워드 전환 버튼 */}
         <TouchableOpacity style={styles.rewardButton} onPress={() => router.push('/reward-conversion')}>
@@ -216,6 +372,22 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'contain',
   },
+  apiTestButton: {
+    position: 'absolute',
+    right: 70,
+    top: 70,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    zIndex: 1,
+  },
+  apiTestButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
   notificationButton: {
     position: 'absolute',
     right: 20,
@@ -251,9 +423,9 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 28,
-    fontWeight: '500',
+    fontWeight: 'bold',
     color: '#FFFFFF',
-    fontFamily: '109LeantheWall',
+    fontFamily: 'System', // 시스템 기본 폰트 사용
     zIndex: 1,
   },
   seedlingSection: {
@@ -265,7 +437,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
     lineHeight: 28,
     fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#2D2D2D',
     textAlign: 'left',
     marginBottom: 10,
@@ -294,7 +466,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: -0.1,
     lineHeight: 28,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#525252',
     textAlign: 'right',
   },
@@ -307,7 +479,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
     lineHeight: 28,
     fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#2D2D2D',
     textAlign: 'left',
     marginBottom: 15,
@@ -359,20 +531,23 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#2D2D2D',
     marginBottom: 4,
   },
   itemSubtitle: {
     fontSize: 14,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#666666',
   },
   itemPoints: {
     fontSize: 16,
     fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#006256',
+  },
+  itemPointsNegative: {
+    color: '#FF6B6B',
   },
   pointsInfo: {
     alignItems: 'center',
@@ -380,7 +555,7 @@ const styles = StyleSheet.create({
   },
   currentPoints: {
     fontSize: 16,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#2D2D2D',
     textAlign: 'center',
     marginBottom: 10,
@@ -390,13 +565,20 @@ const styles = StyleSheet.create({
     color: '#0061E9',
   },
   totalPoints: {
-    width: 110,
     fontSize: 14,
     letterSpacing: 0.3,
     lineHeight: 18,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#6B6B6B',
     textAlign: 'center',
+    marginBottom: 5,
+  },
+  levelInfo: {
+    fontSize: 14,
+    fontFamily: 'System',
+    color: '#006256',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   rewardButton: {
     width: '100%',
@@ -420,7 +602,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     lineHeight: 24,
     fontWeight: '700',
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#FFFFFF',
   },
   loadingContainer: {
@@ -430,7 +612,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#666666',
     marginTop: 10,
   },
@@ -441,11 +623,15 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: 'System',
     color: '#666666',
   },
   testButton: {
     backgroundColor: '#FF6B6B',
+
+
+    
     marginBottom: 10,
   },
 });
+

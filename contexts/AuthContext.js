@@ -73,9 +73,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // 앱 시작 시 로그인 상태 확인
+  // 앱 시작 시 로그인 상태 확인 (테스트용으로 비활성화 가능)
   useEffect(() => {
-    checkAuthStatus();
+    // checkAuthStatus(); // 자동 로그인 비활성화
+    console.log('🚫 자동 로그인 비활성화됨 - 수동 로그인 필요');
   }, []);
 
   // 로그인 상태 확인
@@ -84,10 +85,16 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: AuthAction.SET_LOADING, payload: true });
       
       const token = await TokenManager.getToken();
+      console.log('🔍 AuthContext - 토큰 상태 확인:', {
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
+      });
       
       if (token) {
         // 토큰이 있으면 사용자 정보 조회
         const profileResponse = await AuthService.getProfile();
+        console.log('👤 AuthContext - 프로필 조회 결과:', profileResponse);
         
         if (profileResponse.success) {
           dispatch({
@@ -97,16 +104,19 @@ export const AuthProvider = ({ children }) => {
               token: token,
             },
           });
+          console.log('✅ AuthContext - 로그인 상태 설정 완료');
         } else {
           // 토큰이 유효하지 않으면 로그아웃
+          console.log('❌ AuthContext - 토큰 무효, 로그아웃 처리');
           await TokenManager.removeToken();
           dispatch({ type: AuthAction.LOGOUT });
         }
       } else {
+        console.log('❌ AuthContext - 토큰 없음, 로그아웃 상태');
         dispatch({ type: AuthAction.LOGOUT });
       }
     } catch (error) {
-      console.error('인증 상태 확인 실패:', error);
+      console.error('❌ AuthContext - 인증 상태 확인 실패:', error);
       dispatch({ type: AuthAction.LOGOUT });
     }
   };
@@ -456,6 +466,105 @@ const signup = async (userData) => {
     }
   };
 
+  // 닉네임 업데이트
+  const updateNickname = async (nickname) => {
+    try {
+      const response = await AuthService.updateNickname(nickname);
+      
+      if (response.success) {
+        dispatch({
+          type: AuthAction.SET_USER,
+          payload: response.data,
+        });
+      }
+      
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 생년월일 업데이트
+  const updateBirthday = async (birthday) => {
+    try {
+      const response = await AuthService.updateBirthday(birthday);
+      
+      if (response.success) {
+        dispatch({
+          type: AuthAction.SET_USER,
+          payload: response.data,
+        });
+      }
+      
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 프로필 이미지 업데이트
+  const updateProfileImage = async (imageUrl) => {
+    try {
+      const response = await AuthService.updateProfileImage(imageUrl);
+      
+      if (response.success) {
+        dispatch({
+          type: AuthAction.SET_USER,
+          payload: response.data,
+        });
+      }
+      
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 사용자 통계 정보 조회
+  const getUserStats = async () => {
+    try {
+      const response = await AuthService.getUserStats();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 사용자 활동 내역 조회
+  const getUserActivity = async () => {
+    try {
+      const response = await AuthService.getUserActivity();
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 비밀번호 변경
+  const changePassword = async (passwordData) => {
+    try {
+      const response = await AuthService.changePassword(passwordData);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 계정 삭제
+  const deleteAccount = async () => {
+    try {
+      const response = await AuthService.deleteAccount();
+      
+      if (response.success) {
+        dispatch({ type: AuthAction.LOGOUT });
+      }
+      
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     ...state,
     login,
@@ -466,6 +575,13 @@ const signup = async (userData) => {
     loginWithKakao,
     updateKakaoAdditionalInfo,
     updateProfile,
+    updateNickname,
+    updateBirthday,
+    updateProfileImage,
+    getUserStats,
+    getUserActivity,
+    changePassword,
+    deleteAccount,
     setInterests,
     updateAgreements,
     getAgreements,
