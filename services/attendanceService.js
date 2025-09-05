@@ -9,10 +9,12 @@ export const AttendanceService = {
    */
   async checkAttendance() {
     try {
+      console.log('출석 체크 API 요청 시작');
       const response = await apiClient.post(ENDPOINTS.ATTENDANCE.CHECK);
+      console.log('출석 체크 API 원본 응답:', response);
       return {
         success: true,
-        data: response.result,
+        data: response, // result 필드가 없으므로 전체 응답 사용
         message: response.message,
       };
     } catch (error) {
@@ -49,7 +51,9 @@ export const AttendanceService = {
    */
   async getAttendanceSummary() {
     try {
+      console.log('출석 포인트 합계 API 요청 시작');
       const response = await apiClient.get(ENDPOINTS.ATTENDANCE.SUMMARY);
+      console.log('출석 포인트 합계 API 원본 응답:', response);
       return {
         success: true,
         data: response,

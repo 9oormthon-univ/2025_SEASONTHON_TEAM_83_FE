@@ -392,6 +392,26 @@ const signup = async (userData) => {
     }
   };
 
+  // 챌린지 사진 업로드
+  const uploadChallengePhoto = async (challengeId, photoUri) => {
+    try {
+      const response = await AuthService.uploadChallengePhoto(challengeId, photoUri);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  // 챌린지 인증 검증
+  const verifyChallenge = async (challengeId) => {
+    try {
+      const response = await AuthService.verifyChallenge(challengeId);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   // 카카오 로그인
   const kakaoLogin = async (code) => {
     try {
@@ -461,6 +481,8 @@ const signup = async (userData) => {
     sendGpsData,
     completeChallenge,
     getChallengeStatus,
+    uploadChallengePhoto,
+    verifyChallenge,
     checkAuthStatus,
   };
 

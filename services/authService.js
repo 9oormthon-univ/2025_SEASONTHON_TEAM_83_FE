@@ -367,16 +367,123 @@ export const AuthService = {
     }
   },
 
+  // 사진 업로드
+  async uploadChallengePhoto(challengeId, photoUri) {
+    try {
+      console.log('=== AuthService.uploadChallengePhoto 시작 ===');
+      console.log('챌린지 ID:', challengeId);
+      console.log('사진 URI:', photoUri);
+      
+      // React Native FormData 생성
+      const formData = new FormData();
+      
+      // React Native에서는 파일 객체를 다르게 생성
+      const file = {
+        uri: photoUri,
+        type: 'image/jpeg',
+        name: 'challenge_photo.jpg',
+      };
+      
+      formData.append('file', file);
+      
+      console.log('FormData 생성 완료');
+      console.log('파일 객체:', file);
+      console.log('FormData 내용:', formData);
+      
+      // 직접 fetch 사용 (apiClient.postFormData 대신)
+      const token = await TokenManager.getToken();
+      const url = `https://dev.seonyeong.site/api/challenges/${challengeId}/photo`;
+      
+      console.log('업로드 URL:', url);
+      console.log('토큰 존재 여부:', !!token);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Content-Type을 설정하지 않음 - React Native가 자동으로 multipart/form-data로 설정
+        },
+        body: formData,
+      });
+      
+      console.log('=== uploadChallengePhoto API 응답 수신 ===');
+      console.log('상태 코드:', response.status);
+      console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
+      
+      const responseText = await response.text();
+      console.log('응답 본문 (원본):', responseText);
+      
+      let data;
+      if (responseText.trim() === '') {
+        console.log('⚠️ 빈 응답 수신');
+        data = { message: 'Empty response' };
+      } else {
+        try {
+          data = JSON.parse(responseText);
+          console.log('응답 본문 (파싱됨):', JSON.stringify(data, null, 2));
+        } catch (parseError) {
+          console.error('❌ JSON 파싱 오류:', parseError);
+          console.error('파싱 실패한 텍스트:', responseText);
+          throw new Error(`JSON Parse error: ${parseError.message}`);
+        }
+      }
+
+      if (!response.ok) {
+        console.error(`❌ HTTP 오류: ${response.status}`);
+        console.error(`오류 메시지: ${data.message || '요청 실패'}`);
+        throw new Error(`HTTP ${response.status}: ${data.message || '요청 실패'}`);
+      }
+      
+      console.log('=== uploadChallengePhoto API 응답 성공 ===');
+      console.log('전체 응답:', JSON.stringify(data, null, 2));
+      console.log('result 필드:', data.result);
+      console.log('photoUrl:', data.result?.photoUrl);
+      
+      return {
+        success: true,
+        data: data.result,
+        message: data.message,
+      };
+    } catch (error) {
+      console.error('=== uploadChallengePhoto API 오류 ===');
+      console.error('오류 타입:', error.constructor.name);
+      console.error('오류 메시지:', error.message);
+      console.error('오류 스택:', error.stack);
+      console.error('전체 오류 객체:', JSON.stringify(error, null, 2));
+      
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
   // 사진 인증 검증
   async verifyChallenge(challengeId) {
     try {
+      console.log('=== AuthService.verifyChallenge 시작 ===');
+      console.log('챌린지 ID:', challengeId);
+      console.log('요청 URL:', `/api/challenges/${challengeId}/verify`);
+      
       const response = await apiClient.post(`/api/challenges/${challengeId}/verify`);
+      
+      console.log('=== verifyChallenge API 응답 성공 ===');
+      console.log('전체 응답:', JSON.stringify(response, null, 2));
+      console.log('result 필드:', response.result);
+      console.log('message 필드:', response.message);
+      
       return {
         success: true,
         data: response.result,
         message: response.message,
       };
     } catch (error) {
+      console.error('=== verifyChallenge API 오류 ===');
+      console.error('오류 타입:', error.constructor.name);
+      console.error('오류 메시지:', error.message);
+      console.error('오류 스택:', error.stack);
+      console.error('전체 오류 객체:', JSON.stringify(error, null, 2));
+      
       return {
         success: false,
         error: error.message,

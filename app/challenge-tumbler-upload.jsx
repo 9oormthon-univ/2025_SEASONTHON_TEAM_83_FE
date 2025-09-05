@@ -1,9 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import ImageUploader from '../components/ImageUploader';
+import { useAuth } from '../contexts/AuthContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
@@ -11,7 +12,10 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function ChallengeTumblerUploadScreen() {
   const router = useRouter();
   const navigation = useNavigation();
+  const { uploadChallengePhoto, verifyChallenge } = useAuth();
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(null);
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -23,6 +27,7 @@ export default function ChallengeTumblerUploadScreen() {
   // 업로드 성공 처리
   const handleUploadSuccess = (data) => {
     setUploadedImage(data.photoUrl);
+    setUploadedPhotoUrl(data.photoUrl);
     console.log('텀블러 인증 사진 업로드 성공:', data.photoUrl);
   };
 
@@ -32,22 +37,88 @@ export default function ChallengeTumblerUploadScreen() {
   };
 
   // 챌린지 완료 처리
-  const handleCompleteChallenge = () => {
+  const handleCompleteChallenge = async () => {
     if (!uploadedImage) {
       Alert.alert('알림', '텀블러와 영수증이 함께 찍힌 사진을 업로드해주세요.');
       return;
     }
 
-    Alert.alert(
-      '챌린지 완료',
-      '텀블러 사용 챌린지가 완료되었습니다!\n50포인트가 적립되었습니다.',
-      [
-        {
-          text: '확인',
-          onPress: () => router.replace('/home'),
-        },
-      ]
-    );
+    try {
+      setIsVerifying(true);
+      console.log('=== 텀블러 챌린지 완료 프로세스 시작 ===');
+      console.log('업로드된 이미지:', uploadedImage);
+      console.log('챌린지 ID: 2 (텀블러 챌린지)');
+      
+      // 1단계: 사진 업로드 API 호출
+      console.log('=== 1단계: 사진 업로드 API 호출 ===');
+      const uploadResult = await uploadChallengePhoto(2, uploadedImage);
+      
+      console.log('=== 사진 업로드 API 응답 ===');
+      console.log('전체 응답:', JSON.stringify(uploadResult, null, 2));
+      console.log('성공 여부:', uploadResult.success);
+      console.log('데이터:', uploadResult.data);
+      console.log('에러:', uploadResult.error);
+      
+      if (!uploadResult.success) {
+        console.error('❌ 사진 업로드 실패');
+        Alert.alert(
+          '업로드 실패',
+          uploadResult.error || '사진 업로드에 실패했습니다. 다시 시도해주세요.',
+          [{ text: '확인' }]
+        );
+        return;
+      }
+      
+      console.log('✅ 사진 업로드 성공');
+      console.log('업로드된 사진 URL:', uploadResult.data?.photoUrl);
+      
+      // 2단계: 사진 인증 검증 API 호출
+      console.log('=== 2단계: 사진 인증 검증 API 호출 ===');
+      const verifyResult = await verifyChallenge(2);
+      
+      console.log('=== 사진 인증 검증 API 응답 ===');
+      console.log('전체 응답:', JSON.stringify(verifyResult, null, 2));
+      console.log('성공 여부:', verifyResult.success);
+      console.log('데이터:', verifyResult.data);
+      console.log('에러:', verifyResult.error);
+      
+      if (verifyResult.success) {
+        console.log('✅ 텀블러 챌린지 인증 성공');
+        console.log('획득 포인트:', verifyResult.data?.reward);
+        Alert.alert(
+          '챌린지 완료',
+          `텀블러 사용 챌린지가 완료되었습니다!\n${verifyResult.data?.reward || 50}포인트가 적립되었습니다.`,
+          [
+            {
+              text: '확인',
+              onPress: () => router.replace('/home'),
+            },
+          ]
+        );
+      } else {
+        console.error('❌ 텀블러 챌린지 인증 실패');
+        console.error('실패 이유:', verifyResult.error);
+        Alert.alert(
+          '인증 실패',
+          verifyResult.error || '챌린지 인증에 실패했습니다. 다시 시도해주세요.',
+          [{ text: '확인' }]
+        );
+      }
+    } catch (error) {
+      console.error('❌ 텀블러 챌린지 완료 프로세스 오류 발생');
+      console.error('오류 타입:', error.constructor.name);
+      console.error('오류 메시지:', error.message);
+      console.error('오류 스택:', error.stack);
+      console.error('전체 오류 객체:', JSON.stringify(error, null, 2));
+      Alert.alert(
+        '오류',
+        `챌린지 완료 중 오류가 발생했습니다.\n오류: ${error.message}`,
+        [{ text: '확인' }]
+      );
+    } finally {
+      console.log('=== 텀블러 챌린지 완료 프로세스 종료 ===');
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -160,14 +231,21 @@ export default function ChallengeTumblerUploadScreen() {
           <TouchableOpacity 
             style={[
               styles.completeButton,
-              !uploadedImage && styles.disabledButton
+              (!uploadedImage || isVerifying) && styles.disabledButton
             ]}
             onPress={handleCompleteChallenge}
-            disabled={!uploadedImage}
+            disabled={!uploadedImage || isVerifying}
           >
-            <Text style={styles.completeButtonText}>
-              {uploadedImage ? '챌린지 완료' : '인증 사진 업로드 필요'}
-            </Text>
+            {isVerifying ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color="#FFFFFF" size="small" />
+                <Text style={styles.completeButtonText}>인증 중...</Text>
+              </View>
+            ) : (
+              <Text style={styles.completeButtonText}>
+                {uploadedImage ? '챌린지 완료' : '인증 사진 업로드 필요'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -401,5 +479,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     fontFamily: 'Pretendard Variable',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
