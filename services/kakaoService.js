@@ -1,7 +1,7 @@
 // services/kakaoService.js
 // 카카오 로그인 서비스
 
-import * as AuthSession from 'expo-auth-session';
+import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
 import { API_ENDPOINTS, apiClient } from './api';
 
@@ -10,23 +10,28 @@ WebBrowser.maybeCompleteAuthSession();
 
 // 카카오 로그인 설정
 const KAKAO_CONFIG = {
-  clientId: 'YOUR_KAKAO_APP_KEY', // 실제 카카오 앱 키로 교체 필요
-  redirectUri: AuthSession.makeRedirectUri({
-    scheme: 'pleanetapp', // 앱 스킴
-    path: 'kakao-callback'
-  }),
-  scopes: ['profile_nickname', 'account_email', 'birthday'],
+  clientId: Constants.expoConfig?.extra?.kakaoApiKey || 'c3ee702cb0fea17ff01715a1797c1de7',
+  redirectUri: 'http://localhost:8081', // 간단한 웹 URI
+  scopes: ['profile_nickname', 'account_email'],
 };
 
 // 카카오 로그인 서비스
 const KakaoService = {
   // 카카오 로그인 URL 생성
   getKakaoLoginUrl() {
+    console.log('=== 카카오 로그인 디버깅 ===');
+    console.log('Client ID:', KAKAO_CONFIG.clientId);
+    console.log('Redirect URI:', KAKAO_CONFIG.redirectUri);
+    console.log('Scopes:', KAKAO_CONFIG.scopes);
+    
     const authUrl = `https://kauth.kakao.com/oauth/authorize?` +
       `client_id=${KAKAO_CONFIG.clientId}&` +
       `redirect_uri=${encodeURIComponent(KAKAO_CONFIG.redirectUri)}&` +
       `response_type=code&` +
       `scope=${KAKAO_CONFIG.scopes.join(' ')}`;
+    
+    console.log('Full Auth URL:', authUrl);
+    console.log('========================');
     
     return authUrl;
   },
@@ -102,8 +107,9 @@ const KakaoService = {
 
   // 추가 정보 입력이 필요한지 확인
   checkIfNeedsAdditionalInfo(userData) {
-    // 닉네임이나 생일이 없으면 추가 정보 입력 필요
-    return !userData.nickname || !userData.birthday;
+    // 백엔드에서 nickname이 이미 제공되므로 추가 정보 입력 불필요
+    // 만약 생일 등 추가 정보가 필요하다면 여기서 체크
+    return false; // 일단 항상 false로 설정 (추가 정보 입력 불필요)
   },
 
   // 카카오 사용자 정보 파싱
@@ -111,8 +117,6 @@ const KakaoService = {
     return {
       nickname: kakaoUserInfo.kakao_account?.profile?.nickname || '',
       email: kakaoUserInfo.kakao_account?.email || '',
-      birthday: kakaoUserInfo.kakao_account?.birthday || '',
-      gender: kakaoUserInfo.kakao_account?.gender || '',
       profileImage: kakaoUserInfo.kakao_account?.profile?.profile_image_url || '',
     };
   },

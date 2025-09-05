@@ -4,23 +4,24 @@
 export const API_CONFIG = {
   // 개발 환경
   DEVELOPMENT: {
-    BASE_URL: 'https://your-actual-server.com', // 실제 서버 주소로 변경
+    BASE_URL: 'https://dev.seonyeong.site',
     TIMEOUT: 10000,
   },
   
   // 스테이징 환경
   STAGING: {
-    BASE_URL: 'https://staging-api.pleanet.com',
+    BASE_URL: 'https://dev.seonyeong.site',
     TIMEOUT: 10000,
   },
   
   // 프로덕션 환경
   PRODUCTION: {
-    BASE_URL: 'https://api.pleanet.com',
+    BASE_URL: 'https://dev.seonyeong.site',
     TIMEOUT: 10000,
   },
 };
 
+// ... existing code ...
 // 현재 환경 설정 (환경에 따라 변경)
 export const CURRENT_ENV = __DEV__ ? 'DEVELOPMENT' : 'PRODUCTION';
 

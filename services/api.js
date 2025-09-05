@@ -45,7 +45,7 @@ export const TokenManager = {
 // API 클라이언트
 class ApiClient {
   constructor() {
-    this.baseURL = API_CONFIG.BASE_URL;
+    this.baseURL = API_CONFIG.BASE_URL; // https://dev.seonyeong.site
     this.timeout = API_CONFIG.TIMEOUT;
   }
 
@@ -146,10 +146,13 @@ export const API_ENDPOINTS = {
   SIGNUP: '/api/members/signup',
   LOGIN: '/api/members/login',
   EMAIL_CHECK: '/api/members/email-check',
+  KAKAO_LOGIN: '/api/members/kakao-login',
   KAKAO_CALLBACK: '/api/callback',
   
   // 사용자 정보
   PROFILE: '/api/members/me',
+  INTERESTS: '/api/members/interests',
+  AGREEMENTS: '/api/members/agreements',
 };
 
 // 유저 정보 조회 API

@@ -164,7 +164,7 @@ export const AuthService = {
   // 관심활동 설정
   async setInterests(interests) {
     try {
-      const response = await apiClient.post('/api/members/interests', {
+      const response = await apiClient.post(API_ENDPOINTS.INTERESTS, {
         interests: interests
       });
       return {
@@ -183,7 +183,7 @@ export const AuthService = {
   // 동의항목 수정
   async updateAgreements(agreements) {
     try {
-      const response = await apiClient.patch('/api/members/agreements', agreements);
+      const response = await apiClient.patch(API_ENDPOINTS.AGREEMENTS, agreements);
       return {
         success: true,
         data: response.result,

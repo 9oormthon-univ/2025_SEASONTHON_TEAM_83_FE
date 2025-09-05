@@ -3,13 +3,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  BackHandler,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    BackHandler,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import ActionButton from '../components/ActionButton';
@@ -19,6 +20,7 @@ import HeaderBar from '../components/HeaderBar';
 import HistoryList from '../components/HistoryList';
 import ProfileCard from '../components/ProfileCard';
 import { PROFILE_COLORS, PROFILE_SIZES } from '../constants/ProfileConstants';
+import { useAuth } from '../contexts/AuthContext';
 import { getUserProfile } from '../services/api';
 
 /* =========================
@@ -41,6 +43,7 @@ const BADGES = [
  * ======================= */
 function Screen() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -83,6 +86,35 @@ function Screen() {
 
   const handleMyForest = () => {
     router.push('/my-forest');
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      '로그아웃',
+      '정말 로그아웃 하시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '로그아웃',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await logout();
+              if (result.success) {
+                router.replace('/login');
+              } else {
+                Alert.alert('오류', result.error || '로그아웃 중 오류가 발생했습니다.');
+              }
+            } catch (error) {
+              Alert.alert('오류', '로그아웃 중 오류가 발생했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 로딩 상태
@@ -144,6 +176,13 @@ function Screen() {
           variant="cta"
           style={styles.ctaButton}
         />
+
+        <ActionButton
+          title="로그아웃"
+          onPress={handleLogout}
+          variant="cta"
+          style={styles.logoutButton}
+        />
       </View>
 
       <CustomTabBar />
@@ -192,6 +231,9 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     marginTop: PROFILE_SIZES.GAP,
+  },
+  logoutButton: {
+    marginTop: 10,
   },
   loadingContainer: {
     flex: 1,

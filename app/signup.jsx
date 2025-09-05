@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -34,7 +35,7 @@ const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function SignupScreen() {
   const router = useRouter();
-  const { signup, checkEmailDuplicate } = useAuth();
+  const { signup, checkEmailDuplicate, loginWithKakao, login } = useAuth();
   
   // 폼 데이터
   const [formData, setFormData] = useState({
@@ -204,47 +205,75 @@ export default function SignupScreen() {
   const handleSignup = async () => {
     // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
     // 전체 폼 유효성 검사
-    // const isFormValid = Object.values(validation).every(field => field.isValid);
+    const isFormValid = Object.values(validation).every(field => field.isValid);
     
-    // if (!isFormValid) {
-    //   Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
-    //   return;
-    // }
+    if (!isFormValid) {
+      Alert.alert('입력 오류', '모든 필드를 올바르게 입력해주세요.');
+      return;
+    }
 
-    // setIsLoading(true);
+    setIsLoading(true);
 
-    // try {
-    //   const result = await signup({
-    //     nickname: formData.nickname,
-    //     birthday: formData.birthday,
-    //     email: formData.email,
-    //     password: formData.password
-    //   });
+    try {
+      const result = await signup({
+        nickname: formData.nickname,
+        birthday: formData.birthday,
+        email: formData.email,
+        password: formData.password
+      });
 
-    //   if (result.success) {
-    //     Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.', [
-    //       {
-    //         text: '확인',
-    //         onPress: () => router.push('/login')
-    //       }
-    //     ]);
-    //   } else {
-    //     Alert.alert('회원가입 실패', result.error || '회원가입 중 오류가 발생했습니다.');
-    //   }
-    // } catch (error) {
-    //   Alert.alert('오류', '네트워크 오류가 발생했습니다.');
-    // } finally {
-    //   setIsLoading(false);
-    // }
+      if (result.success) {
+        // 회원가입 성공 후 자동 로그인
+        const loginResult = await login({
+          emailOrNickname: formData.email,
+          password: formData.password
+        });
+
+        if (loginResult.success) {
+          Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.', [
+            {
+              text: '확인',
+              onPress: () => router.push('/category-setup')
+            }
+          ]);
+        } else {
+          Alert.alert('회원가입 성공', '회원가입이 완료되었습니다. 로그인해주세요.', [
+            {
+              text: '확인',
+              onPress: () => router.push('/login')
+            }
+          ]);
+        }
+      } else {
+        Alert.alert('회원가입 실패', result.error || '회원가입 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
     
-    // 임시: 서버 없이 바로 카테고리 설정 화면으로 이동
-    console.log('임시 회원가입 - 카테고리 설정 화면으로 이동');
-    router.push('/category-setup');
+    // // 임시: 서버 없이 바로 카테고리 설정 화면으로 이동
+    // console.log('임시 회원가입 - 카테고리 설정 화면으로 이동');
+    // router.push('/category-setup');
   };
 
-  const handleKakaoLink = () => {
-    // TODO: 카카오톡 연동 로직 구현
-    console.log('카카오톡 연동 시도');
+  const handleKakaoLink = async () => {
+    try {
+      setIsLoading(true);
+      const result = await loginWithKakao();
+      
+      if (result.success) {
+        // 백엔드에서 nickname이 이미 제공되므로 바로 카테고리 설정으로 이동
+        router.push('/category-setup');
+      } else {
+        Alert.alert('카카오 로그인 실패', result.error || '카카오 로그인 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '카카오 로그인 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
     return (
