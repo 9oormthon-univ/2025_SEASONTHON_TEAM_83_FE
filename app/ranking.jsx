@@ -52,60 +52,38 @@ export default function RankingScreen() {
     }
   };
 
-  // 랭킹 아이템 렌더링
+  // 랭킹 아이템 렌더링 (4위부터)
   const renderRankingItem = (item, index) => {
-    const isTopThree = item.rank <= 3;
-    
-    if (isTopThree) {
-      return renderTopThreeRanking(item);
-    } else {
-      return renderRegularRanking(item);
-    }
+    return renderRegularRanking(item);
   };
 
-  // 상위 3위 렌더링
-  const renderTopThreeRanking = (item) => {
-    if (item.rank === 1) {
-      return (
-        <View key={item.memberId} style={styles.firstPlace}>
-          <View style={styles.firstPlaceContent}>
-            <View style={styles.avatarGradientContainer}>
-              <LinearGradient
-                colors={['#87CEEB', '#98D8E8', '#B0E0E6']}
-                locations={[0, 0.5, 1]}
-                style={styles.avatarGradient}
-              >
-                <View style={styles.firstPlaceAvatar}>
-                  <Image 
-                    source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
-                    style={styles.profileImage} 
-                  />
-                </View>
-              </LinearGradient>
-            </View>
-            <Text style={styles.firstPlaceNickname}>{item.nickname}</Text>
-            <View style={styles.firstPlaceInfo}>
-              <Text style={styles.firstPlaceText}>총 {item.totalPoint.toLocaleString()}점</Text>
-              <Text style={styles.firstPlaceText}>보유 뱃지 {item.badgeCount}개</Text>
-            </View>
+  // 1위만 렌더링
+  const renderFirstPlace = (item) => {
+    return (
+      <View key={item.memberId} style={styles.firstPlace}>
+        <View style={styles.firstPlaceContent}>
+          <View style={styles.avatarGradientContainer}>
+            <LinearGradient
+              colors={['#FFD700', '#FFA500', '#FF8C00']}
+              locations={[0, 0.5, 1]}
+              style={styles.avatarGradient}
+            >
+              <View style={styles.firstPlaceAvatar}>
+                <Image 
+                  source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
+                  style={styles.profileImage} 
+                />
+              </View>
+            </LinearGradient>
+          </View>
+          <Text style={styles.firstPlaceNickname}>{item.nickname}</Text>
+          <View style={styles.firstPlaceInfo}>
+            <Text style={styles.firstPlaceText}>총 {item.totalPoint.toLocaleString()}점</Text>
+            <Text style={styles.firstPlaceText}>보유 뱃지 {item.badgeCount}개</Text>
           </View>
         </View>
-      );
-    } else if (item.rank === 2 || item.rank === 3) {
-      return (
-        <View key={item.memberId} style={item.rank === 2 ? styles.secondPlace : styles.thirdPlace}>
-          <Text style={styles.rankText}>{item.rank}위</Text>
-          <View style={styles.avatarContainer}>
-            <Image 
-              source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
-              style={styles.profileImage} 
-            />
-          </View>
-          <Text style={styles.userName}>{item.nickname}</Text>
-          <Text style={styles.pointsText}>{item.totalPoint.toLocaleString()}p</Text>
-        </View>
-      );
-    }
+      </View>
+    );
   };
 
   // 일반 랭킹 렌더링
@@ -192,20 +170,22 @@ export default function RankingScreen() {
             </View>
           ) : (
             <>
-              {/* 상위 3위 */}
-              {rankings.filter(item => item.rank <= 3).map(item => renderTopThreeRanking(item))}
+              {/* 1위 */}
+              {rankings.filter(item => item.rank === 1).map(item => renderFirstPlace(item))}
               
-              {/* 2위와 3위를 위한 컨테이너 */}
+              {/* 2위와 3위 */}
               {rankings.filter(item => item.rank === 2 || item.rank === 3).length > 0 && (
                 <View style={styles.secondThirdRow}>
                   {rankings.filter(item => item.rank === 2 || item.rank === 3).map(item => 
-                    <View key={item.memberId} style={item.rank === 2 ? styles.secondPlace : styles.thirdPlace}>
-                      <Text style={styles.rankText}>{item.rank}위</Text>
-                      <View style={styles.avatarContainer}>
-                        <Image 
-                          source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
-                          style={styles.profileImage} 
-                        />
+                    <View key={item.memberId} style={styles.rankItem}>
+                      <View style={styles.rankHeader}>
+                        <Text style={styles.rankNumber}>{item.rank}위</Text>
+                        <View style={styles.avatarContainer}>
+                          <Image 
+                            source={item.profileUrl ? { uri: item.profileUrl } : require('../assets/images/icon_logo_badge.png')} 
+                            style={styles.profileImage} 
+                          />
+                        </View>
                       </View>
                       <Text style={styles.userName}>{item.nickname}</Text>
                       <Text style={styles.pointsText}>{item.totalPoint.toLocaleString()}p</Text>
@@ -339,20 +319,10 @@ const styles = StyleSheet.create({
   },
   firstPlace: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
     position: 'relative',
-    height: 240,
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#4A90E2',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    height: 180,
+    marginHorizontal: 20,
   },
   firstPlaceContent: {
     flex: 1,
@@ -366,21 +336,21 @@ const styles = StyleSheet.create({
   avatarGradientContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 30,
+    marginTop: 10,
     marginBottom: 15,
   },
   avatarGradient: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    padding: 5,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    padding: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
   firstPlaceAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 94,
+    height: 94,
+    borderRadius: 47,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -414,33 +384,34 @@ const styles = StyleSheet.create({
   secondThirdRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 30,
-    paddingHorizontal: 40,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    gap: 15,
   },
-  secondPlace: {
-    alignItems: 'center',
+  rankItem: {
     flex: 1,
-  },
-  thirdPlace: {
     alignItems: 'center',
-    flex: 1,
+    padding: 15,
   },
-  rankText: {
-    fontSize: 20,
-    letterSpacing: -0.2,
-    lineHeight: 28,
-    fontWeight: '500',
+  rankHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  rankNumber: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#006256',
     fontFamily: 'Pretendard Variable',
-    color: '#525252',
-    marginBottom: 10,
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 40,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    marginLeft: 8,
   },
   rankingList: {
     flex: 1,

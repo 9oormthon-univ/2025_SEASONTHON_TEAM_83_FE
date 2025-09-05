@@ -20,6 +20,7 @@ export default function ChallengeWalkScreen() {
   const [challengeStatus, setChallengeStatus] = useState(null); // 챌린지 진행 상태
   const [isInProgress, setIsInProgress] = useState(false); // 진행 중인지 여부
   const [isCheckingStatus, setIsCheckingStatus] = useState(false); // 상태 확인 중인지 여부
+  const [statusCheckComplete, setStatusCheckComplete] = useState(false); // 상태 확인 완료 여부
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -32,6 +33,7 @@ export default function ChallengeWalkScreen() {
   const checkChallengeStatus = async () => {
     try {
       setIsCheckingStatus(true);
+      setStatusCheckComplete(false);
       
       // 현재 위치를 가져와서 GPS 데이터 전송으로 상태 확인
       const location = await getCurrentLocation();
@@ -52,10 +54,12 @@ export default function ChallengeWalkScreen() {
         } else {
           console.log('챌린지 상태 확인 실패:', response.error);
           setIsInProgress(false);
+          setChallengeStatus(null);
         }
       } else {
         console.log('위치 정보를 가져올 수 없음');
         setIsInProgress(false);
+        setChallengeStatus(null);
       }
     } catch (error) {
       console.log('챌린지 상태 확인 실패:', error.message);
@@ -63,6 +67,7 @@ export default function ChallengeWalkScreen() {
       setChallengeStatus(null);
     } finally {
       setIsCheckingStatus(false);
+      setStatusCheckComplete(true);
     }
   };
 
@@ -234,12 +239,12 @@ export default function ChallengeWalkScreen() {
               {isCheckingStatus && (
                 <View style={styles.statusLoadingSection}>
                   <ActivityIndicator size="small" color="#006256" />
-                  <Text style={styles.statusLoadingText}>현재 진행 중인 챌린지가 있는지 확인 중...</Text>
+                  <Text style={styles.statusLoadingText}>진행 중인 미션 찾는 중...</Text>
                 </View>
               )}
 
               {/* 진행 중인 챌린지 상태 표시 */}
-              {!isCheckingStatus && isInProgress && challengeStatus && (
+              {statusCheckComplete && isInProgress && challengeStatus && (
                 <View style={styles.progressSection}>
                   <Text style={styles.progressTitle}>진행 중인 챌린지</Text>
                   <Text style={styles.progressText}>
@@ -248,6 +253,14 @@ export default function ChallengeWalkScreen() {
                     남은 거리: {challengeStatus.remainingDistance.toFixed(2)}km{'\n'}
                     GPS 포인트 수: {challengeStatus.pathCount}개
                   </Text>
+                </View>
+              )}
+
+              {/* 진행 중인 미션이 없을 때 안내 문구 */}
+              {statusCheckComplete && !isInProgress && (
+                <View style={styles.noProgressSection}>
+                  <Text style={styles.noProgressText}>진행 중인 미션 없습니다!</Text>
+                  <Text style={styles.noProgressSubText}>새로운 챌린지를 시작해보세요 🌱</Text>
                 </View>
               )}
 
@@ -461,6 +474,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: '#2D2D2D',
+    fontFamily: 'Pretendard Variable',
+  },
+  noProgressSection: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 8,
+    padding: 20,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFB300',
+    alignItems: 'center',
+  },
+  noProgressText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E65100',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 4,
+  },
+  noProgressSubText: {
+    fontSize: 14,
+    color: '#F57C00',
     fontFamily: 'Pretendard Variable',
   },
   pointSection: {

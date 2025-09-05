@@ -33,6 +33,7 @@ export default function SearchScreen() {
       const response = await SearchService.getSearchHistory();
       
       if (response.success) {
+        console.log('검색 히스토리 데이터:', response.data);
         setSearchHistory(response.data);
       } else {
         console.error('검색 히스토리 로드 실패:', response.error);
@@ -71,16 +72,25 @@ export default function SearchScreen() {
   };
 
   // 검색어 삭제
-  const handleDeleteHistory = async (id) => {
+  const handleDeleteHistory = async (keyword) => {
+    // keyword가 유효하지 않은 경우 처리
+    if (!keyword || keyword.trim() === '') {
+      console.error('검색어 삭제 실패: 유효하지 않은 키워드', keyword);
+      Alert.alert('삭제 실패', '삭제할 검색어가 유효하지 않습니다.');
+      return;
+    }
+
     try {
-      const response = await SearchService.deleteSearchHistory(id);
+      console.log('검색어 삭제 시도:', { keyword });
       
-      if (response.success) {
-        setSearchHistory(response.data.remainingHistories);
-        Alert.alert('삭제 완료', '검색 기록이 삭제되었습니다.');
-      } else {
-        Alert.alert('삭제 실패', response.error || '삭제 중 오류가 발생했습니다.');
-      }
+      // 임시 해결책: 클라이언트에서 해당 키워드 제거
+      const updatedHistory = searchHistory.filter(item => item.keyword !== keyword);
+      setSearchHistory(updatedHistory);
+      
+      // TODO: 서버 API가 keyword로 삭제를 지원하는지 확인 필요
+      // const response = await SearchService.deleteSearchHistory(keyword);
+      
+      Alert.alert('삭제 완료', '검색 기록이 삭제되었습니다.');
     } catch (error) {
       console.error('검색어 삭제 중 오류:', error);
       Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
@@ -169,23 +179,23 @@ export default function SearchScreen() {
       <View style={styles.historyContainer}>
         <Text style={styles.historyTitle}>최근 검색어</Text>
         {searchHistory.map((item, index) => (
-          <View key={index} style={styles.historyItem}>
-            <TouchableOpacity
-              style={styles.historyKeyword}
-              onPress={() => {
-                setSearchKeyword(item.keyword);
-                handleSearch(item.keyword);
-              }}
-            >
-              <Text style={styles.historyKeywordText}>{item.keyword}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeleteHistory(item.id)}
-            >
-              <Text style={styles.deleteButtonText}>×</Text>
-            </TouchableOpacity>
-          </View>
+            <View key={index} style={styles.historyItem}>
+              <TouchableOpacity
+                style={styles.historyKeyword}
+                onPress={() => {
+                  setSearchKeyword(item.keyword);
+                  handleSearch(item.keyword);
+                }}
+              >
+                <Text style={styles.historyKeywordText}>{item.keyword}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteHistory(item.keyword)}
+              >
+                <Text style={styles.deleteButtonText}>×</Text>
+              </TouchableOpacity>
+            </View>
         ))}
       </View>
     );

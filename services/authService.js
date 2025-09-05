@@ -377,18 +377,18 @@ export const AuthService = {
       // React Native FormData 생성
       const formData = new FormData();
       
-      // React Native에서는 파일 객체를 다르게 생성
-      const file = {
+      // React Native에서 FormData에 파일 추가하는 올바른 방법
+      formData.append('file', {
         uri: photoUri,
         type: 'image/jpeg',
         name: 'challenge_photo.jpg',
-      };
-      
-      formData.append('file', file);
+      });
       
       console.log('FormData 생성 완료');
-      console.log('파일 객체:', file);
-      console.log('FormData 내용:', formData);
+      console.log('사진 URI:', photoUri);
+      console.log('FormData 타입:', typeof formData);
+      console.log('FormData _parts:', formData._parts);
+      console.log('FormData _parts 길이:', formData._parts?.length);
       
       // 직접 fetch 사용 (apiClient.postFormData 대신)
       const token = await TokenManager.getToken();
@@ -397,12 +397,18 @@ export const AuthService = {
       console.log('업로드 URL:', url);
       console.log('토큰 존재 여부:', !!token);
       
+      // 헤더 설정 (Content-Type 제외)
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+      };
+      
+      console.log('요청 헤더:', headers);
+      console.log('FormData body 타입:', typeof formData);
+      console.log('FormData body:', formData);
+      
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // Content-Type을 설정하지 않음 - React Native가 자동으로 multipart/form-data로 설정
-        },
+        headers: headers,
         body: formData,
       });
       
