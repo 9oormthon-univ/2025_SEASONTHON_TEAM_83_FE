@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
+import PermissionService from "../services/permissionService";
 
 const NotificationPopup = ({ onClose, onConfirm }) => {
   const { 
@@ -30,8 +31,8 @@ const NotificationPopup = ({ onClose, onConfirm }) => {
             '챌린지 인증을 위해 위치 서비스 권한이 필요합니다.',
             [
               { text: '취소', onPress: () => setLocationService(false) },
-              { text: '설정으로 이동', onPress: () => {
-                // 설정 앱으로 이동하는 로직 추가 가능
+              { text: '설정으로 이동', onPress: async () => {
+                await PermissionService.openAppSettings();
                 setLocationService(false);
               }}
             ]
@@ -50,8 +51,8 @@ const NotificationPopup = ({ onClose, onConfirm }) => {
             '중요한 알림을 받기 위해 푸시 알림 권한이 필요합니다.',
             [
               { text: '취소', onPress: () => setPushNotification(false) },
-              { text: '설정으로 이동', onPress: () => {
-                // 설정 앱으로 이동하는 로직 추가 가능
+              { text: '설정으로 이동', onPress: async () => {
+                await PermissionService.openAppSettings();
                 setPushNotification(false);
               }}
             ]
@@ -65,17 +66,8 @@ const NotificationPopup = ({ onClose, onConfirm }) => {
         "allowPush": actualNotificationPermission
       };
 
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const result = await updateAgreements(agreements);
-
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 동의항목 수정:', agreements);
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 성공 시뮬레이션
-      const result = { success: true, data: agreements };
+      // 실제 API 호출
+      const result = await updateAgreements(agreements);
 
       if (result.success) {
         console.log('동의항목 수정 성공:', result.data);

@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
-  Image,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import NotificationPopup from '../components/NotificationPopup';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,17 +37,9 @@ export default function CategorySetupScreen() {
       // 선택된 카테고리를 API 형식으로 변환
       const interests = selectedCategory === 'walk' ? ['WALK'] : ['TUMBLER'];
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const result = await setInterests(interests);
-
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 관심활동 설정:', { interests });
       
-      // 2초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 성공 시뮬레이션
-      const result = { success: true, data: { interests } };
+      // 실제 API 호출
+      const result = await setInterests(interests);
 
       if (result.success) {
         console.log('관심활동 설정 성공:', result.data);
@@ -57,6 +49,7 @@ export default function CategorySetupScreen() {
         Alert.alert('오류', result.error || '관심활동 설정에 실패했습니다.');
       }
     } catch (error) {
+      console.error('관심활동 설정 오류:', error);
       Alert.alert('오류', '네트워크 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);

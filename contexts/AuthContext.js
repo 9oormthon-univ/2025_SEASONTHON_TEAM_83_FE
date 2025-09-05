@@ -138,14 +138,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   // 회원가입
-  const signup = async (userData) => {
-    try {
-      const response = await AuthService.signup(userData);
-      return response;
-    } catch (error) {
-      return { success: false, error: error.message };
+// ... existing code ...
+
+const signup = async (userData) => {
+  try {
+    dispatch({ type: AuthAction.SET_LOADING, payload: true });
+    
+    const response = await AuthService.signup(userData);
+    
+    if (response.success) {
+      dispatch({ type: AuthAction.SET_LOADING, payload: false });
+      return { success: true, data: response.data };
+    } else {
+      dispatch({ type: AuthAction.SET_LOADING, payload: false });
+      return { success: false, error: response.error };
     }
-  };
+  } catch (error) {
+    dispatch({ type: AuthAction.SET_LOADING, payload: false });
+    return { success: false, error: error.message };
+  }
+};
 
   // 로그아웃
   const logout = async () => {
