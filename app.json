@@ -30,6 +30,9 @@
       "edgeToEdgeEnabled": true,
       "package": "com.pleanet.app"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "web": {
       "bundler": "metro",
       "output": "static",
