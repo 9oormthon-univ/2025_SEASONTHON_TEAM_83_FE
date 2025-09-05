@@ -1,68 +1,63 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import RankingService from '../services/rankingService';
 
 const RankingList = () => {
   const router = useRouter();
+  const [rankings, setRankings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  const rankings = [
-    {
-      id: 1,
-      rank: 1,
-      username: 'User',
-      points: '2,450',
-      isTop3: true
-    },
-    {
-      id: 2,
-      rank: 2,
-      username: 'User',
-      points: '2,120',
-      isTop3: true
-    },
-    {
-      id: 3,
-      rank: 3,
-      username: 'User',
-      points: '1,890',
-      isTop3: true
-    },
-    {
-      id: 4,
-      rank: 4,
-      username: 'User',
-      points: '1,650',
-      isTop3: false
-    },
-    {
-      id: 5,
-      rank: 5,
-      username: 'User',
-      points: '1,420',
-      isTop3: false
-    },
-    {
-      id: 6,
-      rank: 6,
-      username: 'User',
-      points: '1,280',
-      isTop3: false
-    },
-    {
-      id: 7,
-      rank: 7,
-      username: 'User',
-      points: '1,150',
-      isTop3: false
-    },
-    {
-      id: 8,
-      rank: 8,
-      username: 'User',
-      points: '1,020',
-      isTop3: false
+  // 랭킹 데이터 로드
+  useEffect(() => {
+    loadRankings();
+  }, []);
+
+  const loadRankings = async () => {
+    try {
+      setLoading(true);
+      const response = await RankingService.getRankings(0, 6); // 상위 6명만
+      
+      if (response.success) {
+        setRankings(response.data.content || []);
+      } else {
+        setError(response.error);
+      }
+    } catch (error) {
+      console.error('랭킹 로드 실패:', error);
+      setError('랭킹을 불러올 수 없습니다.');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity onPress={() => router.push('/ranking')}>
+          <Text style={styles.sectionTitle}>현재 순위</Text>
+        </TouchableOpacity>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#006256" />
+          <Text style={styles.loadingText}>랭킹 로딩 중...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity onPress={() => router.push('/ranking')}>
+          <Text style={styles.sectionTitle}>현재 순위</Text>
+        </TouchableOpacity>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>랭킹을 불러올 수 없습니다</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -74,13 +69,13 @@ const RankingList = () => {
         showsVerticalScrollIndicator={false}
       >
         {rankings.map((user, index) => (
-          <View key={user.id} style={styles.rankingItem}>
+          <View key={user.memberId || user.id || index} style={styles.rankingItem}>
             <View style={styles.rankContainer}>
               <Text style={[
                 styles.rankText,
-                user.isTop3 ? styles.top3Rank : styles.otherRank
+                index < 3 ? styles.top3Rank : styles.otherRank
               ]}>
-                {user.rank}
+                {index + 1}
               </Text>
             </View>
             
@@ -93,17 +88,17 @@ const RankingList = () => {
               </View>
               <Text style={[
                 styles.username,
-                user.isTop3 ? styles.top3Text : styles.otherText
+                index < 3 ? styles.top3Text : styles.otherText
               ]}>
-                {user.username}
+                {user.nickname || user.username || '사용자'}
               </Text>
             </View>
             
             <Text style={[
               styles.pointsText,
-              user.isTop3 ? styles.top3Text : styles.otherText
+              index < 3 ? styles.top3Text : styles.otherText
             ]}>
-              | 누적 포인트 {user.points}
+              | 누적 포인트 {user.totalPoint || user.point || 0}
             </Text>
           </View>
         ))}
@@ -115,7 +110,29 @@ const RankingList = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Pretendard Variable',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard Variable',
   },
   sectionTitle: {
     fontSize: 20,

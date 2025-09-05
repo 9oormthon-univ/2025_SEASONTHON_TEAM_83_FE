@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   titleText: {
     color: "#FFFFFF",
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: '500',
     position: 'absolute',
     fontFamily: '109LeantheWall',
   },

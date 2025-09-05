@@ -357,10 +357,11 @@ const styles = StyleSheet.create({
   },
   sloganSub: {
     color: '#2D2D2D',
-    fontFamily: '109LeantheWall',
-    fontWeight: 'bold',
     fontSize: 24,
+    fontWeight: '500',
+    
     textAlign: 'center',
+    fontFamily: '109LeantheWall',
     marginTop: 4,
   },
   sloganContainer: {

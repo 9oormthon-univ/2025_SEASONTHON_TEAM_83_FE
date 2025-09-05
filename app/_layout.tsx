@@ -11,11 +11,16 @@ import { PointProvider } from '../contexts/PointContext';
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/109LeantheWall.ttf'),
+    '109LeantheWall': require('../assets/fonts/109LeantheWall.ttf'),
+    'Pretendard Variable': require('../assets/fonts/PretendardVariable.ttf'),
+    'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  console.log('폰트 로딩 상태:', loaded);
 
   if (!loaded) {
     // Async font loading only occurs in development.
+    console.log('폰트 로딩 중...');
     return null;
   }
 
