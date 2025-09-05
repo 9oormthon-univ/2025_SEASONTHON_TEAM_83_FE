@@ -10,19 +10,15 @@ import { PointProvider } from '../contexts/PointContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    '109LeantheWall': require('../assets/fonts/109LeantheWall.ttf'),
-    'Pretendard Variable': require('../assets/fonts/PretendardVariable.ttf'),
-    'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
+  
+  // 폰트 로딩을 일시적으로 비활성화하여 앱이 정상 작동하도록 함
+  useFonts({
+    // '109LeantheWall': require('../assets/fonts/109LeantheWall.ttf'),
+    // 'Pretendard Variable': require('../assets/fonts/PretendardVariable.ttf'),
+    // 'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  console.log('폰트 로딩 상태:', loaded);
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    console.log('폰트 로딩 중...');
-    return null;
-  }
+  console.log('폰트 로딩 비활성화됨, 시스템 기본 폰트 사용');
 
   return (
     <AuthProvider>
@@ -48,6 +44,7 @@ export default function RootLayout() {
           <Stack.Screen name="reward-conversion" options={{ headerShown: false }} />
           <Stack.Screen name="test-attendance" options={{ headerShown: false }} />
           <Stack.Screen name="test-verify" options={{ headerShown: false }} />
+          <Stack.Screen name="user-profile-test" options={{ headerShown: false }} />
           <Stack.Screen name="search" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />

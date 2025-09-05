@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useCallback, useContext, useReducer } from 'react';
 import PointService from '../services/pointService';
 
 // 포인트 액션 타입
@@ -80,7 +80,7 @@ export const PointProvider = ({ children }) => {
   const [state, dispatch] = useReducer(pointReducer, initialState);
 
   // 포인트 잔액 조회
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     try {
       dispatch({ type: PointAction.SET_LOADING, payload: true });
       const response = await PointService.getBalance();
@@ -93,10 +93,10 @@ export const PointProvider = ({ children }) => {
     } catch (error) {
       dispatch({ type: PointAction.SET_ERROR, payload: error.message });
     }
-  };
+  }, []);
 
   // 포인트 히스토리 조회
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       dispatch({ type: PointAction.SET_LOADING, payload: true });
       const response = await PointService.getHistory();
@@ -109,7 +109,7 @@ export const PointProvider = ({ children }) => {
     } catch (error) {
       dispatch({ type: PointAction.SET_ERROR, payload: error.message });
     }
-  };
+  }, []);
 
   // 포인트 업데이트 (로컬 상태 업데이트)
   const updatePoints = (points) => {
@@ -117,8 +117,13 @@ export const PointProvider = ({ children }) => {
   };
 
   // 포인트 데이터 새로고침
-  const refreshPoints = async () => {
+  const refreshPoints = useCallback(async () => {
     await Promise.all([fetchBalance(), fetchHistory()]);
+  }, [fetchBalance, fetchHistory]);
+
+  // 에러 클리어
+  const clearError = () => {
+    dispatch({ type: PointAction.SET_ERROR, payload: null });
   };
 
   const value = {
@@ -127,6 +132,7 @@ export const PointProvider = ({ children }) => {
     fetchHistory,
     updatePoints,
     refreshPoints,
+    clearError,
   };
 
   return (
