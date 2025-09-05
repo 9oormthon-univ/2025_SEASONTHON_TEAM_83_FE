@@ -2,16 +2,21 @@
 // 카카오 로그인 서비스
 
 import Constants from 'expo-constants';
+import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { API_ENDPOINTS, apiClient } from './api';
 
 // WebBrowser 완료 후 결과 처리
 WebBrowser.maybeCompleteAuthSession();
 
+// Expo Go용 리다이렉트 URI 확인
+const redirectUri = Linking.createURL('kakao-login-callback');
+console.log('My Expo Go Redirect URI:', redirectUri);
+
 // 카카오 로그인 설정
 const KAKAO_CONFIG = {
   clientId: Constants.expoConfig?.extra?.kakaoApiKey || 'c3ee702cb0fea17ff01715a1797c1de7',
-  redirectUri: 'http://localhost:8081', // 간단한 웹 URI
+  redirectUri: redirectUri, // Expo Go용 동적 URI
   scopes: ['profile_nickname', 'account_email'],
 };
 
@@ -23,6 +28,8 @@ const KakaoService = {
     console.log('Client ID:', KAKAO_CONFIG.clientId);
     console.log('Redirect URI:', KAKAO_CONFIG.redirectUri);
     console.log('Scopes:', KAKAO_CONFIG.scopes);
+    console.log('=== 실제 사용할 Redirect URI ===');
+    console.log('등록해야 할 URI:', KAKAO_CONFIG.redirectUri);
     
     const authUrl = `https://kauth.kakao.com/oauth/authorize?` +
       `client_id=${KAKAO_CONFIG.clientId}&` +

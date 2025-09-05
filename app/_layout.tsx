@@ -41,8 +41,6 @@ export default function RootLayout() {
           <Stack.Screen name="ranking" options={{ headerShown: false }} />
           <Stack.Screen name="points" options={{ headerShown: false }} />
           <Stack.Screen name="reward-conversion" options={{ headerShown: false }} />
-          <Stack.Screen name="test-map" options={{ headerShown: false }} />
-          <Stack.Screen name="test-upload" options={{ headerShown: false }} />
           <Stack.Screen name="test-attendance" options={{ headerShown: false }} />
           <Stack.Screen name="test-verify" options={{ headerShown: false }} />
           <Stack.Screen name="search" options={{ headerShown: false }} />
