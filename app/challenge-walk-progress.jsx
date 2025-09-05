@@ -28,6 +28,7 @@ export default function ChallengeWalkProgressScreen() {
   const [locationPermission, setLocationPermission] = useState(false);
   const [pathHistory, setPathHistory] = useState([]); // 이동 경로 히스토리
   const [mapCenter, setMapCenter] = useState(null); // 지도 중심점 (동적으로 설정)
+  const [currentAddress, setCurrentAddress] = useState('위치 확인 중...'); // 현재 주소
 
   // 컴포넌트 마운트 시 초기 위치 가져오기
   useEffect(() => {
@@ -78,6 +79,11 @@ export default function ChallengeWalkProgressScreen() {
           setStartLocation(location);
           // 첫 번째 위치를 지도 중심점으로 설정
           setMapCenter({ lat: location.lat, lng: location.lng });
+          
+          // 초기 위치 주소 설정
+          reverseGeocode(location.lat, location.lng).then(address => {
+            setCurrentAddress(address);
+          });
         }
       }
     };
@@ -166,6 +172,11 @@ export default function ChallengeWalkProgressScreen() {
             // 최대 100개 포인트만 유지 (성능 최적화)
             return newPath.length > 100 ? newPath.slice(-100) : newPath;
           });
+
+          // 현재 위치 주소 업데이트 (역지오코딩)
+          reverseGeocode(latitude, longitude).then(address => {
+            setCurrentAddress(address);
+          });
           
           // 거리 계산 (간단한 계산)
           if (startLocation) {
@@ -181,6 +192,32 @@ export default function ChallengeWalkProgressScreen() {
               pathCount: prev.pathCount + 1,
             }));
           }
+
+          // GPS 데이터를 서버에 전송
+          const gpsData = {
+            latitude,
+            longitude,
+            timestamp: new Date().toISOString(),
+            recordedAt: new Date().toISOString(), // 서버에서 요구하는 recordedAt 필드
+            accuracy: location.coords.accuracy || 0,
+          };
+          
+          // 서버에 GPS 데이터 전송 (비동기, 에러 무시)
+          sendGpsData(1, gpsData).then(response => {
+            if (response.success) {
+              console.log('GPS 데이터 전송 성공, 챌린지 상태 업데이트:', response.data);
+              // 서버에서 받은 챌린지 상태 정보로 UI 업데이트
+              setChallengeData(prev => ({
+                ...prev,
+                totalDistance: response.data.totalDistance || prev.totalDistance,
+                requiredDistance: response.data.requiredDistance || prev.requiredDistance,
+                remainingDistance: response.data.remainingDistance || prev.remainingDistance,
+                pathCount: response.data.pathCount || prev.pathCount,
+              }));
+            }
+          }).catch(error => {
+            console.log('GPS 데이터 전송 실패 (무시):', error);
+          });
         }
       );
 
@@ -216,34 +253,53 @@ export default function ChallengeWalkProgressScreen() {
     console.log('GPS 추적 중지됨');
   };
 
+  // 역지오코딩 (좌표를 주소로 변환)
+  const reverseGeocode = async (latitude, longitude) => {
+    try {
+      const addresses = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude,
+      });
+      
+      if (addresses.length > 0) {
+        const address = addresses[0];
+        const city = address.city || address.district || '';
+        const district = address.district || address.subregion || '';
+        const street = address.street || address.name || '';
+        
+        let fullAddress = '';
+        if (city && district) {
+          fullAddress = `${city} ${district}`;
+        } else if (city) {
+          fullAddress = city;
+        } else if (district) {
+          fullAddress = district;
+        } else {
+          fullAddress = '위치 정보 없음';
+        }
+        
+        return fullAddress;
+      }
+      return '위치 정보 없음';
+    } catch (error) {
+      console.error('역지오코딩 실패:', error);
+      return '위치 확인 실패';
+    }
+  };
+
   // 챌린지 완료 처리
   const handleCompleteChallenge = async () => {
     try {
       setIsCompleting(true);
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await completeChallenge(1); // 걷기 챌린지 ID
+      // 실제 API 호출
+      const response = await completeChallenge(1); // 걷기 챌린지 ID
       
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 챌린지 완료');
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 임시 성공 응답 시뮬레이션
-      const mockResponse = {
-        success: true,
-        data: {
-          rewardPoint: 20,
-          endedAt: "2025-09-03T23:06:21.6296314"
-        }
-      };
-      
-      if (mockResponse.success) {
-        console.log('챌린지 완료 성공:', mockResponse.data);
+      if (response.success) {
+        console.log('챌린지 완료 성공:', response.data);
         Alert.alert(
           '챌린지 완료!',
-          `${mockResponse.data.rewardPoint}포인트를 획득했습니다!`,
+          `${response.data.rewardPoint || 20}포인트를 획득했습니다!`,
           [
             {
               text: '확인',
@@ -263,8 +319,40 @@ export default function ChallengeWalkProgressScreen() {
     }
   };
 
+  // 초기 챌린지 상태 확인 (GPS 데이터 전송으로)
+  const initializeChallengeStatus = async () => {
+    try {
+      // 현재 위치를 가져와서 초기 GPS 데이터 전송
+      const location = await getCurrentLocation();
+      if (location) {
+        const gpsData = {
+          latitude: location.lat,
+          longitude: location.lng,
+          timestamp: new Date().toISOString(),
+          recordedAt: new Date().toISOString(),
+          accuracy: 0,
+        };
+        
+        const response = await sendGpsData(1, gpsData);
+        if (response.success) {
+          console.log('초기 챌린지 상태 확인:', response.data);
+          setChallengeData(prev => ({
+            ...prev,
+            totalDistance: response.data.totalDistance || 0,
+            requiredDistance: response.data.requiredDistance || 1.0,
+            remainingDistance: response.data.remainingDistance || 1.0,
+            pathCount: response.data.pathCount || 0,
+          }));
+        }
+      }
+    } catch (error) {
+      console.log('초기 챌린지 상태 확인 실패:', error);
+    }
+  };
+
   // 컴포넌트 마운트 시 GPS 추적 시작
   useEffect(() => {
+    initializeChallengeStatus(); // 초기 상태 확인
     startGpsTracking();
 
     // 컴포넌트 언마운트 시 정리
@@ -373,7 +461,7 @@ export default function ChallengeWalkProgressScreen() {
                 </Text>
               </View>
               <Text style={styles.mapInfoText}>
-                현재 위치: 서울시 강남구
+                현재 위치: {currentAddress}
               </Text>
               <Text style={styles.mapInfoText}>
                 정확도: ±5m
@@ -396,23 +484,6 @@ export default function ChallengeWalkProgressScreen() {
             <Text style={styles.distanceLabel}>경로 포인트</Text>
             <Text style={styles.distanceValue}>{challengeData.pathCount}개</Text>
           </View>
-        </View>
-
-        {/* 테스트 버튼들 */}
-        <View style={styles.testButtonsContainer}>
-          <TouchableOpacity 
-            style={styles.testButton}
-            onPress={() => router.push('/test-map')}
-          >
-            <Text style={styles.testButtonText}>지도 테스트</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.testButton}
-            onPress={() => router.push('/test-upload')}
-          >
-            <Text style={styles.testButtonText}>업로드 테스트</Text>
-          </TouchableOpacity>
         </View>
 
         {/* 완료 버튼 */}
@@ -615,26 +686,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard Variable',
     color: '#006256',
     fontWeight: '700',
-  },
-  testButtonsContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
-  },
-  testButton: {
-    flex: 1,
-    backgroundColor: '#FFFE4F',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  testButtonText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard Variable',
-    color: '#333',
-    fontWeight: '600',
   },
   completeButton: {
     width: '100%',

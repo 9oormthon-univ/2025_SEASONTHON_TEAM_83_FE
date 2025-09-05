@@ -79,9 +79,23 @@ class ApiClient {
       console.log(`API 요청: ${config.method} ${url}`);
       
       const response = await fetch(url, config);
-      const data = await response.json();
-
-      console.log(`API 응답: ${response.status}`, data);
+      
+      // 응답이 비어있는지 확인
+      const responseText = await response.text();
+      console.log(`API 응답: ${response.status}`, responseText);
+      
+      let data;
+      if (responseText.trim() === '') {
+        // 빈 응답인 경우
+        data = { message: 'Empty response' };
+      } else {
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON 파싱 오류:', parseError);
+          throw new Error(`JSON Parse error: ${parseError.message}`);
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${data.message || '요청 실패'}`);
@@ -153,6 +167,14 @@ export const API_ENDPOINTS = {
   PROFILE: '/api/members/me',
   INTERESTS: '/api/members/interests',
   AGREEMENTS: '/api/members/agreements',
+  
+  // 챌린지
+  CHALLENGES: '/api/challenges',
+  CHALLENGE_DETAIL: '/api/challenges',
+  CHALLENGE_START: '/api/challenges',
+  CHALLENGE_COMPLETE: '/api/challenges',
+  CHALLENGE_GPS: '/api/challenges',
+  CHALLENGE_STATUS: '/api/challenges',
 };
 
 // 유저 정보 조회 API

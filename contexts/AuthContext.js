@@ -383,6 +383,15 @@ const signup = async (userData) => {
     }
   };
 
+  const getChallengeStatus = async (challengeId) => {
+    try {
+      const response = await AuthService.getChallengeStatus(challengeId);
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   // 카카오 로그인
   const kakaoLogin = async (code) => {
     try {
@@ -451,6 +460,7 @@ const signup = async (userData) => {
     startChallenge,
     sendGpsData,
     completeChallenge,
+    getChallengeStatus,
     checkAuthStatus,
   };
 

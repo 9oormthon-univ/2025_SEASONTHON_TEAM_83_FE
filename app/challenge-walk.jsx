@@ -1,4 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
+import * as Location from 'expo-location';
 import { useNavigation, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -11,11 +12,14 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function ChallengeWalkScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const { getChallengeDetail, startChallenge } = useAuth();
+  const { getChallengeDetail, startChallenge, sendGpsData } = useAuth();
   
   const [challengeDetail, setChallengeDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [challengeStatus, setChallengeStatus] = useState(null); // 챌린지 진행 상태
+  const [isInProgress, setIsInProgress] = useState(false); // 진행 중인지 여부
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false); // 상태 확인 중인지 여부
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -24,33 +28,79 @@ export default function ChallengeWalkScreen() {
     });
   });
 
+  // 챌린지 상태 확인 (GPS 데이터 전송으로)
+  const checkChallengeStatus = async () => {
+    try {
+      setIsCheckingStatus(true);
+      
+      // 현재 위치를 가져와서 GPS 데이터 전송으로 상태 확인
+      const location = await getCurrentLocation();
+      if (location) {
+        const gpsData = {
+          latitude: location.lat,
+          longitude: location.lng,
+          timestamp: new Date().toISOString(),
+          recordedAt: new Date().toISOString(),
+          accuracy: 0,
+        };
+        
+        const response = await sendGpsData(1, gpsData);
+        if (response.success) {
+          console.log('챌린지 상태 확인 성공:', response.data);
+          setChallengeStatus(response.data);
+          setIsInProgress(response.data.status === 'IN_PROGRESS');
+        } else {
+          console.log('챌린지 상태 확인 실패:', response.error);
+          setIsInProgress(false);
+        }
+      } else {
+        console.log('위치 정보를 가져올 수 없음');
+        setIsInProgress(false);
+      }
+    } catch (error) {
+      console.log('챌린지 상태 확인 실패:', error.message);
+      setIsInProgress(false);
+      setChallengeStatus(null);
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  };
+
+  // 현재 위치 가져오기 (간단한 버전)
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return null;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      
+      const { latitude, longitude } = location.coords;
+      return { lat: latitude, lng: longitude };
+    } catch (error) {
+      console.error('위치 가져오기 실패:', error);
+      return null;
+    }
+  };
+
   // 챌린지 상세 정보 로드
   const loadChallengeDetail = async () => {
     try {
       setIsLoading(true);
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await getChallengeDetail(1); // 걷기 챌린지 ID
+      // 실제 API 호출
+      const response = await getChallengeDetail(1); // 걷기 챌린지 ID
       
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 챌린지 상세 정보 로드');
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 임시 데이터
-      const tempChallengeDetail = {
-        challengeId: 1,
-        title: "1km 걷기",
-        imageUrl: "/uploads/challenge1.png",
-        point: 20,
-        description: "최소 1km 이상 보행 시 성공 처리||GPS 기반으로 사용자의 이동 경로 기록"
-      };
-      
-      setChallengeDetail(tempChallengeDetail);
-      
-      // 성공 시뮬레이션
-      console.log('챌린지 상세 정보 로드 성공');
+      if (response.success) {
+        console.log('챌린지 상세 정보 로드 성공:', response.data);
+        setChallengeDetail(response.data);
+      } else {
+        console.error('챌린지 상세 정보 로드 실패:', response.error);
+        Alert.alert('오류', response.error || '챌린지 정보를 불러올 수 없습니다.');
+      }
       
     } catch (error) {
       console.error('챌린지 상세 정보 로드 실패:', error);
@@ -60,35 +110,26 @@ export default function ChallengeWalkScreen() {
     }
   };
 
-  // 챌린지 시작
+  // 챌린지 시작/계속하기
   const handleStartChallenge = async () => {
     try {
       setIsStarting(true);
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await startChallenge(1); // 걷기 챌린지 ID
-      
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 챌린지 시작');
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 임시 성공 응답 시뮬레이션
-      const mockResponse = {
-        success: true,
-        data: {
-          missionStatus: "IN_PROGRESS",
-          startedAt: "2025-08-31T19:17:14.1665908"
-        }
-      };
-      
-      if (mockResponse.success) {
-        console.log('챌린지 시작 성공:', mockResponse.data);
-        // 진행 화면으로 이동
+      if (isInProgress) {
+        // 진행 중인 경우 바로 진행 화면으로 이동
+        console.log('진행 중인 챌린지 계속하기');
         router.push('/challenge-walk-progress');
       } else {
-        Alert.alert('오류', mockResponse.error || '챌린지 시작에 실패했습니다.');
+        // 새로운 챌린지 시작
+        const response = await startChallenge(1); // 걷기 챌린지 ID
+        
+        if (response.success) {
+          console.log('챌린지 시작 성공:', response.data);
+          // 진행 화면으로 이동
+          router.push('/challenge-walk-progress');
+        } else {
+          Alert.alert('오류', response.error || '챌린지 시작에 실패했습니다.');
+        }
       }
       
     } catch (error) {
@@ -102,6 +143,7 @@ export default function ChallengeWalkScreen() {
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadChallengeDetail();
+    checkChallengeStatus(); // 챌린지 상태 확인
   }, []);
 
   return (
@@ -188,6 +230,27 @@ export default function ChallengeWalkScreen() {
                 </Text>
               </View>
               
+              {/* 챌린지 상태 확인 로딩 */}
+              {isCheckingStatus && (
+                <View style={styles.statusLoadingSection}>
+                  <ActivityIndicator size="small" color="#006256" />
+                  <Text style={styles.statusLoadingText}>현재 진행 중인 챌린지가 있는지 확인 중...</Text>
+                </View>
+              )}
+
+              {/* 진행 중인 챌린지 상태 표시 */}
+              {!isCheckingStatus && isInProgress && challengeStatus && (
+                <View style={styles.progressSection}>
+                  <Text style={styles.progressTitle}>진행 중인 챌린지</Text>
+                  <Text style={styles.progressText}>
+                    현재 진행률: {Math.round((challengeStatus.totalDistance / challengeStatus.requiredDistance) * 100)}%{'\n'}
+                    걸은 거리: {challengeStatus.totalDistance.toFixed(2)}km / {challengeStatus.requiredDistance}km{'\n'}
+                    남은 거리: {challengeStatus.remainingDistance.toFixed(2)}km{'\n'}
+                    GPS 포인트 수: {challengeStatus.pathCount}개
+                  </Text>
+                </View>
+              )}
+
               {/* 포인트 지급 기준 */}
               <View style={styles.pointSection}>
                 <Text style={styles.pointTitle}>포인트 지급 기준</Text>
@@ -206,7 +269,9 @@ export default function ChallengeWalkScreen() {
                 {isStarting ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.startButtonText}>챌린지 시작</Text>
+                  <Text style={styles.startButtonText}>
+                    {isInProgress ? '챌린지 계속하기' : '챌린지 시작'}
+                  </Text>
                 )}
               </TouchableOpacity>
             </>
@@ -358,6 +423,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 18,
     color: '#000',
+    fontFamily: 'Pretendard Variable',
+  },
+  statusLoadingSection: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusLoadingText: {
+    fontSize: 14,
+    color: '#6B6B6B',
+    fontFamily: 'Pretendard Variable',
+    marginLeft: 8,
+  },
+  progressSection: {
+    backgroundColor: '#F0F8F7',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#006256',
+  },
+  progressTitle: {
+    fontSize: 18,
+    letterSpacing: -0.2,
+    lineHeight: 24,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#006256',
+    marginBottom: 8,
+  },
+  progressText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#2D2D2D',
     fontFamily: 'Pretendard Variable',
   },
   pointSection: {

@@ -54,48 +54,21 @@ export default function ChallengeScreen() {
     try {
       setIsLoading(true);
       
-      // TODO: 서버 연동 시 아래 주석 해제하고 임시 코드 제거
-      // const response = await getChallenges();
+      // 실제 API 호출
+      const response = await getChallenges();
       
-      // 임시: 서버 없이 성공 시뮬레이션
-      console.log('임시 챌린지 목록 로드');
-      
-      // 1초 지연으로 로딩 상태 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 임시 데이터
-      const tempChallenges = [
-        {
-          challengeId: 1,
-          title: "1km 걷기",
-          imageUrl: "/uploads/challenge1.png",
-          point: 20,
-          description: "최소 1km 이상 보행 시 성공 처리||GPS 기반으로 사용자의 이동 경로 기록",
-          totalDistance: 0.0,
-          requiredDistance: 1.0,
-          remainingDistance: 1.0,
-          pathCount: 0,
-          status: "NOT_STARTED"
-        },
-        {
-          challengeId: 2,
-          title: "텀블러 사용",
-          imageUrl: "/uploads/challenge2.png",
-          point: 50,
-          description: "테이크아웃 또는 매장에서 음료를 받을 때||카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)",
-          totalDistance: 0.0,
-          requiredDistance: 1.0,
-          remainingDistance: 1.0,
-          pathCount: 0,
-          status: "NOT_STARTED"
+      if (response.success) {
+        console.log('챌린지 목록 로드 성공:', response.data);
+        // 페이지네이션 구조에서 content 배열 추출
+        const challengesList = response.data.content || response.data;
+        setChallenges(challengesList);
+        if (challengesList.length > 0) {
+          setCurrentChallenge(challengesList[0]); // 첫 번째 챌린지를 현재 챌린지로 설정
         }
-      ];
-      
-      setChallenges(tempChallenges);
-      setCurrentChallenge(tempChallenges[0]); // 첫 번째 챌린지를 현재 챌린지로 설정
-      
-      // 성공 시뮬레이션
-      console.log('챌린지 목록 로드 성공');
+      } else {
+        console.error('챌린지 목록 로드 실패:', response.error);
+        Alert.alert('오류', response.error || '챌린지 목록을 불러올 수 없습니다.');
+      }
       
     } catch (error) {
       console.error('챌린지 목록 로드 실패:', error);
@@ -168,7 +141,7 @@ export default function ChallengeScreen() {
               <Text style={styles.loadingText}>챌린지 목록을 불러오는 중...</Text>
             </View>
           ) : (
-            challenges.map((challenge) => (
+            challenges && challenges.length > 0 ? challenges.map((challenge) => (
               <TouchableOpacity 
                 key={challenge.challengeId}
                 style={styles.challengeCard}
@@ -188,7 +161,11 @@ export default function ChallengeScreen() {
                 />
                 <Text style={styles.challengePoints}>{challenge.point}p</Text>
               </TouchableOpacity>
-            ))
+            )) : (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>챌린지가 없습니다.</Text>
+              </View>
+            )
           )}
         </View>
 
@@ -408,5 +385,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard Variable',
     color: '#666666',
     textAlign: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontFamily: 'Pretendard Variable',
   },
 });

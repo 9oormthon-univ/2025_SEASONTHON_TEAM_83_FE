@@ -7,13 +7,20 @@
     "icon": "./assets/images/icon.png",
     "scheme": "pleanetapp",
     "extra": {
-      "kakaoApiKey": "c3ee702cb0fea17ff01715a1797c1de7"
+      "kakaoApiKey": "c3ee702cb0fea17ff01715a1797c1de7",
+      "router": {},
+      "eas": {
+        "projectId": "0bd0d5b6-8b2f-46ac-8d82-44eb3921b550"
+      }
     },
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pleanet.app"
+      "bundleIdentifier": "com.pleanet.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
