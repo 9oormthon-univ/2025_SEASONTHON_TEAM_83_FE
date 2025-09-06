@@ -209,43 +209,46 @@ const ChallengeCarousel = () => {
             onPress={() => handleChallengePress(challenge)}
             activeOpacity={0.8}
           >
-            <Text style={[
-              styles.cardTitle,
-              index === activeIndex ? styles.activeText : styles.inactiveText
-            ]}>
-              {challenge.title}
-            </Text>
+            {/* 배경 이미지 */}
+            {challenge.imageUrl ? (
+              <Image 
+                source={{ uri: challenge.imageUrl }} 
+                style={styles.backgroundImage}
+                resizeMode="cover"
+                onError={() => {
+                  console.log('이미지 로딩 실패:', challenge.imageUrl);
+                }}
+              />
+            ) : (
+              <View style={[
+                styles.backgroundIcon,
+                challenge.type === 'lastChallenge' ? styles.lastChallengeBackground : styles.recommendedBackground
+              ]}>
+                <Text style={styles.backgroundIconText}>
+                  {challenge.type === 'lastChallenge' ? '↻' : '★'}
+                </Text>
+              </View>
+            )}
             
-            <View style={styles.iconContainer}>
-              {challenge.imageUrl ? (
-                <Image 
-                  source={{ uri: challenge.imageUrl }} 
-                  style={styles.challengeImage}
-                  resizeMode="cover"
-                  onError={() => {
-                    console.log('이미지 로딩 실패:', challenge.imageUrl);
-                  }}
-                />
-              ) : (
-                <View style={[
-                  styles.iconBackground,
-                  challenge.type === 'lastChallenge' ? styles.lastChallengeIcon : styles.recommendedIcon
-                ]}>
-                  <View style={styles.squareIcon}>
-                    <Text style={styles.squareIconText}>
-                      {challenge.type === 'lastChallenge' ? '↻' : '★'}
-                    </Text>
-                  </View>
-                </View>
-              )}
+            {/* 오버레이 그라데이션 */}
+            <View style={styles.overlay} />
+            
+            {/* 텍스트 컨텐츠 */}
+            <View style={styles.contentContainer}>
+              <Text style={[
+                styles.cardTitle,
+                index === activeIndex ? styles.activeText : styles.inactiveText
+              ]}>
+                {challenge.title}
+              </Text>
+              
+              <Text style={[
+                styles.cardDescription,
+                index === activeIndex ? styles.activeText : styles.inactiveText
+              ]}>
+                {challenge.description}
+              </Text>
             </View>
-            
-            <Text style={[
-              styles.cardDescription,
-              index === activeIndex ? styles.activeText : styles.inactiveText
-            ]}>
-              {challenge.description}
-            </Text>
             
             {/* 포인트 표시 */}
             <View style={styles.pointContainer}>
@@ -283,7 +286,6 @@ const styles = StyleSheet.create({
     height: 148,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 16,
     marginHorizontal: cardSpacing / 2,
     shadowColor: '#000',
     shadowOffset: {
@@ -293,7 +295,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    justifyContent: 'space-between',
+    overflow: 'hidden',
+    position: 'relative',
   },
   activeCard: {
     shadowOpacity: 0.2,
@@ -305,16 +308,20 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
     fontFamily: 'Pretendard Variable',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   activeText: {
-    color: '#2D2D2D',
+    color: '#FFFFFF',
   },
   inactiveText: {
-    color: '#999999',
+    color: '#FFFFFF',
+    opacity: 0.7,
   },
   iconContainer: {
     alignItems: 'center',
@@ -370,10 +377,13 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   cardDescription: {
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 16,
+    fontSize: 13,
+    textAlign: 'left',
+    lineHeight: 18,
     fontFamily: 'Pretendard Variable',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   loadingContainer: {
     height: 148,
@@ -386,6 +396,57 @@ const styles = StyleSheet.create({
     color: '#666',
     fontFamily: 'Pretendard Variable',
   },
+  // 배경 이미지 스타일
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  backgroundIcon: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lastChallengeBackground: {
+    backgroundColor: '#E8F5E8',
+  },
+  recommendedBackground: {
+    backgroundColor: '#FFF3E0',
+  },
+  backgroundIconText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#333',
+    opacity: 0.3,
+  },
+  // 오버레이 스타일
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  // 컨텐츠 컨테이너
+  contentContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    zIndex: 2,
+  },
   challengeImage: {
     width: 80,
     height: 50,
@@ -395,10 +456,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#006256',
+    backgroundColor: 'rgba(0, 98, 86, 0.9)',
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    zIndex: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   pointText: {
     fontSize: 12,
