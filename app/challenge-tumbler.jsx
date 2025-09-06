@@ -69,8 +69,11 @@ export default function ChallengeTumblerScreen() {
 
         {/* 챌린지 상세 정보 */}
         <View style={styles.challengeDetailSection}>
-          {/* 챌린지 제목 */}
-          <Text style={styles.challengeTitle}>텀블러 사용</Text>
+          {/* 챌린지 제목과 포인트 */}
+          <View style={styles.titleRow}>
+            <Text style={styles.challengeTitle}>텀블러 사용</Text>
+            <Text style={styles.challengePoints}>50p</Text>
+          </View>
           
           {/* 챌린지 이미지 */}
           <View style={styles.imageContainer}>
@@ -79,7 +82,6 @@ export default function ChallengeTumblerScreen() {
               source={require('../assets/images/tumbler.png')}
               resizeMode="cover"
             />
-            <Text style={styles.challengePoints}>50p</Text>
           </View>
           
           {/* 구분선 */}
@@ -232,7 +234,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 15,
     right: 15,
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '700',
     color: '#006256',
     fontFamily: 'Pretendard Variable',

@@ -210,8 +210,11 @@ export default function ChallengeWalkScreen() {
             </View>
           ) : challengeDetail ? (
             <>
-              {/* 챌린지 제목 */}
-              <Text style={styles.challengeTitle}>{challengeDetail.title}</Text>
+              {/* 챌린지 제목과 포인트 */}
+              <View style={styles.titleRow}>
+                <Text style={styles.challengeTitle}>{challengeDetail.title}</Text>
+                <Text style={styles.challengePoints}>20p</Text>
+              </View>
               
               {/* 챌린지 이미지 */}
               <View style={styles.imageContainer}>
@@ -220,20 +223,10 @@ export default function ChallengeWalkScreen() {
                   source={require('../assets/images/walk_challenge.png')}
                   resizeMode="cover"
                 />
-                <Text style={styles.challengePoints}>{challengeDetail.point}p</Text>
               </View>
               
               {/* 구분선 */}
               <View style={styles.divider} />
-              
-              {/* 챌린지 조건 */}
-              <View style={styles.conditionSection}>
-                <Text style={styles.conditionTitle}>챌린지 조건</Text>
-                <Text style={styles.conditionText}>
-                  {challengeDetail.description.split('||')[0]}{'\n'}
-                  {challengeDetail.description.split('||')[1]}
-                </Text>
-              </View>
               
               {/* 챌린지 상태 확인 로딩 */}
               {isCheckingStatus && (
@@ -263,6 +256,15 @@ export default function ChallengeWalkScreen() {
                   <Text style={styles.noProgressSubText}>새로운 챌린지를 시작해보세요 🌱</Text>
                 </View>
               )}
+              
+              {/* 챌린지 조건 */}
+              <View style={styles.conditionSection}>
+                <Text style={styles.conditionTitle}>챌린지 조건</Text>
+                <Text style={styles.conditionText}>
+                  {challengeDetail.description.split('||')[0]}{'\n'}
+                  {challengeDetail.description.split('||')[1]}
+                </Text>
+              </View>
 
               {/* 포인트 지급 기준 */}
               <View style={styles.pointSection}>
@@ -388,6 +390,12 @@ const styles = StyleSheet.create({
   challengeDetailSection: {
     marginBottom: 100,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   challengeTitle: {
     fontSize: 20,
     letterSpacing: -0.2,
@@ -395,7 +403,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
-    marginBottom: 15,
+    flex: 1,
   },
   imageContainer: {
     position: 'relative',
@@ -407,10 +415,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   challengePoints: {
-    position: 'absolute',
-    bottom: 15,
-    right: 15,
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '700',
     color: '#006256',
     fontFamily: 'Pretendard Variable',
