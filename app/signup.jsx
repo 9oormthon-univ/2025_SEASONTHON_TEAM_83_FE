@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
     position: 'relative',
   },
   titlePattern: {
@@ -517,10 +517,10 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 40,
+    marginBottom: 1,
   },
   topInputs: {
-    marginBottom: 20, // 닉네임, 생년월일과 이메일 사이 공백
+    marginBottom: 15, // 닉네임, 생년월일과 이메일 사이 공백
   },
   bottomInputs: {
     // 이메일, 비밀번호, 비밀번호 재확인 그룹
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.inputBorder,
     paddingVertical: 12,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   socialGroup: {
     flexDirection: 'row',

@@ -342,8 +342,8 @@ const styles = StyleSheet.create({
     marginBottom: 30, // 헤더와 입력 필드 사이 여백 조정
   },
   logo: {
-    width: 300, // 150 * 1.5 = 225
-    height: 300, // 150 * 1.5 = 225
+    width: 280, // 150 * 1.5 = 225
+    height: 280, // 150 * 1.5 = 225
     marginBottom: 25, // 로고 아래 여백 조정
     resizeMode: 'contain', // 이미지 비율 유지
   },
