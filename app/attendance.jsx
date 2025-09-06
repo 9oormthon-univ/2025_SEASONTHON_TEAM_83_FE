@@ -13,7 +13,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function AttendanceScreen() {
   const router = useRouter();
   
-  const [currentMonth, setCurrentMonth] = useState(8);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [showPopup, setShowPopup] = useState(false);
   const [attendanceData, setAttendanceData] = useState({});
   const [monthlyPoints, setMonthlyPoints] = useState(0);
@@ -23,10 +23,11 @@ export default function AttendanceScreen() {
 
   const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
   const currentDate = new Date().getDate();
-  const currentYear = 2025;
+  const currentYear = new Date().getFullYear();
   
-  // 월별 데이터 생성 (6월부터 12월까지)
-  const months = [6, 7, 8, 9, 10, 11, 12];
+  // 월별 데이터 생성 (현재 월부터 12월까지)
+  const currentMonthNum = new Date().getMonth() + 1;
+  const months = Array.from({ length: 12 - currentMonthNum + 1 }, (_, i) => currentMonthNum + i);
 
   // 월별 출석 데이터 로드
   const loadMonthlyAttendance = async (month) => {
@@ -69,7 +70,10 @@ export default function AttendanceScreen() {
       const response = await AttendanceService.getAttendanceSummary();
       
       if (response.success) {
-        setMonthlyPoints(response.data.totalPoints);
+        console.log('출석 포인트 합계 API 응답 전체:', response);
+        console.log('response.data:', response.data);
+        console.log('totalPoints 값:', response.data?.totalPoints);
+        setMonthlyPoints(response.data?.totalPoints || 0);
         console.log('출석 포인트 합계 로드 성공:', response.data);
       } else {
         console.error('출석 포인트 합계 로드 실패:', response.error);
@@ -100,7 +104,9 @@ export default function AttendanceScreen() {
     try {
       setIsCheckingAttendance(true);
       
+      console.log('출석 체크 API 요청 시작');
       const response = await AttendanceService.checkAttendance();
+      console.log('출석 체크 API 응답 전체:', response);
       
       if (response.success) {
         // 출석 데이터 업데이트
@@ -109,9 +115,22 @@ export default function AttendanceScreen() {
         setAttendanceData(newAttendanceData);
         
         // 포인트 업데이트 (API 응답에서 포인트 정보가 있다면)
+        console.log('출석 체크 응답 데이터:', response.data);
+        console.log('earnedPoint 값:', response.data?.earnedPoint);
         if (response.data && response.data.earnedPoint) {
-          setMonthlyPoints(prev => prev + response.data.earnedPoint);
+          console.log('포인트 업데이트 전:', monthlyPoints);
+          setMonthlyPoints(prev => {
+            const newPoints = prev + response.data.earnedPoint;
+            console.log('포인트 업데이트 후:', newPoints);
+            return newPoints;
+          });
+        } else {
+          // 포인트 정보가 없으면 출석 포인트 합계를 다시 로드
+          console.log('출석 체크 응답에 포인트 정보가 없음. 출석 포인트 합계를 다시 로드합니다.');
+          loadAttendanceSummary();
         }
+        
+        // 출석 체크 후에는 백엔드 API를 다시 호출하지 않음 (프론트엔드에서만 업데이트)
         
         // 팝업 표시
         setShowPopup(true);
@@ -157,7 +176,7 @@ export default function AttendanceScreen() {
     // 날짜들
     for (let day = 1; day <= totalDays; day++) {
       const isAttended = attendanceData[day];
-      const isCurrentDay = day === currentDate && month === 8; // 8월 현재 날짜만 표시
+      const isCurrentDay = day === currentDate && month === currentMonth; // 현재 월의 현재 날짜 표시
       
       week.push(
         <View key={day} style={styles.dayContainer}>

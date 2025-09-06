@@ -76,7 +76,7 @@ export default function ChallengeTumblerScreen() {
           <View style={styles.imageContainer}>
             <Image 
               style={styles.challengeImage}
-              source={require('../assets/images/walk_challenge.png')}
+              source={require('../assets/images/tumbler.png')}
               resizeMode="cover"
             />
             <Text style={styles.challengePoints}>50p</Text>

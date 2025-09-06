@@ -3,25 +3,25 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    BackHandler,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import ActionButton from '../components/ActionButton';
 import BadgeStrip from '../components/BadgeStrip';
 import CustomTabBar from '../components/CustomTabBar';
-import HeaderBar from '../components/HeaderBar';
 import HistoryList from '../components/HistoryList';
 import ProfileCard from '../components/ProfileCard';
 import { PROFILE_COLORS, PROFILE_SIZES } from '../constants/ProfileConstants';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserProfile } from '../services/api';
+
+const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 /* =========================
  * Mock data
@@ -120,24 +120,96 @@ function Screen() {
   // 로딩 상태
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <StatusBar translucent={Platform.OS === 'android'} backgroundColor="transparent" barStyle="light-content" />
-        <HeaderBar title="My Page" />
+      <View style={styles.container}>
+        {/* 상단 헤더 */}
+        <View style={styles.header}>
+          <Image
+            style={styles.headerBackground}
+            source={require('../assets/images/bar_green.png')}
+          />
+          
+          {/* 뒤로가기 버튼 */}
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Image
+              source={require('../assets/images/icon_back_button.png')}
+              style={styles.backIcon}
+            />
+          </TouchableOpacity>
+          
+          {/* 중앙 로고 */}
+          <View style={styles.headerLogoContainer}>
+            <Image
+              source={icon_pleanet_logo}
+              style={styles.headerLogo}
+            />
+          </View>
+          
+          {/* 알림 버튼 */}
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => router.push('/notifications')}
+          >
+            <Image
+              source={require('../assets/images/icon_alarm.png')}
+              style={styles.notificationIcon}
+            />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
           <Text style={styles.loadingText}>유저 정보를 불러오는 중...</Text>
         </View>
         <CustomTabBar />
-      </SafeAreaView>
+      </View>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <StatusBar translucent={Platform.OS === 'android'} backgroundColor="transparent" barStyle="light-content" />
-        <HeaderBar title="My Page" />
+      <View style={styles.container}>
+        {/* 상단 헤더 */}
+        <View style={styles.header}>
+          <Image
+            style={styles.headerBackground}
+            source={require('../assets/images/bar_green.png')}
+          />
+          
+          {/* 뒤로가기 버튼 */}
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Image
+              source={require('../assets/images/icon_back_button.png')}
+              style={styles.backIcon}
+            />
+          </TouchableOpacity>
+          
+          {/* 중앙 로고 */}
+          <View style={styles.headerLogoContainer}>
+            <Image
+              source={icon_pleanet_logo}
+              style={styles.headerLogo}
+            />
+          </View>
+          
+          {/* 알림 버튼 */}
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => router.push('/notifications')}
+          >
+            <Image
+              source={require('../assets/images/icon_alarm.png')}
+              style={styles.notificationIcon}
+            />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <ActionButton
@@ -148,15 +220,49 @@ function Screen() {
           />
         </View>
         <CustomTabBar />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
-      <StatusBar translucent={Platform.OS === 'android'} backgroundColor="transparent" barStyle="light-content" />
-      
-      <HeaderBar title="My Page" />
+    <View style={styles.container}>
+      {/* 상단 헤더 */}
+      <View style={styles.header}>
+        <Image
+          style={styles.headerBackground}
+          source={require('../assets/images/bar_green.png')}
+        />
+        
+        {/* 뒤로가기 버튼 */}
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Image
+            source={require('../assets/images/icon_back_button.png')}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        
+        {/* 중앙 로고 */}
+        <View style={styles.headerLogoContainer}>
+          <Image
+            source={icon_pleanet_logo}
+            style={styles.headerLogo}
+          />
+        </View>
+        
+        {/* 알림 버튼 */}
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => router.push('/notifications')}
+        >
+          <Image
+            source={require('../assets/images/icon_alarm.png')}
+            style={styles.notificationIcon}
+          />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.content}>
         <ProfileCard
@@ -186,7 +292,7 @@ function Screen() {
       </View>
 
       <CustomTabBar />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -207,18 +313,70 @@ export default function MyPageScreen() {
     }, [router])
   );
 
-  // NOTE: 루트에서 이미 SafeAreaProvider를 제공한다면 이 Provider는 제거하세요.
-  return (
-    <SafeAreaProvider>
-      <Screen />
-    </SafeAreaProvider>
-  );
+  return <Screen />;
 }
 
 /* =========================
  * Styles
  * ======================= */
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9F8E1',
+  },
+  header: {
+    position: 'relative',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  headerLogoContainer: {
+    position: 'absolute',
+    zIndex: 1,
+    top: 50,
+  },
+  headerLogo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  notificationIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
   safe: { 
     flex: 1, 
     backgroundColor: PROFILE_COLORS.bg 

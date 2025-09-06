@@ -1,11 +1,39 @@
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import { getUserProfile } from '../services/api';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function BadgesScreen() {
   const router = useRouter();
+  const [userProfile, setUserProfile] = useState(null);
+
+  // 사용자 프로필 로드
+  const loadUserProfile = async () => {
+    try {
+      console.log('=== 사용자 프로필 로드 시작 ===');
+      const response = await getUserProfile();
+      
+      if (response.isSuccess) {
+        console.log('✅ 사용자 프로필 로드 성공');
+        console.log('사용자 정보:', response.result);
+        setUserProfile(response.result);
+      } else {
+        console.error('❌ 사용자 프로필 로드 실패');
+        console.error('에러:', response.message);
+      }
+    } catch (error) {
+      console.error('❌ 사용자 프로필 로드 중 오류 발생');
+      console.error('오류:', error);
+    }
+  };
+
+  // 컴포넌트 마운트 시 사용자 프로필 로드
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -60,7 +88,7 @@ export default function BadgesScreen() {
         {/* 사용자 정보 섹션 */}
         <View style={styles.userInfoSection}>
           <View style={styles.userInfoLeft}>
-            <Text style={styles.nicknameText}>닉네임</Text>
+            <Text style={styles.nicknameText}>{userProfile?.nickname || '닉네임'}</Text>
             <Image 
               source={require('../assets/images/icon_plant_level1.png')} 
               style={styles.profileIcon} 
@@ -301,14 +329,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: 10,
   },
   userInfoLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   nicknameText: {
-    width: 52,
+    width: 80,
     fontSize: 20,
     letterSpacing: -0.2,
     lineHeight: 28,
@@ -361,10 +389,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   badgeCard: {
-    padding: 20,
+    padding: 10,
   },
   badgeCategory: {
-    marginBottom: 25,
+    marginBottom: 15,
     marginHorizontal: 0,
   },
   activityBadgeContainer: {
