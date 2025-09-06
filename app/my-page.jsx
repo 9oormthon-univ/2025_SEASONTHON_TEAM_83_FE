@@ -108,7 +108,7 @@ function Screen() {
             <Text style={styles.itemDate}>{formatDate(item.createdAt || item.date)}</Text>
           </View>
         </View>
-        <Text style={styles.itemPoint}>{formatPointChange(item.point || item.amount)}</Text>
+        <Text style={styles.itemPoint}>{formatPointChange(item.pointChange)}</Text>
       </View>
     );
   };

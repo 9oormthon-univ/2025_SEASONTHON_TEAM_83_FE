@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   backIcon: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     resizeMode: 'contain',
   },
   headerLogoContainer: {
@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   notificationIcon: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     resizeMode: 'contain',
   },
   content: {
