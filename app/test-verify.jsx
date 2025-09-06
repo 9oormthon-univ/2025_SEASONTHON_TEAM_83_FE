@@ -3,13 +3,13 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import AuthService from '../services/authService';
 
@@ -85,7 +85,7 @@ export default function TestVerifyScreen() {
           • API: POST /api/challenges/5/verify{'\n'}
           • 챌린지 ID: 5 (텀블러 챌린지){'\n'}
           • JWT 토큰이 필요합니다{'\n'}
-          • 응답: success, reward, message
+          • 응답: success, message
         </Text>
       </View>
     </ScrollView>

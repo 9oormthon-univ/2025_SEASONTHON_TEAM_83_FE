@@ -1,9 +1,11 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import MapBorder from '../components/MapBorder';
+
 import { useAuth } from '../contexts/AuthContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -22,6 +24,7 @@ export default function ChallengeWalkProgressScreen() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [startLocation, setStartLocation] = useState(null);
@@ -29,6 +32,7 @@ export default function ChallengeWalkProgressScreen() {
   const [pathHistory, setPathHistory] = useState([]); // 이동 경로 히스토리
   const [mapCenter, setMapCenter] = useState(null); // 지도 중심점 (동적으로 설정)
   const [currentAddress, setCurrentAddress] = useState('위치 확인 중...'); // 현재 주소
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // 성공 모달 상태
   const mapRef = useRef(null); // MapBorder ref
 
   // 컴포넌트 마운트 시 초기 위치 가져오기
@@ -171,12 +175,6 @@ export default function ChallengeWalkProgressScreen() {
           distanceInterval: 10, // 10m 이동시마다 업데이트
         },
         (location) => {
-          // GPS 추적이 중지된 경우 위치 업데이트 무시
-          if (!isTracking) {
-            console.log('GPS 추적 중지됨, 위치 업데이트 무시');
-            return;
-          }
-          
           const { latitude, longitude } = location.coords;
           console.log('위치 업데이트:', { latitude, longitude });
           
@@ -224,24 +222,10 @@ export default function ChallengeWalkProgressScreen() {
               const newTotalDistance = Math.min(distance, 0.03);
               const newRemainingDistance = Math.max(0, 0.03 - distance);
               
-              // 거리 달성 시 자동으로 챌린지 완료 처리 (왼쪽이 오른쪽을 넘어가면)
+              // 거리 달성 시 자동으로 챌린지 완료 처리
               if (newTotalDistance >= 0.03 && prev.totalDistance < 0.03) {
-                console.log('🎉 거리 달성! 프로그래스바 목표 달성!');
+                console.log('🎉 거리 달성! 자동으로 챌린지 완료 처리');
                 setIsTracking(false); // GPS 추적 중지
-                
-                // 축하 팝업과 API 미션 완료 처리
-                Alert.alert(
-                  '🎉 축하합니다!',
-                  '20p 획득했습니다!',
-                  [
-                    {
-                      text: '확인',
-                      onPress: () => {
-                        handleCompleteChallenge();
-                      }
-                    }
-                  ]
-                );
               }
               
               return {
@@ -266,36 +250,6 @@ export default function ChallengeWalkProgressScreen() {
           sendGpsData(1, gpsData).then(response => {
             if (response.success) {
               console.log('GPS 데이터 전송 성공, 챌린지 상태 업데이트:', response.data);
-              
-              // 서버에서 챌린지 완료 상태 확인 (한 번만 처리)
-              if (response.data.status === 'SUCCESS' && challengeData.status !== 'SUCCESS') {
-                console.log('🎉 서버에서 챌린지 완료 감지! 자동으로 완료 처리');
-                
-                // 상태를 즉시 SUCCESS로 변경하여 중복 처리 방지
-                setChallengeData(prev => ({
-                  ...prev,
-                  status: 'SUCCESS'
-                }));
-                
-                // GPS 추적 완전 중지
-                setIsTracking(false);
-                console.log('GPS 추적 중지됨');
-                
-                // 축하 팝업과 API 미션 완료 처리
-                Alert.alert(
-                  '🎉 축하합니다!',
-                  '20p 획득했습니다!',
-                  [
-                    {
-                      text: '확인',
-                      onPress: () => {
-                        handleCompleteChallenge();
-                      }
-                    }
-                  ]
-                );
-              }
-              
               // 서버에서 받은 챌린지 상태 정보로 UI 업데이트
               setChallengeData(prev => ({
                 ...prev,
@@ -303,7 +257,7 @@ export default function ChallengeWalkProgressScreen() {
                 requiredDistance: response.data.requiredDistance || prev.requiredDistance,
                 remainingDistance: response.data.remainingDistance || prev.remainingDistance,
                 pathCount: response.data.pathCount || prev.pathCount,
-                status: response.data.status || prev.status,
+                status: response.data.status || "IN_PROGRESS",
               }));
             }
           }).catch(error => {
@@ -378,6 +332,19 @@ export default function ChallengeWalkProgressScreen() {
     }
   };
 
+  // 챌린지 상태 업데이트 및 SUCCESS 처리
+  const handleChallengeStatusUpdate = (status) => {
+    console.log('챌린지 상태 업데이트:', status);
+    
+    
+    
+    // status가 SUCCESS일 때 모달 표시
+    if (status === 'SUCCESS') {
+      console.log('🎉 챌린지 완료 감지! 성공 모달 표시');
+      setShowSuccessModal(true);
+    }
+  };
+
   // 챌린지 완료 처리
   const handleCompleteChallenge = async () => {
     try {
@@ -388,9 +355,6 @@ export default function ChallengeWalkProgressScreen() {
       
       if (response.success) {
         console.log('챌린지 완료 성공:', response.data);
-        console.log('획득 포인트:', response.data.rewardPoint);
-        console.log('완료 시간:', response.data.endedAt);
-        
         Alert.alert(
           '챌린지 완료!',
           `${response.data.rewardPoint || 20}포인트를 획득했습니다!`,
@@ -401,14 +365,45 @@ export default function ChallengeWalkProgressScreen() {
             }
           ]
         );
-      } else {
-        console.error('챌린지 완료 실패:', response);
-        Alert.alert('오류', response.error || '챌린지 완료에 실패했습니다.');
-      }
+        } else {
+          // 409 에러 (이미 리워드를 지급받은 미션)는 조용히 처리
+          if (response.error && response.error.includes('409')) {
+            console.log('이미 리워드를 지급받은 미션입니다. (409 에러 무시)');
+            Alert.alert(
+              '알림',
+              '이미 완료된 챌린지입니다.',
+              [{ text: '확인', onPress: () => router.push('/home') }]
+            );
+            return;
+          }
+          
+          Alert.alert('오류', response.error || '챌린지 완료에 실패했습니다.');
+        }
       
     } catch (error) {
+      // 409 에러 (이미 리워드를 지급받은 미션)는 조용히 처리
+      if (error.message && error.message.includes('409')) {
+        console.log('이미 리워드를 지급받은 미션입니다. (409 에러 무시)');
+        Alert.alert(
+          '알림',
+          '이미 완료된 챌린지입니다.',
+          [{ text: '확인', onPress: () => router.push('/home') }]
+        );
+        return;
+      }
+      
       console.error('챌린지 완료 실패:', error);
-      Alert.alert('오류', '챌린지 완료 중 오류가 발생했습니다.');
+      
+      // 403 에러 특별 처리
+      if (error.message.includes('403')) {
+        Alert.alert(
+          '권한 오류', 
+          '챌린지 완료 권한이 없습니다.\n토큰을 확인해주세요.',
+          [{ text: '확인' }]
+        );
+      } else {
+        Alert.alert('오류', `챌린지 완료 중 오류가 발생했습니다.\n${error.message}`);
+      }
     } finally {
       setIsCompleting(false);
     }
@@ -433,11 +428,13 @@ export default function ChallengeWalkProgressScreen() {
           console.log('초기 챌린지 상태 확인:', response.data);
           setChallengeData(prev => ({
             ...prev,
-            totalDistance: response.data.totalDistance || 0,
-            requiredDistance: response.data.requiredDistance || 1.0,
-            remainingDistance: response.data.remainingDistance || 1.0,
-            pathCount: response.data.pathCount || 0,
+            totalDistance: response.data.totalDistance || prev.totalDistance,
+            requiredDistance: response.data.requiredDistance || prev.requiredDistance,
+            remainingDistance: response.data.remainingDistance || prev.remainingDistance,
+            pathCount: response.data.pathCount || prev.pathCount,
+            status: response.data.status || "IN_PROGRESS",
           }));
+          handleChallengeStatusUpdate(response.data);
         }
       }
     } catch (error) {
@@ -547,18 +544,7 @@ export default function ChallengeWalkProgressScreen() {
             backgroundImageOpacity={0.3}
           />
           
-          {/* 지도 리셋 버튼 */}
-          <TouchableOpacity 
-            style={styles.resetButton}
-            onPress={() => {
-              if (mapRef.current) {
-                mapRef.current.resetMap();
-                console.log('지도 리셋 완료');
-              }
-            }}
-          >
-            <Text style={styles.resetButtonText}>지도 리셋</Text>
-          </TouchableOpacity>
+         
 
           {/* 지도 오버레이 정보 */}
           <View style={styles.mapOverlay}>
@@ -579,29 +565,21 @@ export default function ChallengeWalkProgressScreen() {
           </View>
         </View>
 
-        {/* 거리 정보 */}
-        <View style={styles.distanceInfo}>
-          <View style={styles.distanceItem}>
-            <Text style={styles.distanceLabel}>현재 거리</Text>
-            <Text style={styles.distanceValue}>{challengeData.totalDistance.toFixed(2)}km</Text>
-          </View>
-          <View style={styles.distanceItem}>
-            <Text style={styles.distanceLabel}>남은 거리</Text>
-            <Text style={styles.distanceValue}>{challengeData.remainingDistance.toFixed(2)}km</Text>
-          </View>
-          <View style={styles.distanceItem}>
-            <Text style={styles.distanceLabel}>경로 포인트</Text>
-            <Text style={styles.distanceValue}>{challengeData.pathCount}개</Text>
-          </View>
-        </View>
+       
 
         {/* 완료 버튼 */}
-        <TouchableOpacity 
+<TouchableOpacity 
           style={[
             styles.completeButton, 
             (isCompleting || challengeData.totalDistance < challengeData.requiredDistance) && styles.disabledButton
           ]}
-          onPress={handleCompleteChallenge}
+            onPress={() => {
+              // challengeData.status가 SUCCESS일 때만 모달 표시
+              
+                setShowSuccessModal(true);
+              
+            }}
+          
           disabled={isCompleting || challengeData.totalDistance < challengeData.requiredDistance}
         >
           {isCompleting ? (
@@ -614,6 +592,51 @@ export default function ChallengeWalkProgressScreen() {
         </TouchableOpacity>
       </View>
       
+
+      {/* 챌린지 성공 모달 */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowSuccessModal(false)}
+            >
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalTitle}>챌린지 성공!</Text>
+            
+            <TouchableOpacity 
+              style={[styles.rewardButton, isVerifying && styles.disabledButton]}
+              onPress={handleCompleteChallenge}
+              disabled={isCompleting}
+            >
+              {isVerifying ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.rewardButtonText}>리워드 받기</Text>
+              )}
+            </TouchableOpacity>
+            
+            <LinearGradient 
+              style={styles.modalGradient} 
+              colors={['#fffff6', '#faf8d7', '#a0f4eb']} 
+              start={{x: 0, y: 0}} 
+              end={{x: 1, y: 0}}
+            />
+          </View>
+        </View>
+              </Modal>
+        
+  
+
+
+
       <CustomTabBar />
     </View>
   );
@@ -726,7 +749,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   mapContainer: {
-    height: 600, // 400에서 600으로 증가 (3배 더 큰 화면)
+    height: 400, // 400에서 600으로 증가 (3배 더 큰 화면)
     marginBottom: 30,
     borderRadius: 20,
     overflow: 'hidden',
@@ -867,5 +890,97 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard Variable',
     color: '#00AA00',
     fontWeight: '600',
+  },
+
+
+
+
+
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    height: 183,
+    width: '80%',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#d6d6d6',
+    borderStyle: 'solid',
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  modalTitle: {
+    fontSize: 24,
+    letterSpacing: -0.3,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#0061E9',
+    textAlign: 'center',
+    marginBottom: 30,
+    zIndex: 1,
+  },
+  rewardButton: {
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 1,
+  },
+  rewardButtonText: {
+    fontSize: 16,
+    letterSpacing: 0.3,
+    lineHeight: 24,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#FFFFFF',
+  },
+  modalGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
 });

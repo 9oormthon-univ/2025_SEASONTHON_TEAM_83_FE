@@ -30,46 +30,46 @@ export default function ChallengeWalkScreen() {
   });
 
   // 챌린지 상태 확인 (GPS 데이터 전송으로)
-  const checkChallengeStatus = async () => {
-    try {
-      setIsCheckingStatus(true);
-      setStatusCheckComplete(false);
+  // const checkChallengeStatus = async () => {
+    // try {
+    //   setIsCheckingStatus(true);
+    //   setStatusCheckComplete(false);
       
-      // 현재 위치를 가져와서 GPS 데이터 전송으로 상태 확인
-      const location = await getCurrentLocation();
-      if (location) {
-        const gpsData = {
-          latitude: location.lat,
-          longitude: location.lng,
-          timestamp: new Date().toISOString(),
-          recordedAt: new Date().toISOString(),
-          accuracy: 0,
-        };
+  //     // 현재 위치를 가져와서 GPS 데이터 전송으로 상태 확인
+  //     const location = await getCurrentLocation();
+  //     if (location) {
+  //       const gpsData = {
+  //         latitude: location.lat,
+  //         longitude: location.lng,
+  //         timestamp: new Date().toISOString(),
+  //         recordedAt: new Date().toISOString(),
+  //         accuracy: 0,
+  //       };
         
-        const response = await sendGpsData(1, gpsData);
-        if (response.success) {
-          console.log('챌린지 상태 확인 성공:', response.data);
-          setChallengeStatus(response.data);
-          setIsInProgress(response.data.status === 'IN_PROGRESS');
-        } else {
-          console.log('챌린지 상태 확인 실패:', response.error);
-          setIsInProgress(false);
-          setChallengeStatus(null);
-        }
-      } else {
-        console.log('위치 정보를 가져올 수 없음');
-        setIsInProgress(false);
-        setChallengeStatus(null);
-      }
-    } catch (error) {
-      console.log('챌린지 상태 확인 실패:', error.message);
-      setIsInProgress(false);
-      setChallengeStatus(null);
-    } finally {
-      setIsCheckingStatus(false);
-      setStatusCheckComplete(true);
-    }
-  };
+  //       const response = await sendGpsData(1, gpsData);
+  //       if (response.success) {
+  //         console.log('챌린지 상태 확인 성공:', response.data);
+  //         setChallengeStatus(response.data);
+  //         setIsInProgress(response.data.status === 'IN_PROGRESS');
+  //       } else {
+  //         console.log('챌린지 상태 확인 실패:', response.error);
+  //         setIsInProgress(false);
+  //         setChallengeStatus(null);
+  //       }
+  //     } else {
+  //       console.log('위치 정보를 가져올 수 없음');
+  //       setIsInProgress(false);
+  //       setChallengeStatus(null);
+  //     }
+  //   } catch (error) {
+  //     console.log('챌린지 상태 확인 실패:', error.message);
+  //     setIsInProgress(false);
+  //     setChallengeStatus(null);
+  //   } finally {
+  //     setIsCheckingStatus(false);
+  //     setStatusCheckComplete(true);
+  //   }
+  // };
 
   // 현재 위치 가져오기 (간단한 버전)
   const getCurrentLocation = async () => {
@@ -148,7 +148,7 @@ export default function ChallengeWalkScreen() {
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadChallengeDetail();
-    checkChallengeStatus(); // 챌린지 상태 확인
+    // checkChallengeStatus(); // 챌린지 상태 확인
   }, []);
 
   return (

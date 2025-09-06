@@ -1,8 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRouter } from 'expo-router';
+
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import { useAuth } from '../contexts/AuthContext';
 import { TokenManager } from '../services/api';
@@ -13,8 +15,10 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function ChallengeTumblerUploadScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const { uploadChallengePhoto, verifyChallenge } = useAuth();
+  const { uploadChallengePhoto, verifyChallenge, completeChallenge } = useAuth();
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showRewardPopup, setShowRewardPopup] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(null);
@@ -118,6 +122,16 @@ export default function ChallengeTumblerUploadScreen() {
       }
 
       if (!uploadResponse.ok) {
+        // 409 에러는 조용히 처리 (이미 리워드를 지급받은 미션)
+        if (uploadResponse.status === 409) {
+          console.log('이미 리워드를 지급받은 미션입니다. (409 에러 무시)');
+          return {
+            success: false,
+            error: '이미 리워드를 지급받은 미션입니다.',
+            isAlreadyCompleted: true
+          };
+        }
+        
         console.error(`❌ HTTP 오류: ${uploadResponse.status}`);
         console.error(`오류 메시지: ${uploadData.message || '요청 실패'}`);
         
@@ -161,6 +175,7 @@ export default function ChallengeTumblerUploadScreen() {
       setUploadedImage(uploadResult.data?.photoUrl);
       setUploadedPhotoUrl(uploadResult.data?.photoUrl);
       setUploadSuccess(true);
+
       
       Alert.alert(
         '업로드 완료',
@@ -276,6 +291,37 @@ export default function ChallengeTumblerUploadScreen() {
     }
   };
 
+  const handleVerifyChallenge = async () => {
+    try {
+
+      setIsVerifying(true);
+      console.log('사진 인증 검증 시작ㄹㄹㅇㅇ');
+      
+      const response = await completeChallenge(2);
+      
+      if (response.success) {
+        console.log('사진 인증 검증 성공:', response.data);
+        Alert.alert(
+          '인증 성공!', 
+          `챌린지 인증이 완료되었습니다!\n리워드: ${response.data.rewardPoint || 0}포인트`,
+          [
+            {
+              text: '확인',
+              onPress: () => router.push('/home'),
+            },
+          ]
+        );
+      } else {
+        console.error('사진 인증 검증 실패:', response.error);
+        Alert.alert('인증 실패', response.error || '사진 인증에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('사진 인증 검증 오류:', error);
+      Alert.alert('오류', '사진 인증 중 오류가 발생했습니다.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
   // 챌린지 완료 처리 (검증만)
   const handleCompleteChallenge = async () => {
     if (!uploadSuccess) {
@@ -309,6 +355,7 @@ export default function ChallengeTumblerUploadScreen() {
           setUploadSuccess(true);
           setUploadedPhotoUrl(uploadedPhotoUrl);
           setUploadedImage(uploadedImage);
+          setShowModal(true)
           
           // 포인트 획득 알림
           if (verifyResult.data.reward && verifyResult.data.reward > 0) {
@@ -357,6 +404,17 @@ export default function ChallengeTumblerUploadScreen() {
           );
         }
       } else {
+        // 409 에러 (이미 리워드를 지급받은 미션)는 조용히 처리
+        if (verifyResult.error && verifyResult.error.includes('409')) {
+          console.log('이미 리워드를 지급받은 미션입니다. (409 에러 무시)');
+          Alert.alert(
+            '알림',
+            '이미 완료된 챌린지입니다.',
+            [{ text: '확인', onPress: () => router.push('/home') }]
+          );
+          return;
+        }
+        
         console.error('❌ 텀블러 챌린지 인증 API 오류');
         console.error('오류:', verifyResult.error);
         // AI 서버 오류인 경우 특별한 메시지 표시
@@ -370,6 +428,17 @@ export default function ChallengeTumblerUploadScreen() {
         );
       }
     } catch (error) {
+      // 409 에러 (이미 리워드를 지급받은 미션)는 조용히 처리
+      if (error.message && error.message.includes('409')) {
+        console.log('이미 리워드를 지급받은 미션입니다. (409 에러 무시)');
+        Alert.alert(
+          '알림',
+          '이미 완료된 챌린지입니다.',
+          [{ text: '확인', onPress: () => router.push('/home') }]
+        );
+        return;
+      }
+      
       console.error('❌ 텀블러 챌린지 검증 오류 발생');
       console.error('오류 타입:', error.constructor.name);
       console.error('오류 메시지:', error.message);
@@ -544,9 +613,54 @@ export default function ChallengeTumblerUploadScreen() {
               </Text>
             )}
           </TouchableOpacity>
+          
         </View>
       </ScrollView>
       
+
+      {/* 챌린지 성공 모달 */}
+      <Modal
+        visible={showModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowModal(false)}
+            >
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalTitle}>챌린지 성공!</Text>
+            
+            <TouchableOpacity 
+              style={[styles.rewardButton, isVerifying && styles.disabledButton]}
+              onPress={handleVerifyChallenge}
+              disabled={isVerifying}
+            >
+              {isVerifying ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.rewardButtonText}>리워드 받기</Text>
+              )}
+            </TouchableOpacity>
+            
+            <LinearGradient 
+              style={styles.modalGradient} 
+              colors={['#fffff6', '#faf8d7', '#a0f4eb']} 
+              start={{x: 0, y: 0}} 
+              end={{x: 1, y: 0}}
+            />
+          </View>
+        </View>
+              </Modal>
+        
+        
+
+
       <CustomTabBar />
     </View>
   );
@@ -854,5 +968,95 @@ const styles = StyleSheet.create({
     color: '#006256',
     fontFamily: 'Pretendard Variable',
     fontWeight: '500',
+  },
+
+
+
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    height: 183,
+    width: '80%',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#d6d6d6',
+    borderStyle: 'solid',
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  modalTitle: {
+    fontSize: 24,
+    letterSpacing: -0.3,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#0061E9',
+    textAlign: 'center',
+    marginBottom: 30,
+    zIndex: 1,
+  },
+  rewardButton: {
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 1,
+  },
+  rewardButtonText: {
+    fontSize: 16,
+    letterSpacing: 0.3,
+    lineHeight: 24,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#FFFFFF',
+  },
+  modalGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
 });

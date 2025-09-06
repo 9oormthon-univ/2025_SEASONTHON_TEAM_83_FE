@@ -1,7 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation, useRouter } from 'expo-router';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
+import { useAuth } from '../contexts/AuthContext';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 const { width: screenWidth } = Dimensions.get('window');
@@ -9,6 +11,8 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function ChallengeTumblerScreen() {
   const router = useRouter();
   const navigation = useNavigation();
+  const { startChallenge } = useAuth();
+  const [isStarting, setIsStarting] = useState(false);
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -16,6 +20,52 @@ export default function ChallengeTumblerScreen() {
       headerShown: false,
     });
   });
+
+  // 챌린지 시작 처리
+  const handleStartChallenge = async () => {
+    try {
+      setIsStarting(true);
+      console.log('=== 텀블러 챌린지 시작 API 호출 ===');
+      
+      const result = await startChallenge(2); // 텀블러 챌린지 ID: 2
+      
+      console.log('=== 챌린지 시작 API 응답 ===');
+      console.log('전체 응답:', JSON.stringify(result, null, 2));
+      console.log('성공 여부:', result.success);
+      console.log('데이터:', result.data);
+      console.log('에러:', result.error);
+      
+      if (result.success) {
+        console.log('✅ 챌린지 시작 성공');
+        Alert.alert(
+          '챌린지 시작!',
+          '텀블러 챌린지가 시작되었습니다.\n이제 사진을 업로드해주세요.',
+          [
+            {
+              text: '확인',
+              onPress: () => router.push('/challenge-tumbler-upload')
+            }
+          ]
+        );
+      } else {
+        console.log('⚠️ 챌린지 시작 실패');
+        Alert.alert(
+          '챌린지 시작 실패',
+          result.error || '챌린지 시작에 실패했습니다. 다시 시도해주세요.',
+          [{ text: '확인' }]
+        );
+      }
+    } catch (error) {
+      console.error('❌ 챌린지 시작 오류:', error);
+      Alert.alert(
+        '오류',
+        `챌린지 시작 중 오류가 발생했습니다.\n${error.message}`,
+        [{ text: '확인' }]
+      );
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -112,10 +162,21 @@ export default function ChallengeTumblerScreen() {
           
           {/* 챌린지 시작 버튼 */}
           <TouchableOpacity 
-            style={styles.startButton}
-            onPress={() => router.push('/challenge-tumbler-upload')}
+            style={[
+              styles.startButton,
+              isStarting && styles.disabledButton
+            ]}
+            onPress={handleStartChallenge}
+            disabled={isStarting}
           >
-            <Text style={styles.startButtonText}>챌린지 시작</Text>
+            {isStarting ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color="#FFFFFF" size="small" />
+                <Text style={styles.startButtonText}>시작 중...</Text>
+              </View>
+            ) : (
+              <Text style={styles.startButtonText}>챌린지 시작</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -319,5 +380,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Pretendard Variable',
     color: '#FFFFFF',
+  },
+  disabledButton: {
+    backgroundColor: '#CCCCCC',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
