@@ -65,9 +65,9 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     backgroundColor: 'rgba(249, 248, 225, 0.4)',
-    borderRadius: 25,
+    borderRadius: 40,
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 25,
   },
   iconContainer: {
-    width: 24,
-    height: 24,
+    width: 16,
+    height: 16,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: '#2D2D2D',
