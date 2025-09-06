@@ -550,13 +550,16 @@ export const AuthService = {
   // 챌린지 완료 (리워드 받기)
   async completeChallenge(challengeId) {
     try {
-      const response = await apiClient.get(`${API_ENDPOINTS.CHALLENGE_COMPLETE}/${challengeId}/reward`);
+      console.log('🎯 챌린지 완료 API 호출:', challengeId);
+      const response = await apiClient.post(`${API_ENDPOINTS.CHALLENGE_COMPLETE}/${challengeId}/complete`);
+      console.log('🎯 챌린지 완료 API 응답:', response);
       return {
         success: true,
         data: response.result,
         message: response.message,
       };
     } catch (error) {
+      console.error('🎯 챌린지 완료 API 오류:', error);
       return {
         success: false,
         error: error.message,

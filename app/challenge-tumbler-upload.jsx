@@ -13,14 +13,13 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function ChallengeTumblerUploadScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const { startChallenge, uploadChallengePhoto, verifyChallenge } = useAuth();
+  const { uploadChallengePhoto, verifyChallenge } = useAuth();
   const [selectedImage, setSelectedImage] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [challengeStarted, setChallengeStarted] = useState(false);
   
   // 헤더 숨기기
   useFocusEffect(() => {
@@ -39,43 +38,8 @@ export default function ChallengeTumblerUploadScreen() {
       console.log('사진 URI:', photoUri);
       console.log('챌린지 ID: 2 (텀블러 챌린지)');
       
-      // 1단계: 챌린지 시작 (한 번만 호출)
-      if (!challengeStarted) {
-        console.log('=== 1단계: 챌린지 시작 API 호출 ===');
-        const startResult = await startChallenge(2);
-        
-        console.log('=== 챌린지 시작 API 응답 ===');
-        console.log('전체 응답:', JSON.stringify(startResult, null, 2));
-        console.log('성공 여부:', startResult.success);
-        console.log('데이터:', startResult.data);
-        console.log('에러:', startResult.error);
-        
-        if (startResult.success) {
-          console.log('✅ 챌린지 시작 성공');
-          setChallengeStarted(true);
-        } else {
-          console.log('⚠️ 챌린지 시작 실패 또는 이미 참여 중');
-          console.log('에러 메시지:', startResult.error);
-          // 이미 참여 중인 경우는 계속 진행
-          if (startResult.error?.includes('참여중인 미션이 있습니다')) {
-            console.log('✅ 이미 참여 중인 챌린지 확인됨');
-            setChallengeStarted(true);
-          } else {
-            console.error('❌ 챌린지 시작 실패');
-            Alert.alert(
-              '챌린지 시작 실패',
-              startResult.error || '챌린지 시작에 실패했습니다. 다시 시도해주세요.',
-              [{ text: '확인' }]
-            );
-            return;
-          }
-        }
-      } else {
-        console.log('✅ 챌린지가 이미 시작됨 - 시작 단계 건너뜀');
-      }
-      
-      // 2단계: 사진 업로드 API 호출 (무한 업로드 가능)
-      console.log('=== 2단계: 사진 업로드 API 호출 ===');
+      // 사진 업로드 API 호출 (미션 시작 여부와 상관없이 업로드)
+      console.log('=== 사진 업로드 API 호출 ===');
       
       // FormData 생성
       const formData = new FormData();
