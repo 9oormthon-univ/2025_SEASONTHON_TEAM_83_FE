@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import NotificationDetailModal from '../components/NotificationDetailModal';
 
@@ -9,14 +9,14 @@ const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 export default function NotificationsScreen() {
   const router = useRouter();
   const [readProcessing, setReadProcessing] = useState(false);
-  const [deleteAll, setDeleteAll] = useState(true);
+  const [deleteAll, setDeleteAll] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-
-  const notifications = [
+  const [readNotifications, setReadNotifications] = useState(new Set());
+  const [notifications, setNotifications] = useState([
     { 
       id: 1, 
       content: '텀블러 사용 인증 성공! 50P가 쌓였어요.', 
@@ -53,7 +53,7 @@ export default function NotificationsScreen() {
       type: 'reward',
       isSelected: false 
     },
-  ];
+  ]);
 
   const toggleNotification = (id) => {
     if (!isSelectionMode) return;
@@ -65,8 +65,45 @@ export default function NotificationsScreen() {
     );
   };
 
-  const toggleReadProcessing = () => setReadProcessing(!readProcessing);
-  const toggleDeleteAll = () => setDeleteAll(!deleteAll);
+  const toggleReadProcessing = () => {
+    const newReadProcessing = !readProcessing;
+    setReadProcessing(newReadProcessing);
+    
+    if (newReadProcessing) {
+      // 모든 알림을 읽음 처리
+      const allNotificationIds = notifications.map(n => n.id);
+      setReadNotifications(new Set(allNotificationIds));
+    }
+  };
+
+  const toggleDeleteAll = () => {
+    const newDeleteAll = !deleteAll;
+    setDeleteAll(newDeleteAll);
+    
+    if (newDeleteAll) {
+      // 전체 삭제 확인 팝업
+      Alert.alert(
+        '전체 삭제',
+        '모든 알림을 삭제하시겠습니까?',
+        [
+          {
+            text: '취소',
+            onPress: () => setDeleteAll(false),
+            style: 'cancel'
+          },
+          {
+            text: '삭제',
+            onPress: () => {
+              setNotifications([]);
+              setReadNotifications(new Set());
+              setSelectedNotifications([]);
+            },
+            style: 'destructive'
+          }
+        ]
+      );
+    }
+  };
 
   const toggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
@@ -96,9 +133,12 @@ export default function NotificationsScreen() {
       // 선택 모드일 때는 토글만
       toggleNotification(notification.id);
     } else {
-      // 일반 모드일 때는 상세 모달 표시
+      // 일반 모드일 때는 상세 모달 표시하고 읽음 처리
       setSelectedNotification(notification);
       setShowDetailModal(true);
+      
+      // 해당 알림을 읽음 처리
+      setReadNotifications(prev => new Set([...prev, notification.id]));
     }
   };
 
@@ -216,41 +256,47 @@ export default function NotificationsScreen() {
 
         {/* 알림 목록 */}
         <View style={styles.notificationList}>
-          {notifications.map((notification, index) => (
-            <TouchableOpacity
-              key={notification.id}
-              style={[
-                styles.notificationItem,
-                index === 0 && styles.firstItem,
-                index === notifications.length - 1 && styles.lastItem,
-                isSelectionMode && styles.notificationItemSelectionMode,
-              ]}
-              onPress={() => handleNotificationPress(notification)}
-            >
-              <View style={styles.notificationContentContainer}>
-                <View style={[styles.typeBadge, { backgroundColor: getTypeColor(notification.type) }]}>
-                  <Text style={styles.typeText}>{getTypeLabel(notification.type)}</Text>
+          {notifications.map((notification, index) => {
+            const isRead = readNotifications.has(notification.id);
+            return (
+              <TouchableOpacity
+                key={notification.id}
+                style={[
+                  styles.notificationItem,
+                  index === 0 && styles.firstItem,
+                  index === notifications.length - 1 && styles.lastItem,
+                  isSelectionMode && styles.notificationItemSelectionMode,
+                ]}
+                onPress={() => handleNotificationPress(notification)}
+              >
+                <View style={styles.notificationContentContainer}>
+                  <View style={[styles.typeBadge, { backgroundColor: getTypeColor(notification.type) }]}>
+                    <Text style={styles.typeText}>{getTypeLabel(notification.type)}</Text>
+                  </View>
+                  <Text style={[
+                    styles.notificationContent,
+                    isRead && styles.readNotificationContent
+                  ]}>
+                    {notification.content.length > 10 
+                      ? notification.content.substring(0, 10) + '...' 
+                      : notification.content
+                    }
+                  </Text>
                 </View>
-                <Text style={styles.notificationContent}>
-                  {notification.content.length > 10 
-                    ? notification.content.substring(0, 10) + '...' 
-                    : notification.content
-                  }
-                </Text>
-              </View>
-              {isSelectionMode && (
-                <TouchableOpacity 
-                  style={styles.radioButton}
-                  onPress={() => toggleNotification(notification.id)}
-                >
-                  <View style={[
-                    styles.radioCircle,
-                    selectedNotifications.includes(notification.id) && styles.radioCircleSelected
-                  ]} />
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ))}
+                {isSelectionMode && (
+                  <TouchableOpacity 
+                    style={styles.radioButton}
+                    onPress={() => toggleNotification(notification.id)}
+                  >
+                    <View style={[
+                      styles.radioCircle,
+                      selectedNotifications.includes(notification.id) && styles.radioCircleSelected
+                    ]} />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
       
@@ -472,6 +518,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard Variable',
     color: '#525252',
     flex: 1,
+  },
+  readNotificationContent: {
+    color: '#9E9E9E',
   },
   radioButton: {
     width: 20,
