@@ -8,22 +8,40 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '../contexts/AuthContext';
 import { PointProvider } from '../contexts/PointContext';
 
+// 프로덕션 환경에서 콘솔 로그 비활성화 (폰트 로딩 완료 후에만 적용)
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   
-  // 폰트 로딩 활성화
-  const [fontsLoaded] = useFonts({
+  // 폰트 로딩 활성화 (에러 처리 추가)
+  const [fontsLoaded, fontError] = useFonts({
     '109LeantheWall': require('../assets/fonts/109LeantheWall.ttf'),
     'Pretendard Variable': require('../assets/fonts/PretendardVariable.ttf'),
     'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!fontsLoaded) {
-    console.log('폰트 로딩 중...');
-    return null; // 폰트가 로드될 때까지 대기
+  // 폰트 로딩 에러 처리
+  if (fontError) {
+    console.error('폰트 로딩 에러:', fontError);
   }
 
-  console.log('폰트 로딩 완료');
+  // 폰트 로딩 중일 때만 대기 (에러가 있어도 계속 진행)
+  if (!fontsLoaded && !fontError) {
+    console.log('폰트 로딩 중...');
+    return null;
+  }
+
+  if (fontsLoaded) {
+    console.log('폰트 로딩 완료');
+  }
+  
+  // 폰트 로딩 완료 후 프로덕션 환경에서 콘솔 로그 비활성화
+  if (!__DEV__) {
+    console.log = () => {};
+    console.error = () => {};
+    console.warn = () => {};
+    console.info = () => {};
+  }
 
   return (
     <AuthProvider>
