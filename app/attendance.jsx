@@ -1,0 +1,608 @@
+// app/attendance.jsx
+
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CustomTabBar from '../components/CustomTabBar';
+import PopUpAlerts from '../components/PopUpAlerts';
+import AttendanceService from '../services/attendanceService';
+
+const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
+const { width: screenWidth } = Dimensions.get('window');
+
+export default function AttendanceScreen() {
+  const router = useRouter();
+  
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [showPopup, setShowPopup] = useState(false);
+  const [attendanceData, setAttendanceData] = useState({});
+  const [monthlyPoints, setMonthlyPoints] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
+  const [attendanceSummary, setAttendanceSummary] = useState(null);
+
+  const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+  const currentDate = new Date().getDate();
+  const currentYear = new Date().getFullYear();
+  
+  // 월별 데이터 생성 (현재 월부터 12월까지)
+  const currentMonthNum = new Date().getMonth() + 1;
+  const months = Array.from({ length: 12 - currentMonthNum + 1 }, (_, i) => currentMonthNum + i);
+
+  // 월별 출석 데이터 로드
+  const loadMonthlyAttendance = async (month) => {
+    try {
+      setIsLoading(true);
+      
+      // 현재 년도와 월을 사용하여 API 호출
+      const currentYear = new Date().getFullYear();
+      const yearMonth = `${currentYear}-${month.toString().padStart(2, '0')}`;
+      
+      console.log(`월별 출석 데이터 로드 시작: ${yearMonth}`);
+      
+      const response = await AttendanceService.getMonthlyAttendance();
+      
+      if (response.success) {
+        const { month: responseMonth, attendances } = response.data;
+        const [year, monthNum] = responseMonth.split('-');
+        
+        console.log(`API 응답 월: ${responseMonth}, 요청 월: ${yearMonth}`);
+        
+        // 현재 월과 응답 월이 일치하는 경우에만 데이터 설정
+        if (parseInt(monthNum) === month) {
+          const tempAttendanceData = {};
+          attendances.forEach(attendance => {
+            const day = parseInt(attendance.date.split('-')[2]);
+            tempAttendanceData[day] = attendance.checked;
+          });
+          setAttendanceData(tempAttendanceData);
+          console.log(`월별 출석 데이터 설정 완료: ${month}월`, tempAttendanceData);
+        } else {
+          // 다른 월의 경우 빈 데이터로 초기화
+          setAttendanceData({});
+          console.log(`다른 월 데이터이므로 초기화: API=${responseMonth}, 요청=${yearMonth}`);
+        }
+        
+        console.log('월별 출석 데이터 로드 성공:', response.data);
+      } else {
+        console.error('월별 출석 데이터 로드 실패:', response.error);
+        Alert.alert('오류', '출석 데이터를 불러오는데 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('월별 출석 데이터 로드 실패:', error);
+      Alert.alert('오류', '출석 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 출석 포인트 합계 로드
+  const loadAttendanceSummary = async () => {
+    try {
+      const response = await AttendanceService.getAttendanceSummary();
+      
+      if (response.success) {
+        console.log('출석 포인트 합계 API 응답 전체:', response);
+        console.log('response.data:', response.data);
+        console.log('totalPoints 값:', response.data?.totalPoints);
+        setMonthlyPoints(response.data?.totalPoints || 0);
+        console.log('출석 포인트 합계 로드 성공:', response.data);
+      } else {
+        console.error('출석 포인트 합계 로드 실패:', response.error);
+        Alert.alert('오류', '출석 포인트를 불러오는데 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('출석 포인트 합계 로드 실패:', error);
+      Alert.alert('오류', '출석 포인트를 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadMonthlyAttendance(currentMonth);
+    loadAttendanceSummary();
+  }, [currentMonth]);
+
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
+  };
+  
+  const getFirstDayOfMonth = (year, month) => {
+    return new Date(year, month - 1, 1).getDay();
+  };
+
+  const handleAttendance = async () => {
+    try {
+      setIsCheckingAttendance(true);
+      
+      console.log('출석 체크 API 요청 시작');
+      const response = await AttendanceService.checkAttendance();
+      console.log('출석 체크 API 응답 전체:', response);
+      
+      if (response.success) {
+        // 현재 월의 출석 데이터만 업데이트 (다른 월은 영향받지 않음)
+        const newAttendanceData = { ...attendanceData };
+        newAttendanceData[currentDate] = true;
+        setAttendanceData(newAttendanceData);
+        
+        // 포인트 업데이트 (API 응답에서 포인트 정보가 있다면)
+        console.log('출석 체크 응답 데이터:', response.data);
+        console.log('earnedPoint 값:', response.data?.earnedPoint);
+        if (response.data && response.data.earnedPoint) {
+          console.log('포인트 업데이트 전:', monthlyPoints);
+          setMonthlyPoints(prev => {
+            const newPoints = prev + response.data.earnedPoint;
+            console.log('포인트 업데이트 후:', newPoints);
+            return newPoints;
+          });
+        } else {
+          // 포인트 정보가 없으면 출석 포인트 합계를 다시 로드
+          console.log('출석 체크 응답에 포인트 정보가 없음. 출석 포인트 합계를 다시 로드합니다.');
+          loadAttendanceSummary();
+        }
+        
+        // 출석 체크 후에는 백엔드 API를 다시 호출하지 않음 (프론트엔드에서만 업데이트)
+        
+        // 팝업 표시
+        setShowPopup(true);
+        
+        console.log('출석체크 성공:', response.data);
+        console.log(`현재 월(${currentMonth}월) 출석 데이터 업데이트:`, newAttendanceData);
+      } else {
+        Alert.alert('오류', response.error || '출석체크에 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('출석체크 실패:', error);
+      Alert.alert('오류', '출석체크 중 오류가 발생했습니다.');
+    } finally {
+      setIsCheckingAttendance(false);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
+
+  const renderCalendar = (month) => {
+    const calendar = [];
+    const totalDays = getDaysInMonth(currentYear, month);
+    const firstDay = getFirstDayOfMonth(currentYear, month);
+    
+    // 요일 헤더
+    const weekHeader = (
+      <View key="header" style={styles.weekHeader}>
+        {daysOfWeek.map((day, index) => (
+          <Text key={index} style={styles.dayHeader}>{day}</Text>
+        ))}
+      </View>
+    );
+    calendar.push(weekHeader);
+
+    // 첫 주 빈 칸들
+    let week = [];
+    for (let i = 0; i < firstDay; i++) {
+      week.push(<View key={`empty-start-${i}`} style={styles.dayContainer} />);
+    }
+
+    // 날짜들
+    for (let day = 1; day <= totalDays; day++) {
+      // 현재 선택된 월의 출석 데이터만 표시
+      const isAttended = month === currentMonth ? attendanceData[day] : false;
+      // 현재 날짜 마커는 오직 현재 월의 오늘 날짜에만 표시
+      const isCurrentDay = day === currentDate && month === currentMonthNum;
+      
+      week.push(
+        <View key={day} style={styles.dayContainer}>
+          {isCurrentDay ? (
+            <View style={styles.currentDay}>
+              <Text style={styles.currentDayText}>{day}</Text>
+              <Image 
+                source={require('../assets/images/icon_earth.png')} 
+                style={styles.earthIcon} 
+              />
+            </View>
+          ) : (
+            <View style={styles.dayItem}>
+              <Text style={styles.dayText}>{day}</Text>
+              {isAttended ? (
+                <Image 
+                  source={require('../assets/images/icon_earth.png')} 
+                  style={styles.earthIcon} 
+                />
+              ) : (
+                <View style={styles.emptyCircle} />
+              )}
+            </View>
+          )}
+        </View>
+      );
+
+      if (week.length === 7) {
+        calendar.push(
+          <View key={`week-${Math.floor(day / 7)}`} style={styles.weekRow}>
+            {week}
+          </View>
+        );
+        week = [];
+      }
+    }
+
+    // 마지막 주 빈 칸으로 채우기
+    if (week.length > 0) {
+      while (week.length < 7) {
+        week.push(<View key={`empty-end-${week.length}`} style={styles.dayContainer} />);
+      }
+      calendar.push(
+        <View key="week-last" style={styles.weekRow}>
+          {week}
+        </View>
+      );
+    }
+
+    return calendar;
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* 상단 헤더 */}
+      <View style={styles.header}>
+        <Image
+          style={styles.headerBackground}
+          source={require('../assets/images/bar_green.png')}
+        />
+        
+        {/* 뒤로가기 버튼 */}
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Image
+            source={require('../assets/images/icon_back_button.png')}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        
+        {/* 중앙 로고 */}
+        <View style={styles.headerLogoContainer}>
+          <Image
+            source={icon_pleanet_logo}
+            style={styles.headerLogo}
+          />
+        </View>
+        
+        {/* 알림 버튼 */}
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => router.push('/notifications')}
+        >
+          <Image
+            source={require('../assets/images/icon_alarm.png')}
+            style={styles.notificationIcon}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
+        {/* 출석체크 제목 */}
+        <View style={styles.titleContainer}>
+          <Image
+            style={styles.titlePattern}
+            source={require('../assets/images/bar_green.png')}
+          />
+          <Text style={styles.titleText}>출석체크</Text>
+        </View>
+
+        {/* 월별 달력 스크롤 */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          style={styles.monthScrollView}
+          onMomentumScrollEnd={(event) => {
+            const scrollX = event.nativeEvent.contentOffset.x;
+            const pageIndex = Math.round(scrollX / (screenWidth - 40));
+            const selectedMonth = months[pageIndex];
+            if (selectedMonth && selectedMonth !== currentMonth) {
+              console.log(`월 변경 감지: ${currentMonth}월 → ${selectedMonth}월`);
+              setCurrentMonth(selectedMonth);
+            }
+          }}
+        >
+          {months.map((month) => (
+            <View key={month} style={styles.monthContainer}>
+              {/* 월 표시 */}
+              <View style={styles.monthSection}>
+                <Text style={styles.monthText}>{month}월</Text>
+              </View>
+
+              {/* 달력 */}
+              <View style={styles.calendarContainer}>
+                <View style={styles.calendar}>
+                  {renderCalendar(month)}
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* 출석 포인트 */}
+        <View style={styles.pointsSection}>
+          <Text style={styles.pointsText}>
+            <Text style={styles.pointsLabel}>이번달 출석 포인트는 </Text>
+            <Text style={styles.pointsValue}>{monthlyPoints}p</Text>
+            <Text style={styles.pointsLabel}> 입니다</Text>
+          </Text>
+        </View>
+
+        {/* 출석하기 버튼 */}
+        <TouchableOpacity 
+          style={[
+            styles.attendanceButton, 
+            (isCheckingAttendance || (currentMonth === currentMonthNum && attendanceData[currentDate])) && styles.disabledButton
+          ]} 
+          onPress={handleAttendance}
+          disabled={isCheckingAttendance || (currentMonth === currentMonthNum && attendanceData[currentDate])}
+        >
+          {isCheckingAttendance ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.attendanceButtonText}>
+              {(currentMonth === currentMonthNum && attendanceData[currentDate]) ? '출석완료' : '출석하기'}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+      
+      {/* 출석 완료 팝업 */}
+      <PopUpAlerts 
+        visible={showPopup} 
+        onClose={handleClosePopup} 
+      />
+      
+      <CustomTabBar />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9F8E1',
+  },
+  header: {
+    position: 'relative',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  headerLogoContainer: {
+    position: 'absolute',
+    zIndex: 1,
+    top: 50,
+  },
+  headerLogo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  notificationIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  titleContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    marginBottom: 30,
+    height: 50,
+    justifyContent: 'center',
+    marginHorizontal: -20, // 양쪽으로 꽉 채우기
+  },
+  titlePattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
+    bottom: 0,
+  },
+  titleText: {
+    fontSize: 28,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    fontFamily: '109LeantheWall',
+    zIndex: 1,
+  },
+  monthScrollView: {
+    marginBottom: 10,
+  },
+  monthContainer: {
+    width: screenWidth - 40, // paddingHorizontal 20 제외
+    alignItems: 'center',
+  },
+  monthSection: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  monthText: {
+    fontSize: 20,
+    letterSpacing: -0.2,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#2D2D2D',
+    textAlign: 'center',
+    height: 25,
+  },
+  calendarContainer: {
+    marginBottom: 5,
+  },
+  calendar: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: '100%',
+  },
+  weekHeader: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    width: '100%',
+  },
+  dayHeader: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    fontFamily: 'Pretendard Variable',
+  },
+  weekRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    width: '100%',
+  },
+  dayContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 35,
+    minWidth: 35,
+  },
+  dayItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  dayText: {
+    fontSize: 14,
+    color: '#2D2D2D',
+    marginBottom: 3,
+    fontFamily: 'Pretendard Variable',
+    textAlign: 'center',
+  },
+  currentDay: {
+    backgroundColor: '#006256',
+    borderRadius: 18,
+    width: 35,
+    height: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  currentDayText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontFamily: 'Pretendard Variable',
+  },
+  earthIcon: {
+    width: 18,
+    height: 18,
+    resizeMode: 'contain',
+  },
+  emptyCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    backgroundColor: 'transparent',
+  },
+  pointsSection: {
+    alignItems: 'center',
+    marginBottom: 10,
+    top: -10,
+  },
+  pointsText: {
+    width: 230,
+    fontSize: 16,
+    letterSpacing: 0.3,
+    lineHeight: 18,
+    textAlign: 'center',
+    fontFamily: 'Pretendard Variable',
+  },
+  pointsLabel: {
+    color: '#2D2D2D',
+  },
+  pointsValue: {
+    fontWeight: '700',
+    color: '#0061E9',
+  },
+  attendanceButton: {
+    width: '80%',
+    backgroundColor: '#006256',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    marginBottom: 100,
+    marginTop: 0,
+    alignSelf: 'center',
+  },
+  attendanceButtonText: {
+    fontSize: 16,
+    letterSpacing: 0.3,
+    lineHeight: 24,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#FFFFFF',
+  },
+  disabledButton: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
+  },
+});
