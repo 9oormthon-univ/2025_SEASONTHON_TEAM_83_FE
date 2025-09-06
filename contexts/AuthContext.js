@@ -73,10 +73,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // 앱 시작 시 로그인 상태 확인 (테스트용으로 비활성화 가능)
+  // 앱 시작 시 로그인 상태 확인
   useEffect(() => {
-    // checkAuthStatus(); // 자동 로그인 비활성화
-    console.log('🚫 자동 로그인 비활성화됨 - 수동 로그인 필요');
+    checkAuthStatus(); // 자동 로그인 활성화
+    console.log('✅ 자동 로그인 활성화됨 - 토큰 확인 중...');
   }, []);
 
   // 로그인 상태 확인

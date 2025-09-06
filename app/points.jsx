@@ -253,14 +253,6 @@ export default function PointsScreen() {
           />
         </View>
         
-        {/* API 테스트 버튼 */}
-        <TouchableOpacity 
-          style={styles.apiTestButton}
-          onPress={() => router.push('/api-test')}
-        >
-          <Text style={styles.apiTestButtonText}>API 테스트</Text>
-        </TouchableOpacity>
-        
         {/* 알림 버튼 */}
         <TouchableOpacity 
           style={styles.notificationButton}
@@ -286,14 +278,49 @@ export default function PointsScreen() {
         {/* 현재 묘목 단계 섹션 */}
         <View style={styles.seedlingSection}>
           <Text style={styles.seedlingTitle}>현재 묘목 단계</Text>
-          <View style={styles.progressContainer}>
+          <View style={styles.levelContainer}>
+            <View style={styles.levelItem}>
+              <Text style={styles.levelLabel}>새싹 전</Text>
+              <View style={[styles.levelIcon, displayBalance.currentLevel === '새싹 전' && styles.activeLevelIcon]}>
+                <Text style={[styles.levelIconText, displayBalance.currentLevel === '새싹 전' && styles.activeLevelIconText]}>🌱</Text>
+              </View>
+            </View>
+            <View style={styles.levelArrow}>
+              <Text style={styles.arrowText}>→</Text>
+            </View>
+            <View style={styles.levelItem}>
+              <Text style={styles.levelLabel}>새싹</Text>
+              <View style={[styles.levelIcon, displayBalance.currentLevel === '새싹' && styles.activeLevelIcon]}>
+                <Text style={[styles.levelIconText, displayBalance.currentLevel === '새싹' && styles.activeLevelIconText]}>🌿</Text>
+              </View>
+            </View>
+            <View style={styles.levelArrow}>
+              <Text style={styles.arrowText}>→</Text>
+            </View>
+            <View style={styles.levelItem}>
+              <Text style={styles.levelLabel}>묘목</Text>
+              <View style={[styles.levelIcon, displayBalance.currentLevel === '묘목' && styles.activeLevelIcon]}>
+                <Text style={[styles.levelIconText, displayBalance.currentLevel === '묘목' && styles.activeLevelIconText]}>🌱</Text>
+              </View>
+            </View>
+            <View style={styles.levelArrow}>
+              <Text style={styles.arrowText}>→</Text>
+            </View>
+            <View style={styles.levelItem}>
+              <Text style={styles.levelLabel}>나무</Text>
+              <View style={[styles.levelIcon, displayBalance.currentLevel === '나무' && styles.activeLevelIcon]}>
+                <Text style={[styles.levelIconText, displayBalance.currentLevel === '나무' && styles.activeLevelIconText]}>🌳</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.progressBarContainer}>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${Math.min(displayBalance.progressToNextLevel * 100, 100)}%` }]} />
             </View>
-            <Text style={styles.progressText}>
-              {displayBalance.currentLevel} → {displayBalance.nextLevel} ({Math.round(displayBalance.progressToNextLevel * 100)}%)
-            </Text>
           </View>
+          <Text style={styles.progressText}>
+            다음 단계까지 {Math.round(displayBalance.progressToNextLevel * 100)}% 진행
+          </Text>
         </View>
 
         {/* 포인트 획득 내역 섹션 */}
@@ -372,22 +399,6 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'contain',
   },
-  apiTestButton: {
-    position: 'absolute',
-    right: 70,
-    top: 70,
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    zIndex: 1,
-  },
-  apiTestButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'System',
-  },
   notificationButton: {
     position: 'absolute',
     right: 20,
@@ -423,16 +434,16 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '500',
     color: '#FFFFFF',
-    fontFamily: 'System', // 시스템 기본 폰트 사용
+    fontFamily: '109LeantheWall', // 시스템 기본 폰트 사용
     zIndex: 1,
   },
   seedlingSection: {
     marginBottom: 20,
   },
   seedlingTitle: {
-    width: 112,
+    width: 140,
     fontSize: 20,
     letterSpacing: -0.2,
     lineHeight: 28,
@@ -442,39 +453,82 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginBottom: 10,
   },
-  progressContainer: {
+  levelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginVertical: 15,
+    paddingHorizontal: 10,
+  },
+  levelItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  levelLabel: {
+    fontSize: 12,
+    fontFamily: 'Pretendard Variable',
+    color: '#666666',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  levelIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#F0F0F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+  },
+  activeLevelIcon: {
+    backgroundColor: '#006256',
+    borderColor: '#006256',
+  },
+  levelIconText: {
+    fontSize: 24,
+    color: '#999999',
+  },
+  activeLevelIconText: {
+    color: '#FFFFFF',
+  },
+  levelArrow: {
+    marginHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowText: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    fontWeight: 'bold',
+  },
+  progressBarContainer: {
+    marginVertical: 10,
+    paddingHorizontal: 20,
   },
   progressBar: {
-    flex: 1,
-    height: 11,
+    height: 8,
     backgroundColor: '#F0F0F0',
-    borderRadius: 6,
-    marginRight: 15,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
-    width: '90%',
     height: '100%',
     backgroundColor: '#006256',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   progressText: {
-    width: 79,
-    fontSize: 10,
-    letterSpacing: -0.1,
-    lineHeight: 28,
-    fontFamily: 'System',
-    color: '#525252',
-    textAlign: 'right',
+    fontSize: 14,
+    fontFamily: 'Pretendard Variable',
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 8,
   },
   historySection: {
     marginBottom: 30,
   },
   historyTitle: {
-    width: 129,
+    width: 140,
     fontSize: 20,
     letterSpacing: -0.2,
     lineHeight: 28,

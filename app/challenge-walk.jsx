@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   pointText: {
     fontSize: 16,
     lineHeight: 18,
-    color: '#6B6B6B',
+    color: '#6B6B6B', 
     fontFamily: 'Pretendard Variable',
   },
   startButton: {

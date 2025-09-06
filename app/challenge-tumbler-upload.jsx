@@ -354,7 +354,7 @@ export default function ChallengeTumblerUploadScreen() {
               [
                 {
                   text: '확인',
-                  onPress: () => router.replace('/home'),
+                  onPress: () => router.push('/home'),
                 },
               ]
             );
@@ -365,7 +365,7 @@ export default function ChallengeTumblerUploadScreen() {
               [
                 {
                   text: '확인',
-                  onPress: () => router.replace('/home'),
+                  onPress: () => router.push('/home'),
                 },
               ]
             );
@@ -470,21 +470,21 @@ export default function ChallengeTumblerUploadScreen() {
         {/* 챌린지 상세 정보 */}
         <View style={styles.challengeDetailSection}>
           {/* 챌린지 제목 */}
-          <Text style={styles.challengeTitle}>텀블러 사용</Text>
+          {/* <Text style={styles.challengeTitle}>텀블러 사용</Text> */}
           
           {/* 챌린지 이미지 */}
-          <View style={styles.imageContainer}>
+          {/* <View style={styles.imageContainer}>
             <Image 
               style={styles.challengeImage}
               source={require('../assets/images/tumbler.png')}
               resizeMode="cover"
             />
-          </View>
+          </View> */}
           
           {/* 포인트 표시 */}
-          <View style={styles.pointsContainer}>
+          {/* <View style={styles.pointsContainer}>
             <Text style={styles.challengePoints}>50p</Text>
-          </View>
+          </View> */}
           
           {/* 텀블러 인증 사진 업로드 */}
           <View style={styles.uploadSection}>
@@ -523,10 +523,27 @@ export default function ChallengeTumblerUploadScreen() {
           {/* 챌린지 조건 */}
           <View style={styles.conditionSection}>
             <Text style={styles.conditionTitle}>챌린지 조건</Text>
-            <Text style={styles.conditionText}>
-              테이크아웃 또는 매장에서 음료를 받을 때{'\n'}
-              반드시 텀블러 사용{'\n'}
-              텀블러와 영수증을 함께 찍은 사진 제출 (1회 주문당 1회 인정)
+            <Text style={styles.conditionTextContainer}>
+              <Text style={[styles.conditionText, styles.conditionTextBold]}>
+                {`테이크아웃 또는 매장에서 음료를 받을 때
+반드시 텀블러 사용
+`}
+              </Text>
+              <Text style={styles.conditionTextSub}>
+                {`카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)
+`}
+              </Text>
+              <Text style={styles.conditionTextBlank}>
+                {' '}
+              </Text>
+              {/* <Text style={[styles.conditionTextBold, styles.conditionTextBlank]}>
+                {`포인트 지급 기준
+`}
+              </Text>
+              <Text style={styles.conditionTextSub}>
+                {`1회 사용 시 50P
+하루 최대 1회 인증 가능`}
+              </Text> */}
             </Text>
           </View>
           
@@ -725,14 +742,35 @@ const styles = StyleSheet.create({
     color: '#2D2D2D',
     marginBottom: 10,
   },
+  conditionTextContainer: {
+    width: 302,
+    lineHeight: 28,
+    marginLeft: 16,
+    textAlign: 'left',
+  },
   conditionText: {
-    fontSize: 16,
-    lineHeight: 18,
+    color: '#000',
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    fontSize: 14,
+  },
+  conditionTextBold: {
+    fontWeight: '700',
+    lineHeight: 28,
+    fontFamily: 'Pretendard Variable',
+  },
+  conditionTextSub: {
+    fontSize: 14,
+    color: '#6b6b6b',
+    fontFamily: 'Pretendard Variable',
+  },
+  conditionTextBlank: {
     color: '#000',
     fontFamily: 'Pretendard Variable',
   },
   pointSection: {
     marginBottom: 0,
+    marginTop: -10,
   },
   pointTitle: {
     fontSize: 20,
@@ -747,6 +785,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 18,
     color: '#6B6B6B',
+    marginLeft: 16,
     fontFamily: 'Pretendard Variable',
   },
   uploadSection: {
@@ -754,7 +793,7 @@ const styles = StyleSheet.create({
   },
   uploadSectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#2D2D2D',
     fontFamily: 'Pretendard Variable',
     marginBottom: 5,

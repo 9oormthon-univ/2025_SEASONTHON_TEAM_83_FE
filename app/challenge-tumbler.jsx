@@ -29,7 +29,7 @@ export default function ChallengeTumblerScreen() {
         {/* 뒤로가기 버튼 */}
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => router.push('/challenge')}
+          onPress={() => router.back()}
         >
           <Image
             source={require('../assets/images/icon_back_button.png')}
@@ -88,11 +88,15 @@ export default function ChallengeTumblerScreen() {
           {/* 챌린지 조건 */}
           <View style={styles.conditionSection}>
             <Text style={styles.conditionTitle}>챌린지 조건</Text>
-            <Text style={styles.conditionText}>
-              테이크아웃 또는 매장에서 음료를 받을 때{'\n'}
-              반드시 텀블러 사용{'\n'}
-              카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)
-            </Text>
+            <View style={styles.conditionTextContainer}>
+              <Text style={[styles.conditionText, styles.conditionTextBold]}>
+                {`테이크아웃 또는 매장에서 음료를 받을 때
+반드시 텀블러 사용`}
+              </Text>
+              <Text style={styles.conditionTextSub}>
+                {`카페 영수증 + 텀블러 사진 제출 (1회 주문당 1회 인정)`}
+              </Text>
+            </View>
           </View>
           
           {/* 포인트 지급 기준 */}
@@ -250,11 +254,25 @@ const styles = StyleSheet.create({
     color: '#2D2D2D',
     marginBottom: 10,
   },
+  conditionTextContainer: {
+    paddingLeft: 16,
+  },
   conditionText: {
-    fontSize: 16,
-    lineHeight: 18,
     color: '#000',
     fontFamily: 'Pretendard Variable',
+    fontSize: 16,
+    lineHeight: 28,
+    marginBottom: 12,
+  },
+  conditionTextBold: {
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+  },
+  conditionTextSub: {
+    fontSize: 14,
+    color: '#6b6b6b',
+    fontFamily: 'Pretendard Variable',
+    lineHeight: 20,
   },
   pointSection: {
     marginBottom: 30,
@@ -272,6 +290,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 18,
     color: '#6B6B6B',
+    marginLeft: 16,
     fontFamily: 'Pretendard Variable',
   },
   startButton: {

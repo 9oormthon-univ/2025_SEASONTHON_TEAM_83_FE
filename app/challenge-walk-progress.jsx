@@ -303,7 +303,7 @@ export default function ChallengeWalkProgressScreen() {
           [
             {
               text: '확인',
-              onPress: () => router.replace('/home')
+              onPress: () => router.push('/home')
             }
           ]
         );
