@@ -550,13 +550,16 @@ export const AuthService = {
   // 챌린지 완료 (리워드 받기)
   async completeChallenge(challengeId) {
     try {
-      const response = await apiClient.get(`${API_ENDPOINTS.CHALLENGE_COMPLETE}/${challengeId}/reward`);
+      console.log('🎯 챌린지 완료 API 호출:', challengeId);
+      const response = await apiClient.post(`${API_ENDPOINTS.CHALLENGE_COMPLETE}/${challengeId}/complete`);
+      console.log('🎯 챌린지 완료 API 응답:', response);
       return {
         success: true,
         data: response.result,
         message: response.message,
       };
     } catch (error) {
+      console.error('🎯 챌린지 완료 API 오류:', error);
       return {
         success: false,
         error: error.message,
@@ -703,6 +706,103 @@ export const AuthService = {
       console.error('오류 메시지:', error.message);
       console.error('오류 스택:', error.stack);
       console.error('전체 오류 객체:', JSON.stringify(error, null, 2));
+      
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // 최근 선택한 챌린지 조회
+  async getLatestChallenge(size = 5) {
+    try {
+      console.log('=== 최근 선택한 챌린지 조회 시작 ===');
+      console.log('요청할 개수:', size);
+      
+      // 서버에서 pageSize 제한이 있어서 여러 페이지를 요청해야 함
+      const allChallenges = [];
+      let currentPage = 0;
+      const pageSize = 2; // 서버에서 제한하는 페이지 크기
+      let hasMorePages = true;
+      
+      while (hasMorePages && allChallenges.length < size) {
+        console.log(`📄 페이지 ${currentPage} 요청 중...`);
+        
+        const response = await apiClient.get('/api/challenges/latest', {
+          params: {
+            page: currentPage,
+            size: pageSize,
+            sort: ['endedAt,desc'] // 최신순 정렬
+          }
+        });
+
+        console.log(`📄 페이지 ${currentPage} 응답 받음`);
+        
+        // 응답 데이터 확인 및 안전한 접근
+        const responseData = response.data || response;
+        
+        if (responseData && responseData.isSuccess) {
+          const pageChallenges = responseData.result?.content || [];
+          console.log(`📄 페이지 ${currentPage}에서 받은 챌린지: ${pageChallenges.length}개`);
+          
+          // 현재 페이지의 챌린지를 전체 목록에 추가
+          allChallenges.push(...pageChallenges);
+          
+          // 페이지 정보 확인
+          const pageable = responseData.result?.pageable;
+          hasMorePages = !pageable?.last && allChallenges.length < size;
+          currentPage++;
+          
+          console.log(`📄 현재까지 수집된 챌린지: ${allChallenges.length}개`);
+          console.log(`📄 더 많은 페이지 있음: ${hasMorePages}`);
+        } else {
+          console.log(`❌ 페이지 ${currentPage} 응답 실패:`, responseData?.message);
+          hasMorePages = false;
+        }
+      }
+      
+      console.log(`📊 최종 수집된 챌린지 개수: ${allChallenges.length}`);
+      
+      if (allChallenges.length > 0) {
+        // 요청한 개수만큼만 자르기
+        const limitedChallenges = allChallenges.slice(0, size);
+        
+        // 모든 챌린지에 아이콘 추가
+        const challengesWithIcons = limitedChallenges.map((challenge, index) => {
+          // 챌린지 제목에 따라 아이콘 결정
+          let icon = require('../assets/images/icon_walk.png'); // 기본값
+          
+          if (challenge.title && (challenge.title.includes('텀블러') || challenge.title.includes('tumbler'))) {
+            icon = require('../assets/images/icon_tumblr.png');
+          } else if (challenge.title && (challenge.title.includes('걷기') || challenge.title.includes('walk'))) {
+            icon = require('../assets/images/icon_walk.png');
+          }
+
+          return {
+            ...challenge,
+            id: index + 1, // 고유 ID 추가
+            icon: icon
+          };
+        });
+
+        console.log(`✅ 최종 처리된 챌린지 개수: ${challengesWithIcons.length}`);
+        return {
+          success: true,
+          data: challengesWithIcons
+        };
+      } else {
+        console.log('최근 챌린지 데이터 없음');
+        return {
+          success: true,
+          data: []
+        };
+      }
+    } catch (error) {
+      console.error('=== 최근 선택한 챌린지 API 오류 ===');
+      console.error('오류 타입:', error.constructor.name);
+      console.error('오류 메시지:', error.message);
+      console.error('오류 스택:', error.stack);
       
       return {
         success: false,

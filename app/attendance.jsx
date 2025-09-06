@@ -34,11 +34,19 @@ export default function AttendanceScreen() {
     try {
       setIsLoading(true);
       
+      // 현재 년도와 월을 사용하여 API 호출
+      const currentYear = new Date().getFullYear();
+      const yearMonth = `${currentYear}-${month.toString().padStart(2, '0')}`;
+      
+      console.log(`월별 출석 데이터 로드 시작: ${yearMonth}`);
+      
       const response = await AttendanceService.getMonthlyAttendance();
       
       if (response.success) {
         const { month: responseMonth, attendances } = response.data;
         const [year, monthNum] = responseMonth.split('-');
+        
+        console.log(`API 응답 월: ${responseMonth}, 요청 월: ${yearMonth}`);
         
         // 현재 월과 응답 월이 일치하는 경우에만 데이터 설정
         if (parseInt(monthNum) === month) {
@@ -48,6 +56,11 @@ export default function AttendanceScreen() {
             tempAttendanceData[day] = attendance.checked;
           });
           setAttendanceData(tempAttendanceData);
+          console.log(`월별 출석 데이터 설정 완료: ${month}월`, tempAttendanceData);
+        } else {
+          // 다른 월의 경우 빈 데이터로 초기화
+          setAttendanceData({});
+          console.log(`다른 월 데이터이므로 초기화: API=${responseMonth}, 요청=${yearMonth}`);
         }
         
         console.log('월별 출석 데이터 로드 성공:', response.data);
@@ -109,7 +122,7 @@ export default function AttendanceScreen() {
       console.log('출석 체크 API 응답 전체:', response);
       
       if (response.success) {
-        // 출석 데이터 업데이트
+        // 현재 월의 출석 데이터만 업데이트 (다른 월은 영향받지 않음)
         const newAttendanceData = { ...attendanceData };
         newAttendanceData[currentDate] = true;
         setAttendanceData(newAttendanceData);
@@ -136,6 +149,7 @@ export default function AttendanceScreen() {
         setShowPopup(true);
         
         console.log('출석체크 성공:', response.data);
+        console.log(`현재 월(${currentMonth}월) 출석 데이터 업데이트:`, newAttendanceData);
       } else {
         Alert.alert('오류', response.error || '출석체크에 실패했습니다.');
       }
@@ -175,8 +189,10 @@ export default function AttendanceScreen() {
 
     // 날짜들
     for (let day = 1; day <= totalDays; day++) {
-      const isAttended = attendanceData[day];
-      const isCurrentDay = day === currentDate && month === currentMonth; // 현재 월의 현재 날짜 표시
+      // 현재 선택된 월의 출석 데이터만 표시
+      const isAttended = month === currentMonth ? attendanceData[day] : false;
+      // 현재 날짜 마커는 오직 현재 월의 오늘 날짜에만 표시
+      const isCurrentDay = day === currentDate && month === currentMonthNum;
       
       week.push(
         <View key={day} style={styles.dayContainer}>
@@ -285,6 +301,15 @@ export default function AttendanceScreen() {
           showsHorizontalScrollIndicator={false}
           pagingEnabled
           style={styles.monthScrollView}
+          onMomentumScrollEnd={(event) => {
+            const scrollX = event.nativeEvent.contentOffset.x;
+            const pageIndex = Math.round(scrollX / (screenWidth - 40));
+            const selectedMonth = months[pageIndex];
+            if (selectedMonth && selectedMonth !== currentMonth) {
+              console.log(`월 변경 감지: ${currentMonth}월 → ${selectedMonth}월`);
+              setCurrentMonth(selectedMonth);
+            }
+          }}
         >
           {months.map((month) => (
             <View key={month} style={styles.monthContainer}>
@@ -316,16 +341,16 @@ export default function AttendanceScreen() {
         <TouchableOpacity 
           style={[
             styles.attendanceButton, 
-            (isCheckingAttendance || attendanceData[currentDate]) && styles.disabledButton
+            (isCheckingAttendance || (currentMonth === currentMonthNum && attendanceData[currentDate])) && styles.disabledButton
           ]} 
           onPress={handleAttendance}
-          disabled={isCheckingAttendance || attendanceData[currentDate]}
+          disabled={isCheckingAttendance || (currentMonth === currentMonthNum && attendanceData[currentDate])}
         >
           {isCheckingAttendance ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
             <Text style={styles.attendanceButtonText}>
-              {attendanceData[currentDate] ? '출석완료' : '출석하기'}
+              {(currentMonth === currentMonthNum && attendanceData[currentDate]) ? '출석완료' : '출석하기'}
             </Text>
           )}
         </TouchableOpacity>

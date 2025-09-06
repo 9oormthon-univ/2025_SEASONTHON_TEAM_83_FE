@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nicknameText: {
-    width: 80,
+    width: 100,
     fontSize: 20,
     letterSpacing: -0.2,
     lineHeight: 28,
