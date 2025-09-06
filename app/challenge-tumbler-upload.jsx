@@ -395,9 +395,13 @@ export default function ChallengeTumblerUploadScreen() {
       } else {
         console.error('❌ 텀블러 챌린지 인증 API 오류');
         console.error('오류:', verifyResult.error);
+        // AI 서버 오류인 경우 특별한 메시지 표시
+        const isAIServerError = verifyResult.error && verifyResult.error.includes('AI 서버');
         Alert.alert(
           '인증 오류',
-          verifyResult.error || '챌린지 인증 중 오류가 발생했습니다. 다시 시도해주세요.',
+          isAIServerError 
+            ? '사진 분석 서버에 일시적인 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.'
+            : verifyResult.error || '챌린지 인증 중 오류가 발생했습니다. 다시 시도해주세요.',
           [{ text: '확인' }]
         );
       }

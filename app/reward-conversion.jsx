@@ -150,28 +150,28 @@ export default function RewardConversionScreen() {
               <View style={styles.historyLeft}>
                 <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_reward.png')} 
+                    source={require('../assets/images/icon_walk.png')} 
                     style={styles.iconImage}
                   />
                 </View>
                 <View style={styles.historyContent}>
-                  <Text style={styles.historyItemTitle}>나무 심기 전환</Text>
+                  <Text style={styles.historyItemTitle}>걷기 1.3km 인증</Text>
                   <Text style={styles.historyItemSubtitle}>2025-01-15</Text>
                 </View>
               </View>
-              <Text style={styles.historyPoints}>-100p</Text>
+              <Text style={styles.historyPoints}>+20p</Text>
             </View>
 
             <View style={styles.historyItem}>
               <View style={styles.historyLeft}>
                 <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_badge.png')} 
+                    source={require('../assets/images/icon_tumblr.png')} 
                     style={styles.iconImage}
                   />
                 </View>
                 <View style={styles.historyContent}>
-                  <Text style={styles.historyItemTitle}>뱃지 획득</Text>
+                  <Text style={styles.historyItemTitle}>텀블러 사용 인증</Text>
                   <Text style={styles.historyItemSubtitle}>2025-01-14</Text>
                 </View>
               </View>
@@ -182,48 +182,48 @@ export default function RewardConversionScreen() {
               <View style={styles.historyLeft}>
                 <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_reward.png')} 
+                    source={require('../assets/images/icon_plant_level4.png')} 
                     style={styles.iconImage}
                   />
                 </View>
                 <View style={styles.historyContent}>
-                  <Text style={styles.historyItemTitle}>나무 심기 전환</Text>
+                  <Text style={styles.historyItemTitle}>뱃지 획득</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-13</Text>
+                </View>
+              </View>
+              <Text style={styles.historyPoints}>+100p</Text>
+            </View>
+
+            <View style={styles.historyItem}>
+              <View style={styles.historyLeft}>
+                <View style={styles.historyIcon}>
+                  <Image 
+                    source={require('../assets/images/icon_attendance.png')} 
+                    style={styles.iconImage}
+                  />
+                </View>
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyItemTitle}>출석체크</Text>
                   <Text style={styles.historyItemSubtitle}>2025-01-12</Text>
                 </View>
               </View>
-              <Text style={styles.historyPoints}>-200p</Text>
+              <Text style={styles.historyPoints}>+10p</Text>
             </View>
 
             <View style={styles.historyItem}>
               <View style={styles.historyLeft}>
                 <View style={styles.historyIcon}>
                   <Image 
-                    source={require('../assets/images/icon_point.png')} 
+                    source={require('../assets/images/icon_walk.png')} 
                     style={styles.iconImage}
                   />
                 </View>
                 <View style={styles.historyContent}>
-                  <Text style={styles.historyItemTitle}>포인트 적립</Text>
-                  <Text style={styles.historyItemSubtitle}>2025-01-10</Text>
+                  <Text style={styles.historyItemTitle}>걷기 1.7km 인증</Text>
+                  <Text style={styles.historyItemSubtitle}>2025-01-11</Text>
                 </View>
               </View>
-              <Text style={styles.historyPoints}>+150p</Text>
-            </View>
-
-            <View style={styles.historyItem}>
-              <View style={styles.historyLeft}>
-                <View style={styles.historyIcon}>
-                  <Image 
-                    source={require('../assets/images/icon_reward.png')} 
-                    style={styles.iconImage}
-                  />
-                </View>
-                <View style={styles.historyContent}>
-                  <Text style={styles.historyItemTitle}>나무 심기 전환</Text>
-                  <Text style={styles.historyItemSubtitle}>2025-01-08</Text>
-                </View>
-              </View>
-              <Text style={styles.historyPoints}>-100p</Text>
+              <Text style={styles.historyPoints}>+25p</Text>
             </View>
           </ScrollView>
         </View>
@@ -488,17 +488,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   historyIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F0F0F0',
+    width: 50,
+    height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   iconImage: {
-    width: 20,
-    height: 20,
+    width: 50,
+    height: 50,
     resizeMode: 'contain',
   },
   historyContent: {

@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,45 +9,15 @@ const { width: screenWidth } = Dimensions.get('window');
 
 export default function ChallengeScreen() {
   const router = useRouter();
-  const { getChallenges } = useAuth();
+  const { getChallenges, getLatestChallenge } = useAuth();
+  
+  console.log('🔍 getLatestChallenge 함수 확인:', typeof getLatestChallenge);
   
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentChallenge, setCurrentChallenge] = useState(null);
-
-  // 최근 선택한 챌린지 데이터 (스크롤 가능하도록 여러 개 생성)
-  const recentChallenges = [
-    {
-      id: 1,
-      title: '걷기 1.3Km 인증',
-      date: '2025-01-15',
-      icon: require('../assets/images/icon_walk.png')
-    },
-    {
-      id: 2,
-      title: '텀블러 사용 인증',
-      date: '2025-01-14',
-      icon: require('../assets/images/icon_tumblr.png')
-    },
-    {
-      id: 3,
-      title: '1Km 이상 걷기 인증',
-      date: '2025-01-13',
-      icon: require('../assets/images/icon_walk.png')
-    },
-    {
-      id: 4,
-      title: '친환경 제품 사용',
-      date: '2025-01-12',
-      icon: require('../assets/images/icon_earth.png')
-    },
-    {
-      id: 5,
-      title: '대중교통 이용',
-      date: '2025-01-11',
-      icon: require('../assets/images/icon_earth.png')
-    }
-  ];
+  const [recentChallenges, setRecentChallenges] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(false);
 
   // 챌린지 목록 로드
   const loadChallenges = async () => {
@@ -78,10 +48,57 @@ export default function ChallengeScreen() {
     }
   };
 
+  // 최근 선택한 챌린지 로드
+  const loadRecentChallenges = async (count = 5) => {
+    console.log('🚨 loadRecentChallenges 함수 시작!');
+    try {
+      console.log(`🔄 loadRecentChallenges 함수 호출됨 - count: ${count}`);
+      setRecentLoading(true);
+      console.log(`🔄 최근 챌린지 ${count}개 로드 시작`);
+      console.log('🚨 getLatestChallenge 호출 직전');
+      const response = await getLatestChallenge(count);
+      console.log('🚨 getLatestChallenge 호출 완료');
+      
+      if (response.success && response.data && Array.isArray(response.data)) {
+        // API에서 받은 배열 데이터를 그대로 사용
+        const recentChallengesList = response.data.map((challenge, index) => ({
+          id: challenge.id || index + 1,
+          title: challenge.title,
+          date: challenge.endedAt ? 
+            new Date(challenge.endedAt).toLocaleDateString('ko-KR') : 
+            '진행 중',
+          icon: challenge.icon
+        }));
+        setRecentChallenges(recentChallengesList);
+      } else {
+        console.log('최근 챌린지 없음 또는 로드 실패:', response.error);
+        setRecentChallenges([]);
+      }
+    } catch (error) {
+      console.error('최근 챌린지 로드 중 오류:', error);
+      setRecentChallenges([]);
+    } finally {
+      setRecentLoading(false);
+    }
+  };
+
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
+    console.log('🚀 useEffect 실행 - 컴포넌트 마운트');
+    console.log('🚀 loadChallenges 호출');
     loadChallenges();
+    console.log('🚀 loadRecentChallenges 호출');
+    loadRecentChallenges();
+    console.log('🚀 useEffect 완료');
   }, []);
+
+  // 화면이 포커스될 때마다 최근 챌린지 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔄 챌린지 화면 포커스 - 최근 챌린지 새로고침');
+      loadRecentChallenges(5); // 5개 가져오기
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -174,22 +191,32 @@ export default function ChallengeScreen() {
           <Text style={styles.recentTitle}>최근 선택한 챌린지</Text>
           
           {/* 최근 챌린지 리스트 */}
-          {recentChallenges.map((challenge) => (
-            <View key={challenge.id} style={styles.recentChallengeItem}>
-              <View style={styles.recentChallengeIcon}>
-                <Image 
-                  source={challenge.icon}
-                  style={styles.recentIcon}
-                  resizeMode="contain"
-                />
-                <Text style={styles.recentIconText}>Challenge</Text>
-              </View>
-              <View style={styles.recentChallengeInfo}>
-                <Text style={styles.recentChallengeTitle}>{challenge.title}</Text>
-                <Text style={styles.recentChallengeDate}>{challenge.date}</Text>
-              </View>
+          {recentLoading ? (
+            <View style={styles.recentLoadingContainer}>
+              <ActivityIndicator size="small" color="#006256" />
+              <Text style={styles.recentLoadingText}>최근 챌린지 로딩 중...</Text>
             </View>
-          ))}
+          ) : recentChallenges.length > 0 ? (
+            recentChallenges.map((challenge) => (
+              <View key={challenge.id} style={styles.recentChallengeItem}>
+                <View style={styles.recentChallengeIcon}>
+                  <Image 
+                    source={challenge.icon} 
+                    style={styles.recentIcon} 
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.recentChallengeInfo}>
+                  <Text style={styles.recentChallengeTitle}>{challenge.title}</Text>
+                  <Text style={styles.recentChallengeDate}>{challenge.date}</Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <View style={styles.recentEmptyContainer}>
+              <Text style={styles.recentEmptyText}>최근 선택한 챌린지가 없습니다.</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
       
@@ -396,6 +423,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    fontFamily: 'Pretendard Variable',
+  },
+  recentLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  recentLoadingText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Pretendard Variable',
+  },
+  recentEmptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  recentEmptyText: {
+    fontSize: 14,
+    color: '#999',
     fontFamily: 'Pretendard Variable',
   },
 });

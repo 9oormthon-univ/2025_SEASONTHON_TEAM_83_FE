@@ -412,6 +412,18 @@ const signup = async (userData) => {
     }
   };
 
+  // 최근 선택한 챌린지 조회
+  const getLatestChallenge = async (size = 5) => {
+    try {
+      console.log('🔍 AuthContext getLatestChallenge 호출됨, size:', size);
+      const response = await AuthService.getLatestChallenge(size);
+      return response;
+    } catch (error) {
+      console.error('🔍 AuthContext getLatestChallenge 오류:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   // 챌린지 인증 검증
   const verifyChallenge = async (challengeId) => {
     try {
@@ -599,6 +611,7 @@ const signup = async (userData) => {
     getChallengeStatus,
     uploadChallengePhoto,
     verifyChallenge,
+    getLatestChallenge,
     checkAuthStatus,
   };
 
