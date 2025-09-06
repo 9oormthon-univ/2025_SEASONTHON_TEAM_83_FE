@@ -367,19 +367,21 @@ function Screen() {
         </View>
         <BadgeStrip badges={BADGES} title="보유 뱃지" />
 
-        <ActionButton
-          title="나의 숲"
-          onPress={handleMyForest}
-          variant="cta"
-          style={styles.ctaButton}
-        />
+        <View style={styles.buttonRow}>
+          <ActionButton
+            title="나의 숲"
+            onPress={handleMyForest}
+            variant="cta"
+            style={[styles.ctaButton, styles.halfButton]}
+          />
 
-        <ActionButton
-          title="로그아웃"
-          onPress={handleLogout}
-          variant="cta"
-          style={styles.logoutButton}
-        />
+          <ActionButton
+            title="로그아웃"
+            onPress={handleLogout}
+            variant="cta"
+            style={[styles.logoutButton, styles.halfButton]}
+          />
+        </View>
       </View>
 
       <CustomTabBar />
@@ -478,11 +480,19 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     justifyContent: 'flex-start',
   },
-  ctaButton: {
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
     marginTop: PROFILE_SIZES.GAP,
   },
+  ctaButton: {
+    // marginTop: PROFILE_SIZES.GAP,
+  },
   logoutButton: {
-    marginTop: 10,
+    // marginTop: 10,
+  },
+  halfButton: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,

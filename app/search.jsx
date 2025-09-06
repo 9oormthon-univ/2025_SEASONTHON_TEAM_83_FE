@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Image,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,6 +13,8 @@ import {
 } from 'react-native';
 import CustomTabBar from '../components/CustomTabBar';
 import SearchService from '../services/searchService';
+
+const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -73,7 +76,6 @@ export default function SearchScreen() {
 
   // 검색어 삭제
   const handleDeleteHistory = async (keyword) => {
-    // keyword가 유효하지 않은 경우 처리
     if (!keyword || keyword.trim() === '') {
       console.error('검색어 삭제 실패: 유효하지 않은 키워드', keyword);
       Alert.alert('삭제 실패', '삭제할 검색어가 유효하지 않습니다.');
@@ -86,9 +88,6 @@ export default function SearchScreen() {
       // 임시 해결책: 클라이언트에서 해당 키워드 제거
       const updatedHistory = searchHistory.filter(item => item.keyword !== keyword);
       setSearchHistory(updatedHistory);
-      
-      // TODO: 서버 API가 keyword로 삭제를 지원하는지 확인 필요
-      // const response = await SearchService.deleteSearchHistory(keyword);
       
       Alert.alert('삭제 완료', '검색 기록이 삭제되었습니다.');
     } catch (error) {
@@ -203,38 +202,79 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 검색 헤더 */}
+      {/* 상단 헤더 */}
       <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="검색어를 입력하세요"
-            value={searchKeyword}
-            onChangeText={setSearchKeyword}
-            onSubmitEditing={() => handleSearch()}
-            returnKeyType="search"
+        <Image
+          style={styles.headerBackground}
+          source={require('../assets/images/bar_green.png')}
+        />
+        
+        {/* 뒤로가기 버튼 */}
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Image
+            source={require('../assets/images/icon_back_button.png')}
+            style={styles.backIcon}
           />
-          <TouchableOpacity
-            style={styles.searchButton}
-            onPress={() => handleSearch()}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={styles.searchButtonText}>검색</Text>
-            )}
-          </TouchableOpacity>
+        </TouchableOpacity>
+        
+        {/* 중앙 로고 */}
+        <View style={styles.headerLogoContainer}>
+          <Image
+            source={icon_pleanet_logo}
+            style={styles.headerLogo}
+          />
         </View>
+        
+        {/* 알림 버튼 */}
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => router.push('/notifications')}
+        >
+          <Image
+            source={require('../assets/images/icon_alarm.png')}
+            style={styles.notificationIcon}
+          />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 검색 결과 */}
-        {renderSearchResults()}
+      <View style={styles.content}>
+        {/* 검색 섹션 */}
+        <View style={styles.searchSection}>
+          <Text style={styles.searchTitle}>통합 검색</Text>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="검색어를 입력하세요"
+              value={searchKeyword}
+              onChangeText={setSearchKeyword}
+              onSubmitEditing={() => handleSearch()}
+              returnKeyType="search"
+            />
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={() => handleSearch()}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.searchButtonText}>검색</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        {/* 검색 히스토리 */}
-        {!searchResults && renderSearchHistory()}
-      </ScrollView>
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* 검색 결과 */}
+          {renderSearchResults()}
+
+          {/* 검색 히스토리 */}
+          {!searchResults && renderSearchHistory()}
+        </ScrollView>
+      </View>
       
       <CustomTabBar />
     </View>
@@ -247,31 +287,107 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F8E1',
   },
   header: {
-    backgroundColor: '#006256',
-    padding: 20,
-    paddingTop: 60,
+    position: 'relative',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  headerBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  headerLogoContainer: {
+    position: 'absolute',
+    zIndex: 1,
+    top: 50,
+  },
+  headerLogo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 20,
+    top: 70,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  notificationIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  searchSection: {
+    marginBottom: 30,
+  },
+  searchTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#2D2D2D',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
     fontFamily: 'Pretendard Variable',
+    color: '#2D2D2D',
   },
   searchButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#006256',
     borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 80,
   },
   searchButtonText: {
     color: '#FFFFFF',
@@ -279,9 +395,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Pretendard Variable',
   },
-  content: {
+  scrollContent: {
     flex: 1,
-    padding: 20,
   },
   resultsContainer: {
     marginBottom: 20,
@@ -362,9 +477,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    marginBottom: 8,
   },
   historyKeyword: {
     flex: 1,
@@ -392,12 +509,13 @@ const styles = StyleSheet.create({
     color: '#666666',
     fontFamily: 'Pretendard Variable',
     textAlign: 'center',
-    paddingVertical: 20,
+    marginTop: 20,
   },
   loadingText: {
     fontSize: 14,
     color: '#666666',
     fontFamily: 'Pretendard Variable',
-    marginLeft: 10,
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
