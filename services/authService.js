@@ -550,16 +550,13 @@ export const AuthService = {
   // 챌린지 완료 (리워드 받기)
   async completeChallenge(challengeId) {
     try {
-      console.log('🎯 챌린지 완료 API 호출:', challengeId);
       const response = await apiClient.post(`${API_ENDPOINTS.CHALLENGE_COMPLETE}/${challengeId}/complete`);
-      console.log('🎯 챌린지 완료 API 응답:', response);
       return {
         success: true,
         data: response.result,
         message: response.message,
       };
     } catch (error) {
-      console.error('🎯 챌린지 완료 API 오류:', error);
       return {
         success: false,
         error: error.message,
@@ -652,6 +649,16 @@ export const AuthService = {
       }
 
       if (!response.ok) {
+        // 409 에러는 조용히 처리 (이미 리워드를 지급받은 미션)
+        if (response.status === 409) {
+          console.log('이미 리워드를 지급받은 미션입니다. (409 에러 무시)');
+          return {
+            success: false,
+            error: '이미 리워드를 지급받은 미션입니다.',
+            isAlreadyCompleted: true
+          };
+        }
+        
         console.error(`❌ HTTP 오류: ${response.status}`);
         console.error(`오류 메시지: ${data.message || '요청 실패'}`);
         throw new Error(`HTTP ${response.status}: ${data.message || '요청 실패'}`);

@@ -173,7 +173,13 @@ export default function ChallengeScreen() {
                 <Text style={styles.challengeTitle}>{challenge.title}</Text>
                 <Image 
                   style={styles.challengeImage}
-                  source={require('../assets/images/walk_challenge.png')}
+                  source={
+                    challenge.challengeId === 1 
+                      ? require('../assets/images/walk_challenge.png')
+                      : challenge.challengeId === 2
+                      ? require('../assets/images/tumbler.png')
+                      : require('../assets/images/walk_challenge.png')
+                  }
                   resizeMode="cover"
                 />
                 <Text style={styles.challengePoints}>{challenge.point}p</Text>
