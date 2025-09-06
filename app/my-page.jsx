@@ -7,6 +7,7 @@ import {
   Alert,
   BackHandler,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,10 +16,11 @@ import {
 import ActionButton from '../components/ActionButton';
 import BadgeStrip from '../components/BadgeStrip';
 import CustomTabBar from '../components/CustomTabBar';
-import HistoryList from '../components/HistoryList';
+// import HistoryList from '../components/HistoryList'; // 포인트 화면과 동일한 로직 사용
 import ProfileCard from '../components/ProfileCard';
 import { PROFILE_COLORS, PROFILE_SIZES } from '../constants/ProfileConstants';
 import { useAuth } from '../contexts/AuthContext';
+import { usePoint } from '../contexts/PointContext';
 import { getUserProfile } from '../services/api';
 
 const icon_pleanet_logo = require('../assets/images/icon_pleanet_logo.png');
@@ -44,9 +46,81 @@ const BADGES = [
 function Screen() {
   const router = useRouter();
   const { logout } = useAuth();
+  const { history: pointHistory, loading: pointLoading, refreshPoints } = usePoint();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // 포인트 내역 로드
+  useEffect(() => {
+    refreshPoints();
+  }, [refreshPoints]);
+
+  // 포인트 히스토리 아이템 렌더링 (포인트 화면과 동일한 로직)
+  const renderHistoryItem = (item, index) => {
+    const getIconSource = (type) => {
+      switch (type?.toUpperCase()) {
+        case 'WALK':
+        case 'WALKING':
+          return require('../assets/images/icon_walk.png');
+        case 'TUMBLER':
+        case 'TUMBLR':
+          return require('../assets/images/icon_tumblr.png');
+        case 'ATTENDANCE':
+        case 'CHECK_IN':
+          return require('../assets/images/icon_calendar.png');
+        case 'CHALLENGE':
+          return require('../assets/images/icon_badge.png');
+        case 'GENERAL':
+        default:
+          return require('../assets/images/icon_point.png');
+      }
+    };
+
+    // 날짜 포맷팅
+    const formatDate = (dateString) => {
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (_error) {
+        return dateString || '날짜 정보 없음';
+      }
+    };
+
+    // 포인트 변화 표시
+    const formatPointChange = (pointChange) => {
+      const points = pointChange || 0;
+      return points > 0 ? `+${points}p` : `${points}p`;
+    };
+
+    return (
+      <View key={item.id || `history_${index}_${item.date}`} style={styles.historyItem}>
+        <View style={styles.itemLeft}>
+          <Image source={getIconSource(item.type)} style={styles.itemIcon} />
+          <View style={styles.itemContent}>
+            <Text style={styles.itemTitle}>{item.description || item.title || '포인트 적립'}</Text>
+            <Text style={styles.itemDate}>{formatDate(item.createdAt || item.date)}</Text>
+          </View>
+        </View>
+        <Text style={styles.itemPoint}>{formatPointChange(item.point || item.amount)}</Text>
+      </View>
+    );
+  };
+
+  // 포인트 내역 리스트 렌더링
+  const historyList = pointHistory && pointHistory.length > 0 
+    ? pointHistory.map((item, index) => renderHistoryItem(item, index))
+    : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>포인트 내역이 없습니다.</Text>
+        </View>
+      );
 
   // 유저 정보 조회
   const fetchUserProfile = async () => {
@@ -273,7 +347,24 @@ function Screen() {
           onEditPress={handleEditProfile}
         />
 
-        <HistoryList data={HISTORY} title="적립 내역" />
+        {/* 적립 내역 섹션 */}
+        <View style={styles.historySection}>
+          <Text style={styles.historyTitle}>적립 내역</Text>
+          <ScrollView 
+            style={styles.historyCard}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled={true}
+          >
+            {pointLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#006256" />
+                <Text style={styles.loadingText}>포인트 내역을 불러오는 중...</Text>
+              </View>
+            ) : (
+              historyList
+            )}
+          </ScrollView>
+        </View>
         <BadgeStrip badges={BADGES} title="보유 뱃지" />
 
         <ActionButton
@@ -419,5 +510,96 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 10,
+  },
+  // 포인트 내역 스타일 (포인트 화면과 동일)
+  historySection: {
+    marginBottom: 30,
+  },
+  historyTitle: {
+    width: 140,
+    fontSize: 20,
+    letterSpacing: -0.2,
+    lineHeight: 28,
+    fontWeight: '700',
+    fontFamily: 'Pretendard Variable',
+    color: '#2D2D2D',
+    textAlign: 'left',
+    marginBottom: 20,
+    marginTop:20,
+  },
+  historyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    maxHeight: 200,
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  itemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  itemIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+  },
+  itemContent: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2D2D2D',
+    fontFamily: 'Pretendard Variable',
+    marginBottom: 2,
+  },
+  itemDate: {
+    fontSize: 12,
+    color: '#666666',
+    fontFamily: 'Pretendard Variable',
+  },
+  itemPoint: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#006256',
+    fontFamily: 'Pretendard Variable',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'Pretendard Variable',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#999999',
+    fontFamily: 'Pretendard Variable',
   },
 });

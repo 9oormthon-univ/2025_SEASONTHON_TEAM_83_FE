@@ -48,8 +48,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: PROFILE_COLORS.card,
     borderRadius: 12,
-    padding: 14,
-    marginHorizontal: 16,
+    padding: 10,
+    marginHorizontal: 0,
     marginTop: 10,
     ...PROFILE_SHADOW,
   },
