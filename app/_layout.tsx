@@ -11,14 +11,19 @@ import { PointProvider } from '../contexts/PointContext';
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   
-  // 폰트 로딩을 일시적으로 비활성화하여 앱이 정상 작동하도록 함
-  useFonts({
-    // '109LeantheWall': require('../assets/fonts/109LeantheWall.ttf'),
-    // 'Pretendard Variable': require('../assets/fonts/PretendardVariable.ttf'),
-    // 'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
+  // 폰트 로딩 활성화
+  const [fontsLoaded] = useFonts({
+    '109LeantheWall': require('../assets/fonts/109LeantheWall.ttf'),
+    'Pretendard Variable': require('../assets/fonts/PretendardVariable.ttf'),
+    'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  console.log('폰트 로딩 비활성화됨, 시스템 기본 폰트 사용');
+  if (!fontsLoaded) {
+    console.log('폰트 로딩 중...');
+    return null; // 폰트가 로드될 때까지 대기
+  }
+
+  console.log('폰트 로딩 완료');
 
   return (
     <AuthProvider>
