@@ -54,17 +54,19 @@ const MapBorder = ({
     return lines;
   };
 
-  // 이동 경로 생성 함수
+  // 이동 경로 생성 함수 (이전 위치와 새 위치 사이에 선을 그리는 로직)
   const generatePathLine = () => {
     if (!showPath || pathHistory.length < 2) return null;
     
     // 경로 데이터 생성 (M x1 y1 L x2 y2 L x3 y3 ...)
+    // M: Move to (첫 번째 점으로 이동)
+    // L: Line to (이전 점에서 현재 점으로 선 그리기)
     const pathData = pathHistory
       .map((point, index) => {
         if (index === 0) {
-          return `M ${point.x} ${point.y}`;
+          return `M ${point.x} ${point.y}`; // 첫 번째 점으로 이동
         } else {
-          return `L ${point.x} ${point.y}`;
+          return `L ${point.x} ${point.y}`; // 이전 점에서 현재 점으로 선 그리기
         }
       })
       .join(' ');
@@ -77,7 +79,7 @@ const MapBorder = ({
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeDasharray="5,5" // 점선 효과
+        strokeDasharray="5,5" // 점선 효과로 이동 경로 표시
       />
     );
   };

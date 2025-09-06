@@ -166,11 +166,11 @@ export default function ChallengeWalkProgressScreen() {
           const newLocation = { x: mapX, y: mapY, lat: latitude, lng: longitude };
           setCurrentLocation(newLocation);
           
-          // 경로 히스토리에 추가
+          // 경로 히스토리에 추가 (이전 위치와 새 위치 사이에 선을 그리기 위해)
           setPathHistory(prev => {
             const newPath = [...prev, newLocation];
-            // 최대 100개 포인트만 유지 (성능 최적화)
-            return newPath.length > 100 ? newPath.slice(-100) : newPath;
+            // 최대 200개 포인트 유지 (더 부드러운 경로를 위해 증가)
+            return newPath.length > 200 ? newPath.slice(-200) : newPath;
           });
 
           // 현재 위치 주소 업데이트 (역지오코딩)
@@ -446,8 +446,8 @@ export default function ChallengeWalkProgressScreen() {
             currentLocation={currentLocation ? { x: currentLocation.x, y: currentLocation.y } : null}
             pathHistory={pathHistory}
             showPath={isTracking}
-            pathColor="#006256"
-            pathWidth={3}
+            pathColor="#FF6B6B"
+            pathWidth={4}
             backgroundImageOpacity={0.3}
           />
           

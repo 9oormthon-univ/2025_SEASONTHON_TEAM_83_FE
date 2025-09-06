@@ -129,10 +129,11 @@ export default function RewardConversionScreen() {
             <View style={styles.treeTextContainer}>
               <Text style={styles.treeTitle}>나무 심기로 전환</Text>
               <Text style={styles.treeSubtitle}>현재 심을 수 있는 나무는 3그루 입니다.</Text>
-            </View>
-            <TouchableOpacity style={styles.plantTreeButton}>
+              <TouchableOpacity style={styles.plantTreeButton}>
               <Text style={styles.plantTreeText}>나무심기</Text>
             </TouchableOpacity>
+            </View>
+            
           </View>
         </View>
 
@@ -358,6 +359,7 @@ const styles = StyleSheet.create({
     borderColor: '#D6D6D6',
     borderRadius: 4,
     paddingHorizontal: 17,
+    marginBottom: 20,
     paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: {
@@ -407,7 +409,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard Variable',
     color: '#2D2D2D',
     textAlign: 'left',
-    marginBottom: 6,
+    marginBottom: 10,
     lineHeight: 28,
     letterSpacing: -0.2,
   },
@@ -417,13 +419,17 @@ const styles = StyleSheet.create({
     color: '#6B6B6B',
     textAlign: 'left',
     lineHeight: 18,
+    marginBottom: 20,
     letterSpacing: 0.3,
   },
   plantTreeButton: {
     backgroundColor: '#006256',
     borderRadius: 4,
     paddingVertical: 8,
+    width: 100,
+    marginLeft: 10,
     paddingHorizontal: 24,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -434,7 +440,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   plantTreeText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     fontFamily: 'Pretendard Variable',
     color: '#F9F8E1',

@@ -48,9 +48,11 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: PROFILE_COLORS.card,
     borderRadius: 12,
-    padding: 10,
+    paddingTop: 5,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
     marginHorizontal: 0,
-    marginTop: 10,
+    marginTop: 5,
     ...PROFILE_SHADOW,
   },
   profileRow: {
@@ -60,10 +62,12 @@ const styles = StyleSheet.create({
   profileLeft: {
     flex: 1,
     flexDirection: 'row',
+    marginTop: -50,
     alignItems: 'center',
   },
   profileInfo: {
     marginLeft: 12,
+    
   },
   profileRight: {
     alignItems: 'center',
